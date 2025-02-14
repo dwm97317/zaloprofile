@@ -14,33 +14,38 @@ class Zalo {
                   
     } 
     
-    public function hmac_data($data,$key){
-        $hash = hash_hmac("sha256",$data,$key,true);
+    public function hmac_data($data, $key) {
+        $hash = hash_hmac("sha256", $data, $key, true);
         # 转换为16进制值
         return bin2hex($hash);
     }
     
     // token 换取 个人信息    
-    public function getProfile($accessToken){
+    public function getProfile($accessToken) {
         $api = 'https://graph.zalo.me/v2.0/me';
-        $appSecretProof = $this->hmac_data($accessToken,$this->config['secret']);
+        $params = [
+          'fields' => "id,name,picture",    
+        ];
+        $url = $api . '?' . http_build_query($params);
         $header = [
-          'access_token:'.$accessToken,
-          'appsecret_proof:'.$appSecretProof
+          'access_token: ' . $accessToken,
         ];
-        $curl = (new Curl());
-        $body = [
-          'fields' => "id,name,birthday,picture",    
-        ];
-        $response = $curl->get($api,$body,$header);
-        if ($response){
-            $responseJson = json_decode($response,true);
-            if ($responseJson['error']==0){
+        $curl = new Curl();
+        $response = $curl->get($url, [], $header);
+        
+        if ($response) {
+            $responseJson = json_decode($response, true);
+            if (isset($responseJson['error']) && $responseJson['error'] == 0) {
                 return $responseJson;
-            }else{
+            } else {
+                // Log the error for debugging
+                error_log('Zalo API Error: ' . json_encode($responseJson));
                 return false;
             }
+        } else {
+            // Log the error for debugging
+            error_log('Zalo API Request Failed');
+            return false;
         }
-        // halt($response); die;
     }
 }
