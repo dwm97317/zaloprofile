@@ -6,15 +6,26 @@ use app\common\library\GoongApi\GoongApi;
 /**
  * Goong地址API控制器
  * 提供越南地址相关功能
+ * 注意：此控制器直接继承ThinkPHP基础控制器，不进行wxapp_id验证
  */
 class GoongAddress extends \think\Controller
 {
     private $goongApi;
-    
+
     public function __construct()
     {
         parent::__construct();
         $this->goongApi = new GoongApi();
+
+        // 设置CORS头，允许跨域访问
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+        // 处理OPTIONS预检请求
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            exit(0);
+        }
     }
 
     /**
