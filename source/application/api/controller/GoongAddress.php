@@ -7,7 +7,7 @@ use app\common\library\GoongApi\GoongApi;
  * Goong地址API控制器
  * 提供越南地址相关功能
  */
-class GoongAddress extends \app\api\controller\Controller
+class GoongAddress extends \think\Controller
 {
     private $goongApi;
     
@@ -15,6 +15,30 @@ class GoongAddress extends \app\api\controller\Controller
     {
         parent::__construct();
         $this->goongApi = new GoongApi();
+    }
+
+    /**
+     * 返回成功响应
+     */
+    protected function renderSuccess($data = [], $msg = 'success')
+    {
+        return json([
+            'code' => 1,
+            'msg' => $msg,
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * 返回错误响应
+     */
+    protected function renderError($msg = 'error', $data = [])
+    {
+        return json([
+            'code' => 0,
+            'msg' => $msg,
+            'data' => $data
+        ]);
     }
     
     /**
