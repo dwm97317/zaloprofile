@@ -16,7 +16,7 @@ import { showToast } from "zmp-sdk";
 
 // Component danh sách
 const ListItem = (lists) => {
-  const { list } = lists;
+  const { list, onRefresh } = lists;
   const navigate = useNavigate();
   const [confirmModal, setConfirmModal] = useState(false);
   const [confirmModalType, setConfirmModalType] = useState("");
@@ -65,7 +65,24 @@ const ListItem = (lists) => {
   const doRequestDeafult = (e) => {
     request
       .post("/address/setDefault&wxapp_id=10001", { address_id: id })
-      .then((res) => {});
+      .then((res) => {
+        if (res && res.code == 1) {
+          showToast({
+            message: "Đặt địa chỉ mặc định thành công",
+          });
+          onRefresh();
+        } else {
+          showToast({
+            message: "Không thể đặt địa chỉ mặc định",
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Lỗi khi đặt địa chỉ mặc định:", error);
+        showToast({
+          message: "Có lỗi xảy ra",
+        });
+      });
   };
 
   // Xử lý xóa
@@ -73,12 +90,22 @@ const ListItem = (lists) => {
     request
       .post("/address/delete&wxapp_id=10001", { address_id: id })
       .then((res) => {
-        if (res.code == 1) {
+        if (res && res.code == 1) {
           showToast({
             message: "Xóa thành công",
           });
-          getAddressList();
+          onRefresh();
+        } else {
+          showToast({
+            message: "Không thể xóa địa chỉ",
+          });
         }
+      })
+      .catch((error) => {
+        console.error("Lỗi khi xóa địa chỉ:", error);
+        showToast({
+          message: "Có lỗi xảy ra",
+        });
       });
   };
 
@@ -148,8 +175,18 @@ const AddressPage = () => {
   const getAddressList = () => {
     const url = "address/lists";
     request.get(url + "&wxapp_id=10001").then((res) => {
-      const list = res.data.list;
-      setList(list);
+      // Kiểm tra xem res và res.data có tồn tại không
+      if (res && res.data && res.data.list) {
+        const list = res.data.list;
+        setList(list);
+      } else {
+        // Nếu không có dữ liệu, đặt list rỗng
+        console.warn("Không thể lấy danh sách địa chỉ:", res);
+        setList([]);
+      }
+    }).catch((error) => {
+      console.error("Lỗi khi lấy danh sách địa chỉ:", error);
+      setList([]);
     });
   };
   
@@ -175,7 +212,7 @@ const AddressPage = () => {
   return (
     <Page className="page address">
       <Header></Header>
-      {list.length > 0 ? <ListItem list={list} /> : <Empty />}
+      {list.length > 0 ? <ListItem list={list} onRefresh={getAddressList} /> : <Empty />}
       <div className="button">
         <Button className="btn" onClick={(e) => goCreate(e)}>
           Thêm địa chỉ

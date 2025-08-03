@@ -1,0 +1,465 @@
+/* Address Create Page - Modern Design */
+.address-create {
+  background: #f5f5f5;
+  min-height: 100vh;
+  
+  /* Header */
+  .address-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: white;
+    border-bottom: 1px solid #e5e5e5;
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      
+      .back-btn {
+        background: none;
+        border: none;
+        padding: 4px;
+        color: #333;
+        cursor: pointer;
+        
+        svg {
+          width: 24px;
+          height: 24px;
+        }
+      }
+      
+      .header-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+      }
+    }
+    
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      .toggle-label {
+        font-size: 14px;
+        color: #666;
+      }
+      
+      .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        
+        input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        
+        label {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          border-radius: 24px;
+          transition: 0.4s;
+          
+          &:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.4s;
+          }
+        }
+        
+        input:checked + label {
+          background-color: #007bff;
+        }
+        
+        input:checked + label:before {
+          transform: translateX(20px);
+        }
+      }
+    }
+  }
+  
+  /* Progress bar */
+  .progress-bar {
+    height: 3px;
+    background: #e5e5e5;
+    
+    .progress-fill {
+      height: 100%;
+      width: 30%;
+      background: #007bff;
+      transition: width 0.3s ease;
+    }
+  }
+  
+  /* Form container */
+  .address-form-container {
+    padding: 16px;
+    
+    .form-section {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        
+        .section-icon {
+          width: 24px;
+          height: 24px;
+          margin-right: 8px;
+        }
+        
+        .section-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+          margin: 0;
+          flex: 1;
+        }
+        
+        .qr-icon {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: #666;
+          font-size: 12px;
+          cursor: pointer;
+          
+          svg {
+            width: 16px;
+            height: 16px;
+          }
+        }
+      }
+      
+      .form-field {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        .field-icon {
+          width: 24px;
+          height: 24px;
+          margin-right: 12px;
+          color: #666;
+          
+          svg {
+            width: 20px;
+            height: 20px;
+          }
+        }
+        
+        .field-input {
+          flex: 1;
+          border: none;
+          outline: none;
+          font-size: 16px;
+          color: #333;
+          background: transparent;
+          
+          &::placeholder {
+            color: #999;
+          }
+          
+          &.address-field {
+            cursor: pointer;
+            
+            .address-text {
+              color: #333;
+            }
+            
+            .address-placeholder {
+              color: #999;
+            }
+          }
+        }
+        
+        .field-action {
+          width: 24px;
+          height: 24px;
+          color: #666;
+          cursor: pointer;
+          
+          svg {
+            width: 20px;
+            height: 20px;
+          }
+        }
+        
+        &.toggle-field {
+          .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            
+            .toggle-switch-red {
+              position: relative;
+              width: 44px;
+              height: 24px;
+              
+              input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+              }
+              
+              label {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #e53e3e;
+                border-radius: 24px;
+                transition: 0.4s;
+                
+                &:before {
+                  position: absolute;
+                  content: "";
+                  height: 18px;
+                  width: 18px;
+                  left: 3px;
+                  bottom: 3px;
+                  background-color: white;
+                  border-radius: 50%;
+                  transition: 0.4s;
+                }
+              }
+              
+              input:checked + label:before {
+                transform: translateX(20px);
+              }
+            }
+            
+            .toggle-text {
+              font-size: 14px;
+              color: #333;
+            }
+          }
+        }
+      }
+    }
+    
+    /* Address selection dropdowns */
+    .address-selection {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      
+      .dropdown-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        .dropdown-field {
+          position: relative;
+          flex: 1;
+          
+          &.half {
+            flex: 0.5;
+          }
+          
+          .address-dropdown {
+            width: 100%;
+            padding: 12px 40px 12px 12px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            background: white;
+            appearance: none;
+            
+            &:focus {
+              outline: none;
+              border-color: #007bff;
+            }
+            
+            option[disabled] {
+              color: #999;
+            }
+          }
+          
+          .dropdown-arrow {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #666;
+          }
+        }
+      }
+    }
+    
+    /* Map section */
+    .map-section {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      
+      .map-container {
+        height: 200px;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 16px;
+        
+        .map-placeholder {
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          
+          .map-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            
+            .location-marker {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              z-index: 2;
+            }
+            
+            .map-labels {
+              position: absolute;
+              top: 20px;
+              left: 20px;
+              
+              .area-label {
+                background: rgba(0, 0, 0, 0.7);
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                margin-bottom: 8px;
+              }
+              
+              .street-labels {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                
+                span {
+                  background: rgba(255, 255, 255, 0.9);
+                  padding: 2px 6px;
+                  border-radius: 3px;
+                  font-size: 10px;
+                  color: #333;
+                }
+              }
+            }
+          }
+          
+          .map-error {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+          }
+        }
+      }
+      
+      .delivery-time {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-top: 1px solid #f0f0f0;
+        
+        .delivery-label {
+          font-size: 14px;
+          color: #333;
+        }
+        
+        .delivery-value {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #666;
+          cursor: pointer;
+          
+          span {
+            font-size: 14px;
+          }
+          
+          svg {
+            width: 16px;
+            height: 16px;
+          }
+        }
+      }
+    }
+    
+    /* Submit section */
+    .submit-section {
+      padding: 20px 0;
+      
+      .submit-btn {
+        width: 100%;
+        height: 48px;
+        background: #e53e3e;
+        color: white;
+        border: none;
+        border-radius: 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        
+        &:hover {
+          background: #d32f2f;
+        }
+        
+        &:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
