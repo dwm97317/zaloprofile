@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../zaloprofile/zalo_service"
+		},
+		{
+			"path": "../zaloprofile"
+		}
+	],
+	"settings": {}
+}

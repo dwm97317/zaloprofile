@@ -1,0 +1,93 @@
+.storage-title {
+  height: 40px;
+  line-height: 40px;
+  width: 90%;
+  margin: 0 auto;
+}
+.storage-content {
+  width: 90%;
+  margin: 0 auto;
+  .storage-row {
+    position: relative;
+    height: 30px;
+    line-height: 30px;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 30px;
+    .storage-view-btn {
+      width: 90%;
+      height: 45px;
+      margin: 5px auto;
+    }
+    .storage-row-icon {
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      top: 3px;
+      left: 0;
+    }
+  }
+}
+.storage {
+  .row {
+    width: 90%;
+    height: 50px;
+    margin: 0 auto;
+    display: flex;
+    position: relative;
+    .row-content {
+      height: 50px;
+      line-height: 50px;
+      color: #666;
+      font-size: 13px;
+    }
+    .row-label {
+      width: 100px;
+      height: 50px;
+      line-height: 50px;
+      font-size: 14px;
+    }
+    .btn-copy {
+      width: auto;
+      position: absolute;
+      top: 15px;
+      right: 10px;
+      color: blue;
+    }
+  }
+  .btn-all-copy {
+    display: block;
+    width: 90%;
+    margin: 0 auto;
+  }
+  .guide-title {
+    display: flex;
+    height: 40px;
+    line-height: 40px;
+    padding-left: 10px;
+    .guide-title-icon {
+      width: 30px;
+      height: 30px;
+      margin-top: 5px;
+      margin-right: 10px;
+    }
+  }
+  .guide-content {
+    width: 90%;
+    height: auto;
+    margin: 0 auto;
+    .guide-item {
+      padding: 5px;
+      .guide-step {
+        height: 30px;
+        line-height: 30px;
+        color: #000;
+      }
+      .guide-content-text {
+        color: #666;
+      }
+    }
+  }
+}

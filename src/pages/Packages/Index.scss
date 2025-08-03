@@ -1,0 +1,478 @@
+.pages-table {
+  height: 60px;
+  background: #fff;
+}
+.report {
+  .form {
+    background: #fff;
+    padding: 10px 0;
+    padding-bottom: 60px;
+    .flex {
+      display: flex;
+      justify-content: space-between;
+    }
+    .gap {
+      height: 15px;
+      background: aliceblue;
+    }
+    .form-group {
+      height: 40px;
+      .form-label {
+        width: 180px;
+        display: flex;
+        height: 40px;
+        line-height: 40px;
+        padding-left: 10px;
+        font-size: 13px;
+        .form-label-icon {
+          width: 20px;
+          height: 20px;
+          margin-top: 10px;
+          margin-right: 5px;
+        }
+      }
+      .form-textarea {
+        width: 90%;
+        height: 110px;
+        margin: 0 auto;
+        margin-bottom: 10px;
+      }
+      .mulit-express {
+        transition: border 0.4s;
+        border: 1px solid #eee;
+        margin-left: 20px;
+        line-height: 30px !important;
+        padding: 10px;
+      }
+      .mulit-express:hover {
+        border: 1px solid rgb(0, 108, 254);
+      }
+      .picker {
+        border: none;
+        text-align: right;
+        height: 30px;
+        font-size: 13px;
+        background: transparent;
+      }
+      .mulit-input {
+        width: 100px;
+        height: 40px !important;
+        line-height: 40px;
+        outline: none;
+        margin-right: 10px;
+      }
+      .mulit-input:focus {
+        outline: none;
+        border: none;
+        box-shadow: 0;
+      }
+      .good-sheet {
+        .good-sheet-header {
+          height: 50px;
+          line-height: 50px;
+          display: flex;
+          justify-content: space-around;
+          .good-sheet-header-th {
+            font-size: 18px;
+          }
+        }
+        .good-sheet-body {
+          padding-left: 10px;
+          .good-sheet-item {
+            height: 50px;
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 10px;
+            .good-sheet-td {
+              width: 80px;
+              .good-inp {
+                height: 40px;
+              }
+              .op {
+                display: flex;
+                justify-content: center;
+                padding-top: 12px;
+                .op-btn {
+                  font-size: 18px;
+                  width: 30px;
+                  height: 30px;
+                  text-align: center;
+                  margin-right: 5px;
+                  background: aliceblue;
+                  line-height: 30px;
+                }
+              }
+            }
+          }
+        }
+      }
+      .form-picker {
+        height: 40px;
+        line-height: 40px;
+        margin-right: 20px;
+        position: relative;
+        font-size: 13px;
+        .picker-default-value {
+          width: 120px;
+          height: 30px;
+          position: absolute;
+          text-align: right;
+          top: -5px;
+          right: 12px;
+          color: #141415;
+        }
+        .form-picker-input {
+          height: 30px;
+          line-height: 30px;
+          margin-right: 10px;
+          font-size: 13px;
+          color: #333;
+          .default-value {
+            color: #ccc;
+          }
+        }
+        .form-icon {
+          width: 20px;
+          height: 20px;
+          background: url(https://zhuanyun.sllowly.cn/assets/api/images//dzx_img25.png)
+            center center no-repeat;
+          position: absolute;
+          top: 0;
+          right: -10px;
+          margin-top: 5px;
+        }
+      }
+      .tips {
+        width: 90%;
+        margin: 0 auto;
+      }
+      .protocol {
+        width: 100%;
+        height: 40px;
+        margin: 0 auto;
+        margin-top: 10px;
+        font-size: 13px;
+        background: #f4f8fb;
+        padding: 10px 15px;
+        color: #666;
+        display: flex;
+        .check-status {
+          width: 25px;
+          height: 20px;
+          margin-right: 10px;
+          background: aliceblue;
+          img {
+            width: 20px;
+            height: 20px;
+          }
+        }
+      }
+      .form-input {
+        border: none;
+        height: 30px;
+        display: flex;
+        text-align: right;
+        .form-add1 {
+          width: 30px;
+          height: 25px;
+          line-height: 25px;
+          font-size: 18px;
+          text-align: center;
+          margin-right: 10px;
+          background: aliceblue;
+          margin-top: 7px;
+        }
+      }
+      .form-input-group {
+        display: flex;
+        justify-content: center;
+        .form-input-item {
+          width: 100px;
+          margin: 0 5px;
+        }
+      }
+    }
+  }
+}
+
+.package {
+  .tips {
+    display: flex;
+    height: 40px;
+    line-height: 20px;
+    background: #e1edff;
+    padding-left: 10px;
+    font-weight: 600;
+    color: #006efe;
+    font-size: 13px;
+    img {
+      width: 20px;
+      height: 20px;
+      margin-top: 10px;
+      margin-right: 5px;
+    }
+  }
+}
+
+.take-bg {
+  background: #006efe;
+  height: 300px;
+  .header {
+    height: 100px;
+    width: 100%;
+    padding-top: 20px;
+    .take-search {
+      width: 70%;
+      height: 40px;
+      line-height: 40px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: #fff;
+      margin: 0 auto;
+      position: relative;
+      .take-search-icon {
+        width: 25px;
+        height: 25px;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 999;
+      }
+      .take-search-inp {
+        border: none;
+        height: 40px;
+        line-height: 40px;
+        padding-left: 25px;
+      }
+    }
+  }
+  .take-container {
+    width: 100%;
+    min-height: 600px;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    overflow: hidden;
+    background: #f7fafc;
+    .take-item {
+      height: 90px;
+      padding-top: 10px;
+      background: #fff;
+      margin-bottom: 15px;
+      position: relative;
+      .take-btn {
+        position: absolute;
+        top: 20px;
+        right: 10px;
+      }
+      .take-row {
+        width: 90%;
+        height: 40px;
+        margin: 0 auto;
+        display: flex;
+        span {
+          height: 40px;
+          line-height: 25px;
+        }
+        .take-row-icon {
+          width: 25px;
+          height: 25px;
+          margin-right: 10px;
+        }
+      }
+    }
+  }
+}
+.check {
+  width: 25px;
+  height: 25px;
+  border-radius: 15px;
+  margin-right: 10px;
+}
+.no-check {
+  border: 1px solid #ccc;
+}
+.pack-all-check {
+  width: 54%;
+  height: 70px;
+  padding-top: 20px;
+  font-size: 13px;
+  display: flex;
+  .check {
+    margin-top: 5px;
+    margin-left: 30px;
+  }
+}
+.pack-btns {
+  display: flex;
+  justify-content: space-between;
+}
+.pack-btn {
+  padding-top: 10px;
+  margin-right: 10px;
+  font-size: 13px;
+}
+.pack-tab-item {
+  width: 50%;
+  text-align: center;
+}
+.pack-active {
+  background: blue;
+  color: #fff;
+}
+.address-wrap {
+  width: 100%;
+  margin-top: 10px;
+  background: #fff;
+  position: relative;
+  .address {
+    display: flex;
+    height: 80px;
+    position: relative;
+    .address-icon {
+      width: 40px;
+      height: 40px;
+      margin: 20px 10px 0 20px;
+    }
+  }
+  .address-info {
+    padding-top: 15px;
+    .address-name {
+      height: 25px;
+      font-size: 16px;
+    }
+  }
+  .address-btn {
+    position: absolute;
+    right: 10px;
+    top: 20px;
+    width: auto;
+    padding: 5px 15px;
+    border: 1px solid #666;
+    border-radius: 15px;
+    font-size: 13px;
+  }
+}
+.pack-info {
+  margin-top: 10px;
+  background: #fff;
+  padding-bottom: 10px;
+  .pack-label {
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+    text-indent: 1em;
+  }
+  .pack-content {
+    width: 90%;
+    margin: 0 auto;
+    height: auto;
+    .form-check {
+      width: 100%;
+      height: auto;
+      padding-top: 10px;
+      .form-check-input {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        vertical-align: middle;
+        border-radius: 10px;
+        margin-right: 10px;
+      }
+      .no-check {
+        border: 1px solid #ccc;
+      }
+      .form-check-options {
+        width: 49%;
+        margin-bottom: 5px;
+        display: inline-block;
+        font-size: 13px;
+      }
+    }
+  }
+}
+.form-tips {
+  font-size: 13px;
+}
+.recharge-header {
+  height: 130px;
+  position: relative;
+  img {
+    width: 100%;
+    height: 100%;
+  }
+  .recharge-amount {
+    font-size: 20px;
+    position: absolute;
+    top: 40px;
+    text-indent: 1em;
+  }
+  .recharge-lable {
+    width: 100%;
+    height: 30px;
+    line-height: 30px;
+    position: absolute;
+    top: 10px;
+    text-indent: 1.5em;
+  }
+}
+.recharge-content {
+  width: 100%;
+  height: 250px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  background: #fff;
+  margin-top: -30px;
+  position: relative;
+  overflow: hidden;
+  z-index: 999;
+
+  .recharge-list {
+    width: 95%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-around;
+    .recharge-item {
+      padding: 10px 10px;
+      width: 28%;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    .active {
+      background: linear-gradient(180deg, #3375ff 0%, #1a65ff 100%);
+      color: #fff;
+    }
+  }
+  .recharge-input {
+    width: 90%;
+    margin: 0 auto;
+  }
+}
+.recharge-title {
+  width: 90%;
+  height: 50px;
+  line-height: 50px;
+  margin: 0 auto;
+  font-size: 18px;
+  font-weight: bold;
+}
+.recharge-pay-method-content {
+  margin-top: 15px;
+  background: #fff;
+  .recharge-pay-item {
+    width: 90%;
+    height: 50px;
+    line-height: 50px;
+    display: flex;
+    margin: 0 auto;
+    .recharge-pay-label {
+      display: flex;
+      .recharge-pay-icon {
+        width: 30px;
+        height: 30px;
+        margin-top: 10px;
+        margin-right: 10px;
+      }
+    }
+  }
+}

@@ -1,0 +1,214 @@
+.common-container {
+  background: #fff;
+  height: auto;
+  min-height: 50px;
+  margin-bottom: 15px;
+  .c-c-title {
+    height: 40px;
+    line-height: 40px;
+    text-indent: 1em;
+    font-size: 18px;
+  }
+  .c-c-content {
+    width: 90%;
+    margin: 0 auto;
+    padding-bottom: 10px;
+    p {
+      height: 30px;
+      line-height: 30px;
+      color: #666;
+      display: flex;
+      justify-content: space-between;
+    }
+    .calculate_fee {
+      display: flex;
+      height: 40px;
+      line-height: 30px;
+      color: #666;
+      justify-content: space-between;
+    }
+  }
+}
+.search-containner {
+  height: 50px;
+  padding-top: 10px;
+  .search-input {
+    width: 80%;
+    height: 40px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 25px;
+    overflow: hidden;
+    .s-inp {
+      height: 35px;
+      border: none;
+    }
+  }
+}
+.country-containner {
+  padding-top: 20px;
+  .country-item {
+    .country-title {
+      height: 40px;
+      background: #f4f8fb;
+      line-height: 40px;
+      text-indent: 2em;
+    }
+    .country-list {
+      background: #fff;
+      p {
+        height: 40px;
+        line-height: 40px;
+        text-indent: 1em;
+      }
+    }
+  }
+}
+.category-title {
+  height: 30px;
+  line-height: 30px;
+  text-indent: 1em;
+  font-size: 15px;
+}
+.category-sub {
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  .category-sub-item {
+    width: auto;
+    padding: 0 10px;
+    display: inline-block;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-right: 5px;
+  }
+  .active {
+    border-radius: 14rpx;
+    border-color: #006efe;
+    background: #eff6fe;
+    color: #006efe;
+  }
+}
+.category-button {
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-around;
+  .button-reset {
+    background: slategrey;
+  }
+}
+.comment-container {
+}
+.comment-item {
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  display: flex;
+  background: #fff;
+  margin-bottom: 10px;
+  padding: 10px;
+  .comment-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    margin-right: 15px;
+  }
+  .comment-content {
+    width: 80%;
+    .comment-row {
+      width: 100%;
+      height: auto;
+      display: flex;
+      justify-content: space-between;
+      .username {
+        height: 30px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .comment-content-1 {
+        padding-top: 3px;
+      }
+    }
+  }
+}
+
+.coupon-tab {
+  height: 40px;
+  line-height: 40px;
+  background: #fff;
+  display: flex;
+  justify-content: space-around;
+  .active {
+    color: #006efe !important;
+  }
+}
+.coupon-content-list {
+  padding-top: 15px;
+}
+.coupon-item {
+  width: 90%;
+  height: 120px;
+  margin: 0 auto;
+  height: 60px;
+  .coupon-main {
+    height: 80px;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    background: linear-gradient(to right, #ff6d87, #ff4960);
+    .coupon-main-inner {
+      width: 85%;
+      margin: 0 auto;
+      display: flex;
+      position: relative;
+      .coupon-name {
+        height: 80px;
+        line-height: 80px;
+        font-size: 35px;
+        color: #fff;
+        margin-right: 10px;
+      }
+      .coupon-desc {
+        color: #fff;
+        padding-top: 20px;
+        font-size: 13px;
+      }
+      .coupon-infos {
+        color: #fff;
+        position: absolute;
+        top: 20px;
+        right: 0px;
+        text-align: right;
+        font-size: 13px;
+      }
+    }
+  }
+  .coupon-button {
+    height: 50px;
+    background: #fff;
+    position: relative;
+    text-align: center;
+    line-height: 50px;
+    font-size: 14px;
+    color: #333;
+    .coupon-radius-left {
+      width: 30px;
+      height: 30px;
+      position: absolute;
+      top: -15px;
+      left: -15px;
+      border-radius: 15px;
+      background: #e5e7eb;
+    }
+    .coupon-radius-right {
+      width: 30px;
+      height: 30px;
+      position: absolute;
+      top: -15px;
+      right: -15px;
+      border-radius: 15px;
+      background: #e5e7eb;
+    }
+  }
+}

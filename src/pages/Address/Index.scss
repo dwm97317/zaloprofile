@@ -1,0 +1,72 @@
+.address-container {
+  width: 90%;
+  background: #fff;
+  border-radius: 10px;
+  height: 110px;
+  margin: 0 auto;
+  margin-top: 15px;
+  .address-content {
+    padding-top: 10px;
+    width: 90%;
+    position: relative;
+    margin: 0 auto;
+    .address-row {
+      height: 30px;
+      line-height: 30px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .edit {
+      width: 25px;
+      height: 25px;
+      position: absolute;
+      top: 40px;
+      right: 0px;
+      img {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+  .opration {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 14px;
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+    padding-right: 5%;
+    border-top: 1px solid #eee;
+    .default {
+      color: blue;
+      margin-right: 10px;
+    }
+  }
+}
+.button {
+  width: 100%;
+  height: 70px;
+  position: absolute;
+  bottom: 0;
+  background: #fff;
+  .btn {
+    display: block;
+    width: 75%;
+    margin: 10px auto;
+  }
+}
+.picker {
+  border: none;
+  text-align: right;
+  height: 30px;
+}
+.form-input {
+  font-size: 13px;
+}
+.form-picker-input {
+  height: 30px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}

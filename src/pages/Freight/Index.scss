@@ -1,0 +1,136 @@
+.freight {
+  .tips {
+    height: 40px;
+    line-height: 15px;
+    background: skyblue;
+    padding-left: 20px;
+    font-size: 13px;
+    color: blue;
+    padding-top: 5px;
+    display: flex;
+    img {
+      width: 25px;
+      height: 25px;
+      margin-right: 5px;
+    }
+  }
+  .form {
+    background: #fff;
+    .flex {
+      display: flex;
+      justify-content: space-between;
+    }
+    .gap {
+      height: 10px;
+      background: aliceblue;
+    }
+    .form-group {
+      height: 40px;
+      .form-label {
+        width: 170px;
+        display: flex;
+        height: 40px;
+        line-height: 40px;
+        padding-left: 10px;
+        font-size: 13px;
+        .form-label-icon {
+          width: 20px;
+          height: 20px;
+          margin-top: 10px;
+          margin-right: 5px;
+        }
+      }
+      .form-picker {
+        height: 40px;
+        line-height: 40px;
+        margin-right: 20px;
+        position: relative;
+        .picker {
+          height: 40px;
+          line-height: 40px;
+          background: transparent;
+          font-size: 13px;
+        }
+        .picker-default-value {
+          width: 120px;
+          height: 30px;
+          position: absolute;
+          text-align: right;
+          top: 1px;
+          right: 10px;
+          color: #141415;
+        }
+        .form-picker-input {
+          color: #666;
+          height: 40px;
+          line-height: 40px;
+          margin-right: 10px;
+          font-size: 13px;
+          .default-value {
+            color: #ccc;
+          }
+        }
+        .form-icon {
+          width: 20px;
+          height: 20px;
+          background: url(https://zhuanyun.sllowly.cn/assets/api/images//dzx_img25.png)
+            center center no-repeat;
+          position: absolute;
+          top: 0;
+          right: -10px;
+          margin-top: 10px;
+        }
+      }
+      .form-input {
+        border: none;
+        height: 30px;
+        text-align: right;
+      }
+      .form-input-group {
+        display: flex;
+        justify-content: center;
+        .form-input-item {
+          width: 80px;
+          margin: 0 5px;
+          input {
+            height: 40px;
+            border: 1px solid #eee;
+          }
+        }
+      }
+    }
+  }
+}
+.container {
+  background: #fff;
+}
+.route-item {
+  width: 90%;
+  height: auto;
+  margin: 0 auto;
+  margin-bottom: 10px;
+  display: flex;
+  padding-bottom: 10px;
+  .route-img {
+    width: 120px;
+    height: 80px;
+    margin-right: 10px;
+    border-radius: 10px;
+    img {
+      max-width: 100%;
+      height: 80px;
+    }
+  }
+  .route-content {
+    width: auto;
+    padding-top: 3px;
+    .route-text {
+      height: auto;
+      font-size: 13px;
+      line-height: 25px;
+    }
+  }
+}
+.item-border-bottom {
+  border-bottom: 1px solid #eee;
+}
