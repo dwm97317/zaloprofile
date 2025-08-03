@@ -20,7 +20,7 @@ class AddressApi {
         ...options
       };
       
-      const response = await request.get('goong-address/autocomplete', params);
+      const response = await request.get('goong_address/autocomplete', params);
       return response;
     } catch (error) {
       console.error('地址自动补全失败:', error);
@@ -35,7 +35,7 @@ class AddressApi {
    */
   static async getPlaceDetail(placeId) {
     try {
-      const response = await request.get('goong-address/place-detail', {
+      const response = await request.get('goong_address/place_detail', {
         place_id: placeId
       });
       return response;
@@ -53,7 +53,7 @@ class AddressApi {
    */
   static async reverseGeocode(lat, lng) {
     try {
-      const response = await request.get('goong-address/reverse-geocode', {
+      const response = await request.get('goong_address/reverse_geocode', {
         lat,
         lng
       });
@@ -71,7 +71,7 @@ class AddressApi {
    */
   static async geocode(address) {
     try {
-      const response = await request.get('goong-address/geocode', {
+      const response = await request.get('goong_address/geocode', {
         address
       });
       return response;
@@ -87,7 +87,7 @@ class AddressApi {
    */
   static async getProvinces() {
     try {
-      const response = await request.get('goong-address/provinces');
+      const response = await request.get('goong_address/get_provinces');
       return response;
     } catch (error) {
       console.error('获取省份列表失败:', error);
@@ -102,7 +102,7 @@ class AddressApi {
    */
   static async validateAddress(addressData) {
     try {
-      const response = await request.post('goong-address/validate', addressData);
+      const response = await request.post('goong_address/validate_address', addressData);
       return response;
     } catch (error) {
       console.error('地址验证失败:', error);

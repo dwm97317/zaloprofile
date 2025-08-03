@@ -22,7 +22,7 @@ const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} })
 
     setLoading(true);
     try {
-      const response = await request.get(`goong-address/autocomplete`, {
+      const response = await request.get(`goong_address/autocomplete`, {
         input: query,
         limit: 10
       });
@@ -47,7 +47,7 @@ const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} })
   const getPlaceDetail = async (placeId) => {
     setLoading(true);
     try {
-      const response = await request.get(`goong-address/place-detail`, {
+      const response = await request.get(`goong_address/place_detail`, {
         place_id: placeId
       });
 
@@ -84,7 +84,7 @@ const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} })
   const reverseGeocode = async (lat, lng) => {
     setLoading(true);
     try {
-      const response = await request.get(`goong-address/reverse-geocode`, {
+      const response = await request.get(`goong_address/reverse_geocode`, {
         lat: lat,
         lng: lng
       });
