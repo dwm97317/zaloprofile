@@ -21,6 +21,19 @@ class Article extends Controller
         $categoryList = CategoryModel::getAll();
         return $this->renderSuccess(compact('categoryList'));
     }
+    
+        /**
+     * 文章
+     * @return array
+     */
+    public function categorylist($category_id = 0)
+    {
+        // 文章分类列表
+        $model = new ArticleModel;
+        $list = $model->getList($category_id);
+        return $this->renderSuccessWeb(compact('list'));
+    }
+    
 
     /**
      * 文章列表
@@ -56,7 +69,65 @@ class Article extends Controller
     public function detail($article_id)
     {
         $detail = ArticleModel::detail($article_id);
-        return $this->renderSuccess(compact('detail'));
+        return $this->renderSuccessWeb(compact('detail'));
+    }
+    
+        /**
+     * 文章分类名
+     * @return array
+     */
+    public function getCategoryName($category_id = 0)
+    {
+        // 文章分类列表
+        $model = new CategoryModel;
+        $result = $model::detail($category_id);
+        return $this->renderSuccessWeb(compact('result'));
+    }
+    
+    
+    
+    /**
+     * 获取普通文章点分类列表
+     * @return array
+     */
+    public function getNewsCategory()
+    {
+        // 文章分类列表
+        $model = new CategoryModel;
+        $param = $this->request->param();
+        $list = $model->getNormalList($param['mini_id']);
+        return $this->renderSuccessWeb(compact('list'));
+    }
+    
+        /**
+     * 获取普通文章点分类列表
+     * @return array
+     */
+    public function getNewsList($category_id = 0)
+    {
+        // 文章分类列表
+        $model = new ArticleModel;
+        $list = $model->getNewsList($category_id);
+        return $this->renderSuccessWeb(compact('list'));
+    }
+    
+    /**
+     * 获取关于我们
+     * @return array
+     */
+    public function getAboutUsDetail()
+    {
+        // 文章分类列表
+        $CategoryModel = new CategoryModel;
+        $model = new ArticleModel;
+        $result = $CategoryModel->where('belong',3)->find();
+        $detail = "";
+        if(!empty($result)){
+            $detail = $model->with('image')->where('category_id',$result['category_id'])->find();
+        }
+        
+        
+        return $this->renderSuccessWeb(compact('detail'));
     }
     
     /**

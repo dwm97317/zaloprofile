@@ -26,9 +26,7 @@
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-				<h1>
-				    <a class="navbar-brand" href="<?=urlCreate('/index.php/web/track/search') ?>"><i class="fa fa-plane" aria-hidden="true"></i> <?= $setting['name'] ;?> </a></h1>
-
+				<h1><a class="navbar-brand" href="<?=urlCreate('/index.php/web/track/search') ?>"><i class="fa fa-plane" aria-hidden="true"></i> <?= $setting['name'] ;?> </a></h1>
 				</div>
 			</nav>	
 			<div class="clearfix"> </div> 
@@ -67,27 +65,6 @@
 <!-- footer -->
 	<div class="footer">
 		<div class="container">
-			<!--<div class="w3ls_address_mail_footer_grids">-->
-			<!--	<div class="col-md-4 w3ls_footer_grid_left">-->
-			<!--		<div class="wthree_footer_grid_left">-->
-			<!--			<i class="fa fa-map-marker" aria-hidden="true"></i>-->
-			<!--		</div>-->
-			<!--		<p><?= $setting['desc'] ;?></p>-->
-			<!--	</div>-->
-			<!--	<div class="col-md-4 w3ls_footer_grid_left">-->
-			<!--		<div class="wthree_footer_grid_left">-->
-			<!--			<i class="fa fa-phone" aria-hidden="true"></i>-->
-			<!--		</div>-->
-			<!--		<p><?= $setting['service_phone'] ;?></p>-->
-			<!--	</div>-->
-			<!--	<div class="col-md-4 w3ls_footer_grid_left">-->
-			<!--		<div class="wthree_footer_grid_left">-->
-			<!--			<i class="fa fa-envelope-o" aria-hidden="true"></i>-->
-			<!--		</div>-->
-			<!--		<p><a href="mailto:info@example.com"><?= $setting['kefuemail'] ;?></a></p>-->
-			<!--	</div>-->
-			<!--	<div class="clearfix"> </div>-->
-			<!--</div>-->
 			<div class="agileinfo_copyright">
 				<p>© 2017-2023 <?= $setting['name'] ;?>. All Rights Reserved </p>
 			</div>

@@ -14,6 +14,8 @@ use app\api\model\Setting;
 use think\Cache;
 use app\api\model\Wxapp as WxappModel;
 use app\api\model\UserCoupon;
+use think\Db;
+
 /**
  * 用户管理
  * Class User
@@ -103,6 +105,16 @@ class User extends Controller
         $userInfo['sms'] = (new SiteSmsModel())->where('user_id',$userInfo['user_id'])->where('is_read',0)->count();
         $userInfo['coupon'] = (new UserCoupon())->where('user_id',$userInfo['user_id'])->where('is_use',0)->where('is_expire',0)->count();
         return $this->renderSuccess(compact('userInfo'));
+    }
+    
+    public function bindOa(){
+       $param = $this->request->param();
+       $userInfo = $this->getUser();
+       $res = Db::name('zaloa_user')->where('oa_user_id',$param['oa_user_id'])->update(['mini_app_user_id'=>$userInfo['open_id']]);
+       if ($res){
+          return $this->renderSuccess('更新成功');   
+       }
+       return $this->renderError('更新失败');  
     }
     
     /**

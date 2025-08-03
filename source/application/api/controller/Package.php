@@ -23,6 +23,7 @@ use app\common\model\dealer\Capital;
 use app\common\model\store\shop\Capital as CapitalModel;
 use app\common\model\dealer\Order as DealerOrder;
 use app\common\library\Pinyin;
+use app\common\library\ZaloSdk\ZaloOfficialApi;
 use app\common\model\dealer\User as DealerUser;
 use app\api\model\Coupon as CouponModel;
 use app\api\model\UserCoupon;
@@ -62,6 +63,7 @@ class Package extends Controller
     public function _initialize()
     {
         parent::_initialize();
+        // file_put_contents('token',\request()->param('token'));
         if (\request()->param('token')){
             // 用户信息
             $this->user = $this->getUser();
@@ -144,15 +146,17 @@ class Package extends Controller
 
      // 包裹预报
      public function report(){
-         if (!$this->user['user_id']){
+         try {
+              
+             if (!$this->user['user_id']){
             return $this->renderError('请先登录');
          }
          $user = (new User())->find($this->user['user_id']);
-         $userclient = SettingModel::detail("userclient")['values'];
-        //  dump($userclient);die;
-         
          $post = $this->postData();
-         
+         $userclient = SettingModel::detail("userclient")['values'];
+         //  dump($userclient);die;
+        //  ZaloOfficialApi::sendMessage(10001,'orderSend',['orderSn'=>"JY85685858568585"]);
+        //  die;
          if($userclient['yubao']['is_country']==1){
             if ($post['country_id']){
               $country = (new Country())->getValueById($post['country_id'],'title');
@@ -161,7 +165,6 @@ class Package extends Controller
                  }
               } 
          }
-         
         
          if (!$post['storage_id']){
               return $this->renderError('请选择仓库');
@@ -192,6 +195,7 @@ class Package extends Controller
              return $this->renderError('快递单号不能使用特殊字符');
            } 
          }
+           
          $express = (new Express())->getValueById($post['express_id'],'express_name');
          $express_code = (new Express())->getValueById($post['express_id'],'express_code');
          
@@ -209,9 +213,11 @@ class Package extends Controller
                   return $this->renderError('您无权限参与该拼团活动，或受到限制');
              }
          } 
+     
          $classItem = [];
          if ($class_ids || $goodslist){
              $classItem = $this->parseClass($class_ids);
+             file_put_contents('err.txt',var_export($goodslist,true));
              if(empty($classItem)){
                 foreach ($goodslist as $k => $val){
                      $classItem[$k]['class_name'] = $val['pinming'];
@@ -221,6 +227,7 @@ class Package extends Controller
                      $classItem[$k]['express_num'] = $post['express_sn'];
                      $classItem[$k]['express_name'] = $express;
                 }
+                file_put_contents('err.txt',var_export($classItem,true));
              }else{
                  foreach ($classItem as $k => $val){
                    $classItem[$k]['class_id'] = $val['category_id'];
@@ -233,11 +240,12 @@ class Package extends Controller
                 }
              }
          }
+            
          $packModel = new PackageModel();
          $packItemModel = new PackageItemModel();
          // todo 判断预报的单号是否存在（待认领或者已认领），如果存在且被认领则提示已认领，如果存在但未被认领则修改存在的记录所属用户，认领状态；
          $packres = $packModel->where('express_num',$post['express_sn'])->where('is_delete',0)->find();
-         
+             file_put_contents('err.txt',888888);
          if($packres && ($packres['is_take']==2)){
              return $this->renderError('快递单号已被预报');
          }else{
@@ -266,8 +274,8 @@ class Package extends Controller
                 $packModel->where('express_num',$post['express_num'])->update(['express_num'=>$express_num]);
             }
          }
-     
-   
+         
+         
          // 开启事务
          Db::startTrans();
        
@@ -276,7 +284,7 @@ class Package extends Controller
 
          $post['member_id'] = $this->user['user_id'];
          $post['member_name'] = $user['nickName'];
- 
+      
          if($packres && ($packres['is_take']==1)){
             
            $resup = $packModel->where('id',$packres['id'])->update(
@@ -349,8 +357,18 @@ class Package extends Controller
                 Db::rollback();
                 return $this->renderError('申请预报失败');
              }
-         }
+         } 
+            // 可能抛出异常的代码
+            // throw new Exception("这是一个异常");
+         } catch (Exception $e) {
+            file_put_contents('err.txt',$e->getMessage()); 
+            // 捕获异常并处理
+            // echo "捕获到异常：" . $e->getMessage();
+         }   
+        
+         
          Logistics::add($res,'包裹预报成功');
+        //  ZaloOfficialApi::sendMessage(10001,'order');
          Db::commit();
          return $this->renderSuccess('申请预报成功');
      }
@@ -469,7 +487,6 @@ class Package extends Controller
                          }
                      }
                  }
-              
                  Logistics::add($packres['id'],'包裹预报成功');
                 //  Db::commit();
              }
@@ -793,21 +810,21 @@ class Package extends Controller
             'wxapp_id' => \request()->get('wxapp_id'),
             'remark' =>$remark,
           ];
-          $tplmsgsetting = SettingModel::getItem('tplMsg');
+        //   $tplmsgsetting = SettingModel::getItem('tplMsg');
         //   dump($tplmsgsetting);die;
-          if($tplmsgsetting['is_oldtps']==1){
-              //循环通知员工打包消息 
-              foreach ($clerk as $key => $val){
-                  $data['clerkid'] = $val['user_id'];
-                  Message::send('order.packageit',$data);   
-              }
-          }else{
-              foreach ($clerk as $key => $val){
-                  $data['member_id'] = $val['user_id'];
-                  Message::send('package.outapply',$data);
-              }
+        //   if($tplmsgsetting['is_oldtps']==1){
+        //       //循环通知员工打包消息 
+        //       foreach ($clerk as $key => $val){
+        //           $data['clerkid'] = $val['user_id'];
+        //           Message::send('order.packageit',$data);   
+        //       }
+        //   }else{
+        //       foreach ($clerk as $key => $val){
+        //           $data['member_id'] = $val['user_id'];
+        //           Message::send('package.outapply',$data);
+        //       }
               
-          }
+        //   }
          }
         
         if (!$res){

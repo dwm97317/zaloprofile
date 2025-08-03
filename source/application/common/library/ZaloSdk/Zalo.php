@@ -20,32 +20,76 @@ class Zalo {
         return bin2hex($hash);
     }
     
-    // token 换取 个人信息    
-    public function getProfile($accessToken) {
-        $api = 'https://graph.zalo.me/v2.0/me';
-        $params = [
-          'fields' => "id,name,picture",    
-        ];
-        $url = $api . '?' . http_build_query($params);
+    public function getLocationByToken($params){
+        $api = 'https://graph.zalo.me/v2.0/me/info';
         $header = [
-          'access_token: ' . $accessToken,
+          'code:'.$params['code'],
+          'access_token:'.$params['accesstoken'],
+          'secret_key:'.$this->config['secret']
         ];
-        $curl = new Curl();
-        $response = $curl->get($url, [], $header);
-        
-        if ($response) {
-            $responseJson = json_decode($response, true);
-            if (isset($responseJson['error']) && $responseJson['error'] == 0) {
-                return $responseJson;
-            } else {
-                // Log the error for debugging
-                error_log('Zalo API Error: ' . json_encode($responseJson));
-                return false;
-            }
-        } else {
-            // Log the error for debugging
-            error_log('Zalo API Request Failed');
-            return false;
+        $curl = curl_init();
+        curl_setopt($curl,CURLOPT_URL,$api);
+        curl_setopt($curl,CURLOPT_HTTPHEADER,$header);
+        curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
+        $response = curl_exec($curl);
+        file_put_contents('err.txt',$response);
+        if ($response === false) {
+            $error = curl_error($curl);
+            curl_close($curl);
+            throw new Exception("cURL Error: " . $error);
         }
+          
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        
+        if ($httpCode != 200) {
+            throw new Exception("API Request Error: HTTP Code " . $httpCode);
+        }
+        
+        $decodedResponse = json_decode($response, true);
+        
+        if ($decodedResponse === null && json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("JSON Decode Error: " . json_last_error_msg());
+        }
+        
+        return $decodedResponse;
+    }
+    
+    // token 换取 个人信息    
+    function getProfile($accessToken) {
+        $url = "https://graph.zalo.me/v2.0/me?fields=id,name,picture";
+        
+        $curl = curl_init();
+        
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                'access_token: ' . $accessToken
+            ]
+        ]);
+        
+        $response = curl_exec($curl);
+        
+        if ($response === false) {
+            $error = curl_error($curl);
+            curl_close($curl);
+            throw new Exception("cURL Error: " . $error);
+        }
+        
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        
+        curl_close($curl);
+        
+        if ($httpCode != 200) {
+            throw new Exception("API Request Error: HTTP Code " . $httpCode);
+        }
+        
+        $decodedResponse = json_decode($response, true);
+        
+        if ($decodedResponse === null && json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("JSON Decode Error: " . json_last_error_msg());
+        }
+        
+        return $decodedResponse;
     }
 }

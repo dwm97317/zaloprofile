@@ -157,12 +157,12 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-group row">
-                                <label class="col-sm-2 col-form-label control-label">代收款</label>
-                                <div class="col-sm-10">
-                                    <input type="text" class="form-control" name="package[waitreceivedmoney]" placeholder="代收款">
-                                </div>
-                            </div>
+                            <!--<div class="form-group row">-->
+                            <!--    <label class="col-sm-2 col-form-label control-label">代收款</label>-->
+                            <!--    <div class="col-sm-10">-->
+                            <!--        <input type="text" class="form-control" name="package[waitreceivedmoney]" placeholder="代收款">-->
+                            <!--    </div>-->
+                            <!--</div>-->
                             <div class="form-group row">
                                 <label class="col-sm-2 col-form-label control-label">备注</label>
                                 <div class="col-sm-10">
@@ -170,7 +170,7 @@
                                 </div>
                             </div>
         
-                            <button type="button" class="btn btn-gradient-success package">提交预报</button>
+                            <button type="button" class="btn btn-gradient-success package">提交打包</button>
                         </form>
                     </div>
                 </div>
@@ -240,7 +240,7 @@ function changese(e){
     }
      $.ajax({
         url:'<?=urlCreate('/index.php/web/package/mypackage') ?>',
-        type:'POST',
+        type:'get',
         dataType:"json",
         data:{type:e},
         success:function(res){

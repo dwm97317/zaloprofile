@@ -33,6 +33,8 @@ class Wxapp extends Controller
         return $this->renderError($model->getError() ?: '更新失败');
     }
 
+   
+
     // web端设置    
     public function web(){
          // 当前小程序信息
@@ -46,6 +48,35 @@ class Wxapp extends Controller
             return $this->renderSuccess('更新成功');
         }
         return $this->renderError($model->getError() ?: '更新失败');
+    }
+    
+    
+    /**
+     * web端菜单
+     * @return mixed
+     * @throws \think\exception\DbException
+     */
+    public function webmenu()
+    {
+        $model = new WebMenuModel;
+        $list = $model->getTree($this->getWxappId());
+        return $this->fetch('web_menu/index', [
+            'list' => $list,
+            'typeMap' => $model::getTypeOptions()
+        ]);
+    }
+    
+    /**
+     * 友情链接
+     * @return mixed
+     * @throws \think\exception\DbException
+     */
+    public function weblink()
+    {
+        $query = $this->request->param();
+        $model = new WebLinkModel;
+        $list = $model->getList($query);
+        return $this->fetch('wxapp/web_link/index',compact('list'));
     }
     
     public function h5(){

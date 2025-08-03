@@ -13,7 +13,7 @@ use app\common\library\storage\Driver as StorageDriver;
 class Upload extends Controller
 {
     private $config;
-    private $user;
+    // private $user;
 
     /**
      * 构造方法
@@ -26,7 +26,8 @@ class Upload extends Controller
         // 存储配置信息
         $this->config = SettingModel::getItem('storage');
         // 验证用户
-        $this->user = $this->getUser();
+        // dump($this->user());die;
+        // $this->user = $this->user();
     }
 
     /**

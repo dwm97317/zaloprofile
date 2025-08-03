@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mẫu địa chỉ Việt Nam - Vietnamese Address Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .address-form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .map-container {
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .map-title {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+            font-weight: 500;
+        }
+        
+        .address-search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .address-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 768px) {
+            .address-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .required {
+            color: red;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="address-form-container">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    Thông tin địa chỉ giao hàng
+                </h4>
+                <small class="text-muted">Vui lòng điền đầy đủ thông tin địa chỉ để đảm bảo giao hàng chính xác</small>
+            </div>
+            
+            <div class="card-body">
+                <!-- 地址搜索和地图区域 -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-search me-2"></i>
+                        Tìm kiếm địa chỉ
+                    </div>
+                    
+                    <!-- 地址搜索框 -->
+                    <div class="address-search-container">
+                        <div id="address-autocomplete" class="autocomplete-container">
+                            <!-- 搜索框和结果将由JS组件动态创建 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 地图容器 -->
+                    <div class="map-container">
+                        <div class="map-title">
+                            <i class="fas fa-map me-2"></i>
+                            Chọn vị trí trên bản đồ
+                            <small class="text-muted ms-2">(Nhấp vào bản đồ để chọn địa chỉ chính xác)</small>
+                        </div>
+                        <div id="address-map"></div>
+                    </div>
+                </div>
+                
+                <!-- 地址表单 -->
+                <form id="vietnamese-address-form" data-vietnamese-address="true" class="needs-validation" novalidate>
+                    <!-- 收件人信息 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-user me-2"></i>
+                            Thông tin người nhận
+                        </div>
+                        
+                        <div class="address-grid">
+                            <div>
+                                <label for="recipient_name" class="form-label">
+                                    Họ và tên <span class="required">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="recipient_name" name="address[name]" required>
+                                <div class="invalid-feedback">Vui lòng nhập họ và tên</div>
+                            </div>
+                            
+                            <div>
+                                <label for="recipient_phone" class="form-label">
+                                    Số điện thoại <span class="required">*</span>
+                                </label>
+                                <input type="tel" class="form-control" id="recipient_phone" name="address[phone]" required>
+                                <div class="invalid-feedback">Vui lòng nhập số điện thoại</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 地址详细信息 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-map-marked-alt me-2"></i>
+                            Địa chỉ chi tiết
+                        </div>
+                        
+                        <div class="address-grid">
+                            <!-- 省/市 -->
+                            <div>
+                                <label for="province" class="form-label">
+                                    Tỉnh/Thành phố <span class="required">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="province" name="address[province]" required>
+                                <div class="invalid-feedback">Vui lòng chọn tỉnh/thành phố</div>
+                            </div>
+                            
+                            <!-- 区/县 -->
+                            <div>
+                                <label for="district" class="form-label">
+                                    Quận/Huyện <span class="required">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="district" name="address[district]" required>
+                                <div class="invalid-feedback">Vui lòng chọn quận/huyện</div>
+                            </div>
+                            
+                            <!-- 坊/社 -->
+                            <div>
+                                <label for="ward" class="form-label">
+                                    Phường/Xã <span class="required">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="ward" name="address[ward]" required>
+                                <div class="invalid-feedback">Vui lòng chọn phường/xã</div>
+                            </div>
+                            
+                            <!-- 街道 -->
+                            <div>
+                                <label for="street" class="form-label">Đường/Phố</label>
+                                <input type="text" class="form-control" id="street" name="address[street]">
+                            </div>
+                            
+                            <!-- 门牌号 -->
+                            <div class="full-width">
+                                <label for="house_number" class="form-label">Số nhà</label>
+                                <input type="text" class="form-control" id="house_number" name="address[door]" placeholder="Ví dụ: 123, 45A, 67/8...">
+                            </div>
+                            
+                            <!-- 详细地址 -->
+                            <div class="full-width">
+                                <label for="detail_address" class="form-label">
+                                    Địa chỉ chi tiết <span class="required">*</span>
+                                </label>
+                                <textarea class="form-control" id="detail_address" name="address[detail]" rows="3" 
+                                    placeholder="Địa chỉ đầy đủ sẽ được điền tự động khi bạn chọn từ bản đồ hoặc tìm kiếm" required></textarea>
+                                <div class="invalid-feedback">Vui lòng nhập địa chỉ chi tiết</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 额外信息 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Thông tin bổ sung
+                        </div>
+                        
+                        <div class="address-grid">
+                            <div>
+                                <label for="postal_code" class="form-label">Mã bưu điện</label>
+                                <input type="text" class="form-control" id="postal_code" name="address[code]" placeholder="Ví dụ: 10000">
+                            </div>
+                            
+                            <div>
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="address[email]" placeholder="example@email.com">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <label for="delivery_note" class="form-label">Ghi chú giao hàng</label>
+                            <textarea class="form-control" id="delivery_note" name="address[note]" rows="2" 
+                                placeholder="Ví dụ: Giao vào buổi sáng, gọi trước khi đến..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- 隐藏字段 -->
+                    <input type="hidden" name="address[country_id]" value="1" id="country_id">
+                    <input type="hidden" name="address[addressty]" value="0">
+                    <input type="hidden" id="latitude" name="address[latitude]">
+                    <input type="hidden" id="longitude" name="address[longitude]">
+                    
+                    <!-- 提交按钮 -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <button type="button" class="btn btn-outline-secondary me-md-2" onclick="clearAddressForm()">
+                            <i class="fas fa-undo me-2"></i>Xóa tất cả
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Lưu địa chỉ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 地址预览 -->
+        <div class="card mt-3" id="address-preview" style="display: none;">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-eye me-2"></i>
+                    Xem trước địa chỉ
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="preview-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script src="vietnamese-address-component.js"></script>
+    
+    <script>
+        // 初始化越南地址组件
+        let vietnameseAddress;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化地址组件
+            vietnameseAddress = new VietnameseAddressComponent({
+                apiBaseUrl: '/api/goong-address',
+                mapContainer: 'address-map',
+                autocompleteContainer: 'address-autocomplete',
+                defaultCenter: [106.6297, 10.8231], // Ho Chi Minh City
+                defaultZoom: 12
+            });
+            
+            // 监听地址选择事件
+            document.addEventListener('vietnameseAddressSelected', function(event) {
+                const addressData = event.detail;
+                updateAddressPreview(addressData);
+                
+                // 更新隐藏的坐标字段
+                if (addressData.geometry && addressData.geometry.location) {
+                    document.getElementById('latitude').value = addressData.geometry.location.lat;
+                    document.getElementById('longitude').value = addressData.geometry.location.lng;
+                }
+            });
+            
+            // 表单验证
+            const form = document.getElementById('vietnamese-address-form');
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+                
+                // 如果验证通过，可以提交到后端
+                if (form.checkValidity()) {
+                    submitAddressForm(event);
+                }
+            });
+        });
+        
+        /**
+         * 更新地址预览
+         */
+        function updateAddressPreview(addressData) {
+            const previewCard = document.getElementById('address-preview');
+            const previewContent = document.getElementById('preview-content');
+            
+            if (addressData) {
+                const vietnameseAddr = addressData.vietnamese_address || {};
+                
+                previewContent.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Địa chỉ đã chọn:</h6>
+                            <p class="mb-2"><strong>${addressData.formatted_address || 'N/A'}</strong></p>
+                            
+                            <h6>Phân tích chi tiết:</h6>
+                            <ul class="list-unstyled">
+                                ${vietnameseAddr.province ? `<li><strong>Tỉnh/TP:</strong> ${vietnameseAddr.province}</li>` : ''}
+                                ${vietnameseAddr.district ? `<li><strong>Quận/Huyện:</strong> ${vietnameseAddr.district}</li>` : ''}
+                                ${vietnameseAddr.ward ? `<li><strong>Phường/Xã:</strong> ${vietnameseAddr.ward}</li>` : ''}
+                                ${vietnameseAddr.street ? `<li><strong>Đường:</strong> ${vietnameseAddr.street}</li>` : ''}
+                                ${vietnameseAddr.house_number ? `<li><strong>Số nhà:</strong> ${vietnameseAddr.house_number}</li>` : ''}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            ${addressData.geometry && addressData.geometry.location ? `
+                                <h6>Tọa độ:</h6>
+                                <p>
+                                    <strong>Vĩ độ:</strong> ${addressData.geometry.location.lat}<br>
+                                    <strong>Kinh độ:</strong> ${addressData.geometry.location.lng}
+                                </p>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                previewCard.style.display = 'block';
+            } else {
+                previewCard.style.display = 'none';
+            }
+        }
+        
+        /**
+         * 清空地址表单
+         */
+        function clearAddressForm() {
+            if (confirm('Bạn có chắc chắn muốn xóa tất cả thông tin đã nhập?')) {
+                document.getElementById('vietnamese-address-form').reset();
+                document.getElementById('address-preview').style.display = 'none';
+                
+                if (vietnameseAddress) {
+                    vietnameseAddress.clearAddress();
+                }
+                
+                // 移除验证样式
+                const form = document.getElementById('vietnamese-address-form');
+                form.classList.remove('was-validated');
+            }
+        }
+        
+        /**
+         * 提交地址表单
+         */
+        async function submitAddressForm(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            
+            // 显示加载状态
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+            submitButton.disabled = true;
+            
+            try {
+                // 这里可以发送到后端API
+                const response = await fetch('/api/address/add', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 1) {
+                    alert('Địa chỉ đã được lưu thành công!');
+                    // 可以重定向或执行其他操作
+                } else {
+                    alert('Lỗi: ' + (result.msg || 'Không thể lưu địa chỉ'));
+                }
+            } catch (error) {
+                console.error('Lỗi khi lưu địa chỉ:', error);
+                alert('Có lỗi xảy ra, vui lòng thử lại');
+            } finally {
+                // 恢复按钮状态
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html> 

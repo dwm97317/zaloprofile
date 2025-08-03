@@ -24,6 +24,7 @@ use app\common\library\Ditch\Hualei;
 use app\common\library\Ditch\Xzhcms5;
 use app\common\library\Ditch\Aolian;
 use app\common\library\Ditch\Yidida;
+use app\common\library\ZaloSdk\ZaloOfficialApi;
 /**
  * 订单管理
  * Class Order
@@ -199,6 +200,7 @@ class Package extends PackageModel
          if($post['length']>0 && $post['width']>0 && $post['height']>0){
              $post['volume'] = $post['length']*$post['width']*$post['height']/1000000;
          }
+          ZaloOfficialApi::sendMessage(10001,'orderSend',['orderSn'=>$result['express_num'],'userId'=>$result['member_id']]);
          //存在id则为更新
          if ($data['id']){
               $post['status'] = 2;
@@ -246,14 +248,15 @@ class Package extends PackageModel
                  $shopData =  (new Shop())->where('shop_id',$data['shop_id'])->find();
                  $post['shop_name'] = $shopData['shop_name'];
               }
-              $tplmsgsetting = SettingModel::getItem('tplMsg');
-              if($tplmsgsetting['is_oldtps']==1){
-                  //发送旧版本订阅消息以及模板消息
-                  $sub = $this->sendEnterMessage([$post]);
-              }else{
-                  //发送新版本订阅消息以及模板消息
-                  Message::send('package.inwarehouse',$post);
-              }
+              ZaloOfficialApi::sendMessage(10001,'orderSend',['orderSn'=>$result['express_num'],'userId'=>$result['member_id']]);
+            //   $tplmsgsetting = SettingModel::getItem('tplMsg');
+            //   if($tplmsgsetting['is_oldtps']==1){
+            //       //发送旧版本订阅消息以及模板消息
+            //       $sub = $this->sendEnterMessage([$post]);
+            //   }else{
+            //       //发送新版本订阅消息以及模板消息
+            //       Message::send('package.inwarehouse',$post);
+            //   }
               
             
               //判断是否有用户id，发送邮件

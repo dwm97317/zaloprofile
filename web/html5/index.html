@@ -1,2 +1,30 @@
 <!DOCTYPE html><html lang=zh-CN><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><title>XSJY</title><script>var coverSupport = 'CSS' in window && typeof CSS.supports === 'function' && (CSS.supports('top: env(a)') || CSS.supports('top: constant(a)'))
-            document.write('<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0' + (coverSupport ? ', viewport-fit=cover' : '') + '" />')</script><link rel=stylesheet href=/html5/static/index.97465e7b.css></head><body><noscript><strong>Please enable JavaScript to continue.</strong></noscript><div id=app></div><script src=/html5/static/js/chunk-vendors.62e9e1aa.js></script><script src=/html5/static/js/index.f5676b70.js></script></body></html>
+            document.write('<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0' + (coverSupport ? ', viewport-fit=cover' : '') + '" />')</script><link rel=stylesheet href=/html5/static/index.97465e7b.css></head><body><noscript><strong>Please enable JavaScript to continue.</strong></noscript><div id=app></div>
+<!-- Zalo开发环境修复脚本 - 仅在开发环境加载 -->
+<script>
+// 检查是否为开发环境并加载修复脚本
+(function() {
+    var isDev = (
+        navigator.userAgent.indexOf('ZaloStudio') !== -1 ||
+        location.hostname === 'localhost' ||
+        location.hostname === '127.0.0.1' ||
+        location.hostname.indexOf('mini-app-studio') !== -1 ||
+        location.search.indexOf('debug_mode=1') !== -1 ||
+        location.search.indexOf('dev=1') !== -1
+    );
+    
+    if (isDev) {
+        console.log('检测到开发环境，加载Zalo修复脚本');
+        var script = document.createElement('script');
+        script.src = '/html5/zalo-dev-fix.js';
+        script.onload = function() {
+            console.log('Zalo开发环境修复脚本加载完成');
+        };
+        script.onerror = function() {
+            console.warn('Zalo开发环境修复脚本加载失败');
+        };
+        document.head.appendChild(script);
+    }
+})();
+</script>
+<script src=/html5/static/js/chunk-vendors.62e9e1aa.js></script><script src=/html5/static/js/index.f5676b70.js></script></body></html>

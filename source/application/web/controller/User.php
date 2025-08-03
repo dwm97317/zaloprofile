@@ -14,6 +14,11 @@ use app\web\model\recharge\Order as rechargeOrder;
 use app\web\model\user\Grade as GradeModel;
 use app\web\model\UserCoupon;
 use  app\web\model\Coupon;
+use app\web\model\Wxapp as WxappModel;
+use app\web\model\Bank;
+use app\web\model\Currency;
+use app\web\model\Certificate;
+
 /**
  * 用户管理
  * Class User
@@ -50,6 +55,26 @@ class User extends Controller
         return $this->fetch('usercenter/forget', compact('model'));
     }
     
+        // 根据域名返回wxapp_id
+    public function getSiteUrl(){
+        $WxappModel = new WxappModel();
+        $url = $_SERVER['HTTP_ORIGIN'];
+        $wxappData  = WxappModel::useGlobalScope(false)->where('other_url','like','%'.$url.'%')->find();
+        if(empty($wxappData)){
+            return $this->renderSuccessWeb([
+            'other_url' => base_url(),
+            'wxapp_id' => 10001,
+            'mini_id' => 10047
+            ]);
+        }
+
+        return $this->renderSuccessWeb([
+            'other_url' => $wxappData['other_url'],
+            'wxapp_id' => $wxappData['wxapp_id'],
+            'mini_id' =>$wxappData['mini_id']
+        ]);
+    }
+    
     public function grade(){
          $user = $this->user;
          $GradeModel = new GradeModel;
@@ -74,6 +99,22 @@ class User extends Controller
          $list = $rechargeOrder->getList($user['user']['user_id']); 
          return $this->fetch('usercenter/recharge',compact('list'));
     }
+    
+    // 我要充值
+    public function iwantrecharge(){
+         $user =  $this->user;
+         $rechargeOrder = new rechargeOrder;
+         $Bank = (new Bank());
+         $Currency = new Currency();
+         $banklist = $Bank->getList();
+         $userinfo = (new UserModel())->where('user_id',$user['user']['user_id'])->find();
+         $list = $rechargeOrder->getList($user['user']['user_id']); 
+         $currencylist = $Currency->getListAll();
+        //  dump($banklist);die;
+         return $this->fetch('usercenter/iwantrecharge',compact('list','userinfo','banklist','currencylist'));
+    }
+    
+    
     
     public function balance(){
          $user = $this->user;
@@ -172,7 +213,7 @@ class User extends Controller
     }
     
     public function smslist(){
-         $userInfo = $this->getUser();
+        $userInfo = $this->getUser();
         $model = new SiteSmsModel;
         return $this->renderSuccess(
         $model->getList(['member_id'=>$userInfo['user_id']]));
@@ -180,12 +221,13 @@ class User extends Controller
     
       public function certificate(){
          // 当前用户信息
-         $userInfo = $this->getUser();
-         $post = $this->postData();
-         unset($post['token']);
-         $post['member_id'] = $userInfo['user_id'];
+         $user = $this->user;
+        //  dump($user);die;
+         $data = $this->request->param();
+         unset($data['token']);
+         $data['member_id'] = $user['user']['user_id'];
          $cer = (new Certificate());
-         if (!$cer->post($post)){
+         if (!$cer->add($data)){
             return $this->renderError($cer->getError()??"提交失败");
          }  
          return $this->renderSuccess('提交成功');          

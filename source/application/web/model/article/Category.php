@@ -22,6 +22,21 @@ class Category extends CategoryModel
     {
         return static::get($category_id);
     }
+    
+    /**
+     * 分类详情
+     * @param $category_id
+     * @return Category|null
+     * @throws \think\exception\DbException
+     */
+    public function getNormalList($mini_id)
+    {
+        return $this->where('belong',0)
+        ->where('mini_id',$mini_id)
+        ->order(['sort' => 'asc', 'create_time' => 'asc'])->select();
+    }
+    
+    
 
     /**
      * 添加新记录

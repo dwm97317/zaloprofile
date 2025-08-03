@@ -86,10 +86,12 @@
                                                 </div>
                                                 <div class="col-sm">
                                                     <div class="text-right m-t-20">
+                                                        <a href="<?= urlCreate('/web/user/iwantrecharge') ?>">
                                                         <button class="btn btn-info m-b-0 m-r-5">
                                                             <i class="mdi mdi-credit-card-plus font-size-16 m-r-5"></i>
                                                             <span>充值</span>
                                                         </button>
+                                                        </a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -154,39 +156,7 @@
                             </div>
                              
                         </div>
-                        <!--<div class="row">-->
-                        <!--    <div class="col-md-12">-->
-                        <!--        <div class="card">-->
-                        <!--            <div class="card-header">-->
-                        <!--                <h4 class="card-title">最新订单</h4>-->
-                        <!--                <div class="card-toolbar">-->
-                        <!--                    <ul>-->
-                        <!--                        <li>-->
-                        <!--                            <a class="text-gray" href="javascript:void(0)">-->
-                        <!--                                <i class="mdi mdi-dots-vertical font-size-20"></i>-->
-                        <!--                            </a>-->
-                        <!--                        </li>-->
-                        <!--                    </ul>-->
-                        <!--                </div>-->
-                        <!--            </div>-->
-                        <!--            <table class="table table-xl">-->
-                        <!--                <tbody>-->
-                        <!--                    <?php if ( !empty($list) && !$list->isEmpty()): foreach ($list as $item): ?>-->
-                        <!--                    <tr>-->
-                        <!--                        <td class="text-center"><span><?= $item['country'] ?></span></td>-->
-                        <!--                        <td><span class="font-size-13"><?= $item['t_order_sn'] ?></span></td>-->
-                        <!--                        <td class="m-b-0 text-success"><span class="font-size-13"><a class="j-search" data-id="<?= $item['t_order_sn'] ?>" href="javascript:void(0)">查询</a></span></td>-->
-                        <!--                    </tr>-->
-                        <!--                    <?php endforeach; else: ?>-->
-                        <!--                        <tr>-->
-                        <!--                            <td colspan="11" class="am-text-center">暂无记录</td>-->
-                        <!--                        </tr>-->
-                        <!--                    <?php endif; ?>-->
-                        <!--                </tbody>-->
-                        <!--            </table>-->
-                        <!--        </div>-->
-                        <!--    </div>-->
-                        <!--</div>-->
+                        
                       
                 <!-- Content Wrapper END -->
 <script>

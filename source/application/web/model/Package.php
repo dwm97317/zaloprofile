@@ -132,7 +132,7 @@ class Package extends PackageModel
         !empty($param['is_take'])&& $this->where('is_take','in',$param['is_take']);
         !empty($param['source'])&& $this->where('source','=',$param['source']);
         !empty($param['is_delete'])&& $this->where('a.is_delete','=',$param['is_delete']);
-        
+        !empty($param['status'])&& $this->where('status','in',$param['status']);
         !empty($param['extract_shop_id'])&&is_numeric($param['extract_shop_id']) && $param['extract_shop_id'] > -1 && $this->where('storage_id', '=', (int)$param['extract_shop_id']);
         !empty($param['start_time']) && $this->where('created_time', '>', $param['start_time']);
         !empty($param['end_time']) && $this->where('created_time', '<', $param['end_time']." 23:59:59");

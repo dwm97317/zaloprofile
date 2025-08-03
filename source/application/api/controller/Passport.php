@@ -106,7 +106,7 @@ class Passport extends Controller
     public function loginbyzalo(){
         // 微信小程序一键登录
         $LoginService = new LoginService;
-
+        file_put_contents('token',var_export($this->postForm(),true));
         if (!$LoginService->loginMpZalo($this->postForm())) {
             return $this->renderError($LoginService->getError());
         }

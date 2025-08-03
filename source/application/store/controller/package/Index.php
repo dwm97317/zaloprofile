@@ -317,6 +317,7 @@ class Index extends Controller
             }
             $packlists = implode(',',$packlist);
         }
+        $title = '222';
         return $this->fetch('index', compact('i','packlists','list','shopList','title','line','packageService','statusTotal','type','storeAddress','topcategory','category','set','datatotal','countweight'));
     }
     

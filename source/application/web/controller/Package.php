@@ -67,6 +67,7 @@ class Package extends Controller
         $where = [];    
         isset($param['number']) && $where['express_num'] = $param['number'];
         $where['member_id']= $this->user['user']['user_id'];
+        // dump($param);die;
         if(isset($param['type'])){
             switch ($param['type']) {
                 case 1:
@@ -103,9 +104,9 @@ class Package extends Controller
         }
         $line = (new Line())->getListAll([]);
         $address =(new UserAddress())->getList($this->user['user']['user_id'],'');
-        
+        // dump($where);die;
         $list = $package->query($where,$field);
-        // dump($list->toArray());die;
+        
         foreach ($list as $key=>$value){
             $packageitem = (new PackageItemModel())->whereIn('order_id',$value['id'])->find();
             $value['class_name'] = $packageitem['class_name'];
@@ -180,7 +181,7 @@ class Package extends Controller
             $data['remark'] = isset($param['remark'][$key])?$param['remark'][$key]:'';
             $id = $package->created($data);
             
-            if($id){
+            if($id && isset($param['class_id'])){
                 $packItemModel = new PackageItemModel();
                 $classItem = [];
                 $packItemModel->where('order_id',$id)->delete();
@@ -753,7 +754,7 @@ class Package extends Controller
         $line_id = $this->postData('package')['line_id'];
         $remark = $this->postData('package')['remark'];
         $address_id = $this->postData('package')['address_id'];
-        $waitreceivedmoney = $this->postData('package')['waitreceivedmoney'];
+        // $waitreceivedmoney = $this->postData('package')['waitreceivedmoney'];
         if (!$ids){
             return $this->renderError('请选择要打包的包裹');
         }
@@ -789,13 +790,12 @@ class Package extends Controller
           'storage_id' => $pack[0]['storage_id'],
           'address_id' => $address_id,
           'free' => $price,
-          'waitreceivedmoney'=> $waitreceivedmoney,
+          'waitreceivedmoney'=> 0,
           'weight' => $allWeigth,
           'cale_weight' => $caleWeigth,
           'volume' => $volumn,
           'pack_free' => 0,
           'member_id' => $this->user['user']['user_id'],
-          'country' => $address['country'],
           'created_time' => getTime(),
           'updated_time' => getTime(),
           'status' => 1,

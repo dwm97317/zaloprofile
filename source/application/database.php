@@ -2,9 +2,9 @@
 // 数据库配置
 $config = [
     'host' => '127.0.0.1',
-    'database' => 'zalo_zhuanyun',
-    'username' => 'zalo_zhuanyun',
-    'password' => 'eLzHzCFkdbh2NDct',
+    'database' => 'zalo_itaoth_com',
+    'username' => 'zalo_itaoth_com',
+    'password' => '2Kwi7STcaJ2R78Np',
     'port' => '3306',
     'charset' => 'utf8',
 ];

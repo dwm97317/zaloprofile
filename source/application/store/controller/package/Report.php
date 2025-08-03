@@ -10,6 +10,7 @@ use app\common\model\Logistics;
 use app\store\model\Inpack;
 use app\store\model\ShelfUnitItem;
 use app\common\model\setting;
+use app\common\library\ZaloSdk\ZaloOfficialApi;
 /**
  * 包裹预报控制器
  * Class StoreUser
@@ -121,12 +122,14 @@ class Report extends Controller
        $idsArr = explode(',',$ids);
        $model = new Package();
        foreach ($idsArr as $v){
+           $orderInfo = $model->where(['id'=>$v])->find();
            $_up = [
              'status' => $status,
              'entering_warehouse_time' => $status==1?'':getTime(),
              'updated_time' => getTime()
            ];     
-            Logistics::add($v,"包裹入库");
+           Logistics::add($v,"包裹入库");
+           ZaloOfficialApi::sendMessage(10001,'orderSend',['orderSn'=>$orderInfo['express_num'],'userId'=>$orderInfo['member_id']]);
            $model->where(['id'=>$v])->update($_up);
        }    
        return $this->renderSuccess('更新成功');

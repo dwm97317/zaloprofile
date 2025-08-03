@@ -110,8 +110,8 @@ class Setting extends BaseModel
                 'describe' => '系统设置',
                 'values' => [
                     // 系统名称
-                    'name' => $storeName ?: '小思集运',
-                    'title' =>"小思集运",
+                    'name' => $storeName ?: '越华集运',
+                    'title' =>"越华集运",
                     'desc' => "让每个包裹都能安全到达",
                     'is_getphone' => 0, //强制授权手机号
                     'checkphone'=> 10, //10是验证邮箱，20是验证手机号
@@ -160,12 +160,12 @@ class Setting extends BaseModel
                     'is_wechathao' =>1,
                     'is_kefuemail' => 1,
                     'newhand_mode'=> 10,//10 列表  20 图文
-                    'service_name' =>"小思集运客服",
-                    'service_phone' =>"18086328550",
+                    'service_name' =>"越华集运客服",
+                    'service_phone' =>"18029896909",
                     'wechat_name' => "微信客服小冯",
-                    'wechathao' => "f18995802785",
+                    'wechathao' => "dwm97317",
                     'emailname' =>"客服邮箱",
-                    'kefuemail' =>"sllowly@sllowly.com",
+                    'kefuemail' =>"kefu@itaoth.com",
                     
                     'is_service' => 0, //查询运费时是否启用增值服务项目
                     'service_othername'=>'增值服务',
@@ -467,12 +467,12 @@ class Setting extends BaseModel
                 'key' => 'lang',
                 'describe' => '语言设置',
                 'values' => [
-                    'default' => 'zhHant',
-                    'zhHans' => '1', //简体中文
+                    'default' => 'vietnam',
+                    'zhHans' => '0', //简体中文
                     'en' => '0', //英文
-                    'zhHant' => '0', //繁体
+                    'zhHant' => '1', //繁体
                     'thai'=>0, //泰语
-                    'vietnam'=>0, //越南
+                    'vietnam'=>'1', //越南
                 ]
             ],
             // 支付设置

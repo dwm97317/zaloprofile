@@ -13,7 +13,7 @@ class Curl {
         }
         // 防止CURL执行超时
         set_time_limit(0);
-
+        
         if (!empty($params)){
             $url = $url.'?'.http_build_query($params);
         }
@@ -51,13 +51,11 @@ class Curl {
     }
 
     // 发送一个常规的Post请求
-    public static function post($url, $post_data = array(), $header = "", $timeout = 5, $data_type = "json",$is_cert=false){
+    public static function post($url, $post_data = array(), $header = [], $timeout = 5, $data_type = "json",$is_cert=false){
         $default_header = [
             'User-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
         ];
-        if ($header){
-            $header = array_merge($default_header,$header);
-        }
+        $header = array_merge($default_header,$header);
         //支持json数据数据提交
         // if($data_type == 'json'){
         //     $post_string = json_encode($post_data);

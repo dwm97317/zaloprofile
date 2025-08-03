@@ -1,7 +1,7 @@
 
 <?php include($__TEMPLATE__.'common/__header__.php'); ?>
 <body>
-    <div class="app  side-nav-dark header-dark">
+    <div class="app  side-nav-dark header-dark side-nav-folded">
         <div class="layout">
             <!-- Header START app  header-info-gradient side-nav-default --> 
             <div class="header navbar">
@@ -18,6 +18,56 @@
                             </a>
                             <a class="sidenav-expand-toggler" href="javascript:void(0);">
                                 <i class="mdi mdi-menu"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="nav-left navmmenu">
+                        <li>
+                            <a href="<?php echo(urlCreate('/web/package/packreport')) ?>">
+                                <i class="ti-layout-grid3 p-r-10"></i>
+                                <span>申请预报</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo(urlCreate('/web/package/mypackage')) ?>">
+                                <i class="ti-package p-r-10"></i>
+                                <span>我的包裹</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo(urlCreate('/web/package/waitrl')) ?>">
+                                <i class="ti-unlink p-r-10"></i>
+                                <span>包裹认领</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo(urlCreate('/web/package/allorder')) ?>">
+                                <i class="ti-receipt p-r-10"></i>
+                                <span>全部订单</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo(urlCreate('/web/user/iwantrecharge')) ?>">
+                                <i class="ti-id-badge p-r-10"></i>
+                                <span>我要充值</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo(urlCreate('/web/user/address')) ?>">
+                                <i class="ti-location-pin  p-r-10"></i>
+                                <span>收件地址</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo(urlCreate('/web/package/trajectory')) ?>">
+                                <i class="ti-map-alt p-r-10"></i>
+                                <span>轨迹查询</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo(urlCreate('/web/package/price')) ?>">
+                                <i class="ti-money p-r-10"></i>
+                                <span>价格查询</span>
                             </a>
                         </li>
                     </ul>

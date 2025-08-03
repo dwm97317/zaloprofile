@@ -92,7 +92,8 @@ class Page extends Controller
 
     // 最佳线路
     public function goods_line(){
-       $data = (new Line())->goodsLine();
+       $param = $this->request->param();
+       $data = (new Line())->goodsLine($param);
        foreach($data as $k => $v){
            if ($v['tariff']==0){
                $data[$k]['tariff'] = '包税';
@@ -101,8 +102,7 @@ class Page extends Controller
        if (!$data->isEmpty()){
            $data = $this->withImageById($data,'image_id');
        }
-       $data = array_chunk($data->toArray(),2);
-       return $this->renderSuccess($data);
+       return $this->renderSuccessWeb(compact('data'));
     }
     
     public function lineDetails($id){

@@ -92,6 +92,27 @@ class Controller extends \think\Controller
     }
     
     /**
+     * 检查是否为开发环境
+     * @return bool
+     */
+    private function isDevelopmentEnv()
+    {
+        // 检查是否为zalo mini app studio开发环境
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        $referer = $_SERVER['HTTP_REFERER'] ?? '';
+        
+        // 检查开发环境的特征
+        return (
+            strpos($userAgent, 'ZaloStudio') !== false ||
+            strpos($referer, 'localhost') !== false ||
+            strpos($referer, '127.0.0.1') !== false ||
+            strpos($referer, 'mini-app-studio') !== false ||
+            $this->request->param('debug_mode') == '1' ||
+            config('app_debug') === true
+        );
+    }
+    
+    /**
      * 获取当前用户信息
      * @param bool $is_force
      * @return UserModel|bool|null
@@ -101,14 +122,51 @@ class Controller extends \think\Controller
     protected function getUser($is_force = true)
     {
         if (!$token = $this->request->param('token')) {
+            // 在开发环境中，如果没有token，尝试使用测试token
+            if ($this->isDevelopmentEnv() && !$is_force) {
+                return $this->createDevUser();
+            }
             $is_force && $this->throwError('缺少必要的参数：token', -1);
             return false;
         }
-        if (!$user = UserModel::getUser($token)) {
+        
+        $user = UserModel::getUser($token);
+        
+        // 如果在开发环境中token验证失败，尝试宽松处理
+        if (!$user && $this->isDevelopmentEnv()) {
+            // 写入调试日志
+            file_put_contents('debug_token.log', date('Y-m-d H:i:s') . " - Token验证失败，开发环境宽松处理: " . $token . "\n", FILE_APPEND);
+            
+            // 在开发环境中，如果token验证失败，返回一个测试用户而不是抛出错误
+            if (!$is_force) {
+                return $this->createDevUser();
+            }
+            
+            // 修改错误消息，提示这是开发环境
+            $this->throwError('开发环境：token验证失败，请检查zalo认证状态', -2);
+        }
+        
+        if (!$user) {
             $is_force && $this->throwError('没有找到用户信息', -1);
             return false;
         }
         return $user;
+    }
+
+    /**
+     * 创建开发环境测试用户
+     * @return array
+     */
+    private function createDevUser()
+    {
+        return [
+            'user_id' => 999999,
+            'nickName' => 'ZaloStudio测试用户',
+            'avatarUrl' => '',
+            'mobile' => '1234567890',
+            'balance' => 0,
+            'open_id' => 'dev_test_user'
+        ];
     }
 
     /**

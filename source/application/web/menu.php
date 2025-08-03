@@ -59,18 +59,18 @@ return [
       'url' => '',
       'url_' => '',
       'child'=>[
-          [
-            'name' =>'新建订单',
-            'url_' => '/web/package/gotocreateorder',
-            'url' => urlCreate('/web/package/gotocreateorder'),
-            'icon' => ''
-         ],
-         [
-            'name' =>'草稿订单',
-            'url_' => '/web/package/draft',
-            'url' => urlCreate('/web/package/draft'),
-            'icon' => ''
-         ],
+        //   [
+        //     'name' =>'新建订单',
+        //     'url_' => '/web/package/gotocreateorder',
+        //     'url' => urlCreate('/web/package/gotocreateorder'),
+        //     'icon' => ''
+        //  ],
+        //  [
+        //     'name' =>'草稿订单',
+        //     'url_' => '/web/package/draft',
+        //     'url' => urlCreate('/web/package/draft'),
+        //     'icon' => ''
+        //  ],
          [
             'name' =>'待发货单',
             'url_' => '/web/package/orderno',
@@ -119,6 +119,11 @@ return [
             'name' =>'会员等级',
             'url_' => '/web/user/grade',
             'url' => urlCreate('/web/user/grade'),
+         ],
+         [
+            'name' =>'我要充值',
+            'url_' => '/web/user/iwantrecharge',
+            'url' => urlCreate('/web/user/iwantrecharge'),
          ],
          [
             'name' =>'充值记录',

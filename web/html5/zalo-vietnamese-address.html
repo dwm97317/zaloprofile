@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Địa chỉ Việt Nam - Zalo Mini App</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Goong Maps CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/@goongmaps/goong-js@1.0.9/dist/goong-js.css" rel="stylesheet" />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container-fluid {
+            padding: 10px;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 15px;
+            margin: -10px -10px 20px -10px;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .page-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 5px 0 0 0;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .section-content {
+            padding: 20px;
+        }
+        
+        .search-input {
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 12px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .map-container {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        #vietnamese-map {
+            height: 250px;
+            width: 100%;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .form-group-inline {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .required {
+            color: #dc3545;
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            cursor: default;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .address-suggestions {
+            position: absolute;
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .search-result-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f1f1;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-main {
+            font-weight: 500;
+            color: #333;
+            font-size: 15px;
+        }
+        
+        .result-secondary {
+            font-size: 13px;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        .preview-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .preview-item {
+            margin-bottom: 10px;
+        }
+        
+        .preview-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .preview-value {
+            color: #333;
+            font-size: 15px;
+            margin-top: 5px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .action-buttons {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #e9ecef;
+            margin: 20px -10px -10px -10px;
+        }
+        
+        @media (max-width: 576px) {
+            .form-group-inline {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 页面头部 -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-map-marker-alt me-2"></i>
+                Địa chỉ giao hàng
+            </h1>
+            <p class="page-subtitle">Chọn địa chỉ giao hàng chính xác tại Việt Nam</p>
+        </div>
+        
+        <!-- 地址搜索区域 -->
+        <div class="section-card">
+            <div class="section-header">
+                <i class="fas fa-search me-2"></i>
+                Tìm kiếm địa chỉ
+            </div>
+            <div class="section-content">
+                <div class="position-relative">
+                    <div id="vietnamese-autocomplete">
+                        <!-- 搜索框将由JS创建 -->
+                    </div>
+                </div>
+                
+                <!-- 地图 -->
+                <div class="map-container">
+                    <div id="vietnamese-map"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 地址表单 -->
+        <div class="section-card">
+            <div class="section-header">
+                <i class="fas fa-edit me-2"></i>
+                Thông tin địa chỉ
+            </div>
+            <div class="section-content">
+                <form id="zaloAddressForm">
+                    <!-- 收件人信息 -->
+                    <div class="form-grid">
+                        <div class="form-group-inline">
+                            <div>
+                                <label class="form-label">
+                                    Họ và tên <span class="required">*</span>
+                                </label>
+                                <input type="text" class="form-control" name="name" placeholder="Nhập họ và tên" required>
+                            </div>
+                            <div>
+                                <label class="form-label">
+                                    Số điện thoại <span class="required">*</span>
+                                </label>
+                                <input type="tel" class="form-control" name="phone" placeholder="Số điện thoại" required>
+                            </div>
+                        </div>
+                        
+                        <!-- 地址信息 -->
+                        <div class="form-group-inline">
+                            <div>
+                                <label class="form-label">
+                                    Tỉnh/Thành phố <span class="required">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="province" name="province" 
+                                       placeholder="Chọn tỉnh/thành phố" readonly required>
+                            </div>
+                            <div>
+                                <label class="form-label">
+                                    Quận/Huyện <span class="required">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="district" name="district" 
+                                       placeholder="Chọn quận/huyện" readonly required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group-inline">
+                            <div>
+                                <label class="form-label">
+                                    Phường/Xã <span class="required">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="ward" name="ward" 
+                                       placeholder="Chọn phường/xã" readonly required>
+                            </div>
+                            <div>
+                                <label class="form-label">Đường/Phố</label>
+                                <input type="text" class="form-control" id="street" name="street" 
+                                       placeholder="Tên đường/phố">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="form-label">Số nhà</label>
+                            <input type="text" class="form-control" id="house_number" name="house_number" 
+                                   placeholder="Ví dụ: 123, 45A, 67/8...">
+                        </div>
+                        
+                        <div>
+                            <label class="form-label">
+                                Địa chỉ chi tiết <span class="required">*</span>
+                            </label>
+                            <textarea class="form-control" id="detail_address" name="detail" rows="3" 
+                                placeholder="Địa chỉ đầy đủ sẽ được điền tự động khi bạn chọn từ tìm kiếm hoặc bản đồ" required></textarea>
+                        </div>
+                        
+                        <div class="form-group-inline">
+                            <div>
+                                <label class="form-label">Mã bưu điện</label>
+                                <input type="text" class="form-control" name="postal_code" placeholder="Ví dụ: 10000">
+                            </div>
+                            <div>
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" placeholder="example@email.com">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="form-label">Ghi chú giao hàng</label>
+                            <textarea class="form-control" name="delivery_note" rows="2" 
+                                placeholder="Ghi chú cho người giao hàng..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- 隐藏字段 -->
+                    <input type="hidden" name="country_id" value="1">
+                    <input type="hidden" name="addressty" value="0">
+                    <input type="hidden" id="latitude" name="latitude">
+                    <input type="hidden" id="longitude" name="longitude">
+                </form>
+            </div>
+        </div>
+        
+        <!-- 地址预览 -->
+        <div id="address-preview" class="section-card" style="display: none;">
+            <div class="section-header">
+                <i class="fas fa-eye me-2"></i>
+                Xem trước địa chỉ
+            </div>
+            <div class="section-content">
+                <div class="preview-card">
+                    <div id="preview-content"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 消息显示区域 -->
+        <div id="message-container"></div>
+    </div>
+    
+    <!-- 操作按钮 -->
+    <div class="action-buttons">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="button" class="btn btn-secondary flex-fill" onclick="clearForm()">
+                <i class="fas fa-undo me-2"></i>Xóa tất cả
+            </button>
+            <button type="button" class="btn btn-primary flex-fill" onclick="saveAddress()">
+                <i class="fas fa-save me-2"></i>Lưu địa chỉ
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@goongmaps/goong-js@1.0.9/dist/goong-js.js"></script>
+    <script src="vietnamese-address-component.js"></script>
+    
+    <script>
+        // 全局变量
+        let vietnameseAddressComponent;
+        let selectedAddressData = null;
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeZaloVietnameseAddress();
+        });
+        
+        /**
+         * 初始化Zalo越南地址功能
+         */
+        function initializeZaloVietnameseAddress() {
+            // 初始化地址组件
+            vietnameseAddressComponent = new VietnameseAddressComponent({
+                apiKey: '5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj',
+                apiBaseUrl: '/api/goong-address',
+                mapContainer: 'vietnamese-map',
+                autocompleteContainer: 'vietnamese-autocomplete',
+                defaultCenter: [106.6297, 10.8231], // Ho Chi Minh City
+                defaultZoom: 12
+            });
+            
+            // 监听地址选择事件
+            document.addEventListener('vietnameseAddressSelected', function(event) {
+                selectedAddressData = event.detail;
+                updateAddressForm(selectedAddressData);
+                updateAddressPreview(selectedAddressData);
+                showMessage('Đã chọn địa chỉ thành công!', 'success');
+            });
+            
+            // 绑定表单验证
+            bindFormValidation();
+        }
+        
+        /**
+         * 更新地址表单
+         */
+        function updateAddressForm(addressData) {
+            if (!addressData || !addressData.vietnamese_address) return;
+            
+            const vietnameseAddr = addressData.vietnamese_address;
+            
+            // 填充地址字段
+            document.getElementById('province').value = vietnameseAddr.province || '';
+            document.getElementById('district').value = vietnameseAddr.district || '';
+            document.getElementById('ward').value = vietnameseAddr.ward || '';
+            document.getElementById('street').value = vietnameseAddr.street || '';
+            document.getElementById('house_number').value = vietnameseAddr.house_number || '';
+            document.getElementById('detail_address').value = addressData.formatted_address || '';
+            
+            // 保存坐标
+            if (addressData.geometry && addressData.geometry.location) {
+                document.getElementById('latitude').value = addressData.geometry.location.lat;
+                document.getElementById('longitude').value = addressData.geometry.location.lng;
+            }
+        }
+        
+        /**
+         * 更新地址预览
+         */
+        function updateAddressPreview(addressData) {
+            const previewDiv = document.getElementById('address-preview');
+            const previewContent = document.getElementById('preview-content');
+            
+            if (addressData) {
+                const vietnameseAddr = addressData.vietnamese_address || {};
+                
+                const html = `
+                    <div class="preview-item">
+                        <div class="preview-label">Địa chỉ đã chọn:</div>
+                        <div class="preview-value">${addressData.formatted_address || 'N/A'}</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="preview-item">
+                                <div class="preview-label">Phân tích chi tiết:</div>
+                                <ul class="list-unstyled preview-value">
+                                    ${vietnameseAddr.province ? `<li><strong>Tỉnh/TP:</strong> ${vietnameseAddr.province}</li>` : ''}
+                                    ${vietnameseAddr.district ? `<li><strong>Quận/Huyện:</strong> ${vietnameseAddr.district}</li>` : ''}
+                                    ${vietnameseAddr.ward ? `<li><strong>Phường/Xã:</strong> ${vietnameseAddr.ward}</li>` : ''}
+                                    ${vietnameseAddr.street ? `<li><strong>Đường:</strong> ${vietnameseAddr.street}</li>` : ''}
+                                    ${vietnameseAddr.house_number ? `<li><strong>Số nhà:</strong> ${vietnameseAddr.house_number}</li>` : ''}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            ${addressData.geometry && addressData.geometry.location ? `
+                                <div class="preview-item">
+                                    <div class="preview-label">Tọa độ:</div>
+                                    <div class="preview-value">
+                                        <strong>Vĩ độ:</strong> ${addressData.geometry.location.lat}<br>
+                                        <strong>Kinh độ:</strong> ${addressData.geometry.location.lng}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                previewContent.innerHTML = html;
+                previewDiv.style.display = 'block';
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        }
+        
+        /**
+         * 清空表单
+         */
+        function clearForm() {
+            if (confirm('Bạn có chắc chắn muốn xóa tất cả thông tin?')) {
+                // 重置表单
+                document.getElementById('zaloAddressForm').reset();
+                
+                // 清空地址组件
+                if (vietnameseAddressComponent) {
+                    vietnameseAddressComponent.clearAddress();
+                }
+                
+                // 隐藏预览
+                document.getElementById('address-preview').style.display = 'none';
+                
+                // 清空选择的地址数据
+                selectedAddressData = null;
+                
+                showMessage('Đã xóa tất cả thông tin!', 'success');
+            }
+        }
+        
+        /**
+         * 保存地址
+         */
+        async function saveAddress() {
+            // 验证表单
+            if (!validateForm()) {
+                return;
+            }
+            
+            const formData = getFormData();
+            
+            try {
+                showLoadingButton();
+                
+                const response = await fetch('/api/address/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 1) {
+                    showMessage('Lưu địa chỉ thành công!', 'success');
+                    
+                    // 延迟后可以关闭页面或跳转
+                    setTimeout(() => {
+                        // 如果在Zalo小程序中，可以调用相应的API关闭页面
+                        if (typeof ZaloJS !== 'undefined') {
+                            ZaloJS.closeApp();
+                        } else {
+                            // 浏览器环境可以关闭窗口或跳转
+                            window.history.back();
+                        }
+                    }, 2000);
+                } else {
+                    showMessage(result.msg || 'Lỗi khi lưu địa chỉ!', 'error');
+                }
+            } catch (error) {
+                console.error('保存地址失败:', error);
+                showMessage('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+            } finally {
+                hideLoadingButton();
+            }
+        }
+        
+        /**
+         * 验证表单
+         */
+        function validateForm() {
+            const form = document.getElementById('zaloAddressForm');
+            const formData = new FormData(form);
+            
+            // 验证必填字段
+            const requiredFields = [
+                { name: 'name', label: 'Họ và tên' },
+                { name: 'phone', label: 'Số điện thoại' },
+                { name: 'province', label: 'Tỉnh/Thành phố' },
+                { name: 'district', label: 'Quận/Huyện' },
+                { name: 'ward', label: 'Phường/Xã' },
+                { name: 'detail', label: 'Địa chỉ chi tiết' }
+            ];
+            
+            for (const field of requiredFields) {
+                if (!formData.get(field.name) || formData.get(field.name).trim() === '') {
+                    showMessage(`Vui lòng nhập ${field.label}!`, 'error');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        /**
+         * 获取表单数据
+         */
+        function getFormData() {
+            const form = document.getElementById('zaloAddressForm');
+            const formData = new FormData(form);
+            
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            return data;
+        }
+        
+        /**
+         * 绑定表单验证
+         */
+        function bindFormValidation() {
+            const form = document.getElementById('zaloAddressForm');
+            const inputs = form.querySelectorAll('input, textarea');
+            
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.hasAttribute('required') && !this.value.trim()) {
+                        this.style.borderColor = '#dc3545';
+                    } else {
+                        this.style.borderColor = '#e9ecef';
+                    }
+                });
+            });
+        }
+        
+        /**
+         * 显示消息
+         */
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('message-container');
+            const messageClass = type === 'error' ? 'error-message' : 'success-message';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = messageClass;
+            messageDiv.innerHTML = `
+                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} me-2"></i>
+                ${message}
+            `;
+            
+            container.innerHTML = '';
+            container.appendChild(messageDiv);
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                messageDiv.style.opacity = '0';
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        /**
+         * 显示加载按钮
+         */
+        function showLoadingButton() {
+            const button = document.querySelector('.btn-primary');
+            button.disabled = true;
+            button.innerHTML = '<span class="loading-spinner me-2"></span>Đang lưu...';
+        }
+        
+        /**
+         * 隐藏加载按钮
+         */
+        function hideLoadingButton() {
+            const button = document.querySelector('.btn-primary');
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-save me-2"></i>Lưu địa chỉ';
+        }
+    </script>
+</body>
+</html> 

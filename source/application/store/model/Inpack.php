@@ -199,15 +199,12 @@ class Inpack extends InpackModel
             //发送订阅消息以及模板消息,包裹查验完成，等待支付
             $noticesetting = SettingModel::getItem('notice');
             //根据设置内容，判断是否需要发送通知；
-            
-         
-            
             $pack['remark']= $noticesetting['check']['describe'];
             $pack['total_free'] = $pack['free']+$pack['other_free']+$pack['pack_free'];
             //获取模板消息设置，根据设置选择调用的函数
 
             //发送邮件通知
-             $email = SettingModel::getItem('email');
+            $email = SettingModel::getItem('email');
             if($email['is_enable']==1 && (isset($pack['member_id']) || !empty($pack['member_id']))){
                 $EmailUser = UserModel::detail($pack['member_id']);
                 $EmailData['code'] = $data['id'];
@@ -221,15 +218,15 @@ class Inpack extends InpackModel
         // dump($pack);die;
         $rers =  $this->where('id',$data['id'])->update($data);
         $tplmsgsetting = SettingModel::getItem('tplMsg');
-            if($tplmsgsetting['is_oldtps']==1){
-                  //发送旧版本订阅消息以及模板消息
-                //   $sub = $this->sendEnterMessage([$post]);
-                  $res =$this->sendEnterMessage([$pack],'payment');
-            }else{
-                  //发送新版本订阅消息以及模板消息
-                  Message::send('package.dabaosuccess',$pack);
-                  Message::send('package.payorder',$pack);
-            }
+        if($tplmsgsetting['is_oldtps']==1){
+              //发送旧版本订阅消息以及模板消息
+            //   $sub = $this->sendEnterMessage([$post]);
+              $res =$this->sendEnterMessage([$pack],'payment');
+        }else{
+              //发送新版本订阅消息以及模板消息
+              Message::send('package.dabaosuccess',$pack);
+              Message::send('package.payorder',$pack);
+        }
        if($rers || $imgres){return true;}
        return false;
     }

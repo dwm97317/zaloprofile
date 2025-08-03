@@ -41,6 +41,25 @@ class Wxapp extends BaseModel
         return $this->hasOne('WxappPage');
     }
 
+
+        /**
+     * 关联LOGO
+     * @return \think\model\relation\belongsTo
+     */
+    public function logos()
+    {
+        return $this->belongsTo('app\\common\\model\\UploadFile', 'logo','file_id');
+    }
+    
+     /**
+     * 关联微信公众号
+     * @return \think\model\relation\belongsTo
+     */
+    public function wechatimgs()
+    {
+        return $this->belongsTo('app\\common\\model\\UploadFile', 'wechatimg','file_id');
+    }
+
     /**
      * 获取小程序信息
      * @param int|null $wxappId
@@ -50,6 +69,17 @@ class Wxapp extends BaseModel
     public static function detail($wxappId = null)
     {
         return static::get($wxappId ?: []);
+    }
+
+    /**
+     * 获取小程序信息
+     * @param int|null $wxappId
+     * @return static|null
+     * @throws \think\exception\DbException
+     */
+    public static function getdetail($wxappId = null)
+    {
+        return static::get(array_merge(['is_delete' => 0], ['wxapp_id'=>$wxappId]));
     }
 
     /**
