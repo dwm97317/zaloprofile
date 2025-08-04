@@ -140,9 +140,21 @@ const ListItem = (lists) => {
                 handleSelectAddress(e, index);
               }}
             >
-              <div className="address-row">{item.name}</div>
               <div className="address-row">
-                {item.phone ? item.phone : "Chưa có số điện thoại"}
+                <strong>{item.name}</strong>
+                {item.tel_code && <span> (+{item.tel_code})</span>}
+                <span> {item.phone || "Chưa có số điện thoại"}</span>
+              </div>
+              <div className="address-row">
+                <span>{item.country || 'Việt Nam'}</span>
+                {item.province && <span>, {item.province}</span>}
+                {item.city && <span>, {item.city}</span>}
+                {item.region && <span>, {item.region}</span>
+              </div>
+              <div className="address-row">
+                {item.street && <span>{item.street}, </span>}
+                {item.door && <span>{item.door}, </span>}
+                <span>{item.detail || 'Chưa có địa chỉ chi tiết'}</span>
               </div>
               <div className="edit" onClick={(e) => onTargetEdit(e, index)}>
                 <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img81.png"></img>

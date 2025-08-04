@@ -2,7 +2,7 @@
   width: 90%;
   background: #fff;
   border-radius: 10px;
-  height: 110px;
+  min-height: 140px; // 增加高度以适应更多地址信息
   margin: 0 auto;
   margin-top: 15px;
   .address-content {

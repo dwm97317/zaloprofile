@@ -122,31 +122,46 @@ const AddressPage = () => {
     setLoadingText("Đang lưu địa chỉ...");
     
     try {
-      // 准备地址数据，确保格式正确，国家统一为越南
+      // 准备地址数据，确保格式符合后端 API 期望
+      // 后端通过 explode(',', $data['region']) 解析地区信息
+      // region[0] = country, region[1] = province, region[2] = city, region[3] = region
+      const regionString = [
+        'Việt Nam',                    // 国家统一为越南
+        form.userProvince || '',       // 省份
+        form.userchengshi || '',       // 城市
+        form.userregion || ''          // 区域
+      ].join(',');
+
       const addressData = {
-        ...form,
-        // 确保地址字段映射正确
-        name: form.name,
-        phone: form.userphones,
-        identity_card: form.identitycard,
-        clearance_code: form.clearancecode,
-        tel_code: form.telcode || '84', // 越南国际区号
-        country_id: 1, // 强制设置为越南 ID
-        country: 'Việt Nam', // 强制设置国家名称为越南
-        province: form.userProvince,
-        city: form.userchengshi,
-        region: form.userregion,
-        street: form.userstree,
-        villages: form.uservillages,
-        door: form.userdoor,
-        code: form.usercode,
-        email: form.useremils,
-        detail: form.detail,
-        latitude: form.latitude,
-        longitude: form.longitude
+        // 基本信息
+        name: form.name || '',
+        phone: form.userphones || '',
+        identitycard: form.identitycard || '',
+        clearancecode: form.clearancecode || '',
+
+        // 电话区号 - 后端字段名是 telcode，不是 tel_code
+        telcode: '84', // 越南国际区号
+
+        // 国家信息 - 统一设置为越南
+        country_id: 1, // 越南 ID
+
+        // 地区信息 - 后端通过 region 字段解析
+        region: regionString,
+
+        // 详细地址信息
+        userstree: form.userstree || '',  // 街道 - 后端映射到 street 字段
+        door: form.userdoor || '',        // 门牌号
+        code: form.usercode || '',        // 邮编
+        email: form.useremils || '',      // 邮箱
+        detail: form.detail || '',        // 详细地址
+
+        // 坐标信息
+        latitude: form.latitude || '',
+        longitude: form.longitude || ''
       };
 
-      console.log("提交地址数据:", addressData);
+      console.log("提交地址数据 (符合后端格式):", addressData);
+      console.log("region 字符串:", regionString);
       
       const response = await request.post("address/add&wxapp_id=10001", addressData);
       
@@ -184,13 +199,20 @@ const AddressPage = () => {
         const address = response.data.address;
         const vietnameseAddress = address.vietnamese_address || {};
         
+        // 构建符合后端期望的地区字符串格式
+        const regionString = [
+          'Việt Nam',                                    // 国家统一为越南
+          vietnameseAddress.province || '',              // 省份
+          vietnameseAddress.district || '',              // 城市
+          vietnameseAddress.ward || ''                   // 区域
+        ].join(',');
+
         const updatedForm = {
           ...form,
           latitude: data.latitude,
           longitude: data.longitude,
           // 强制设置国家信息为越南
           country_id: 1,
-          country: 'Việt Nam',
           telcode: '84',
           // 设置省市区信息
           userProvince: vietnameseAddress.province || '',
@@ -198,14 +220,12 @@ const AddressPage = () => {
           userregion: vietnameseAddress.ward || '',
           userstree: vietnameseAddress.street || '',
           userdoor: vietnameseAddress.house_number || '',
-          region: [
-            vietnameseAddress.province,
-            vietnameseAddress.district,
-            vietnameseAddress.ward
-          ].filter(Boolean).join(', ')
+          // 后端期望的 region 格式
+          region: regionString
         };
 
         console.log("反向地理编码更新表单:", updatedForm);
+        console.log("构建的 region 字符串:", regionString);
         
         setForm(updatedForm);
         saveAddressFormState(updatedForm);
