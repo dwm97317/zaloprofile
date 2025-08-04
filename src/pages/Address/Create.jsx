@@ -27,7 +27,15 @@ const AddressPage = () => {
   const setCountryData = useSetRecoilState(countryState);
   const navigate = useNavigate();
   const requireFormFields = ["name", "userphones"]; // Các trường bắt buộc
-  const [form, setForm] = useState({ region: "" });
+  const [form, setForm] = useState({
+    region: "",
+    detail: "",
+    userstree: "",
+    name: "",
+    userphones: "",
+    telcode: "84",
+    country_id: 1
+  });
   const [formData, setFormData] = useState([]);
 
   const [loading, setLoading] = useState(false);
@@ -252,9 +260,9 @@ const AddressPage = () => {
       // 后端通过 explode(',', $data['region']) 解析地区信息
       // region[0] = country, region[1] = province, region[2] = city, region[3] = region
 
-      // 简化地址处理 - 后台已关闭行政区域选择
-      // 只使用详细地址字段，包含完整地址信息
-      const fullDetailAddress = form.detail || form.userstree || '';
+      // 越南文化特色的地址处理 - 后台已关闭行政区域选择
+      // 优先使用详细地址字段，包含完整的越南地址信息
+      const fullDetailAddress = form.detail || form.userstree || form.region || '';
 
       // 构建简化的地区字符串 - 只包含越南国家信息
       const regionString = 'Việt Nam,,,'; // 国家,省,市,区 - 省市区留空
