@@ -25,9 +25,30 @@ const ListItem = (lists) => {
   const isSelect = useRecoilValue(selectState);
   const setAddressInfo = useSetRecoilState(addressInfoState);
 
-  const onTargetEdit = (e, index) => {
-    setAddressInfo(list[index]);
-    navigate("/address/create");
+  const onTargetEdit = async (e, index) => {
+    try {
+      const addressId = list[index].address_id;
+      console.log("编辑地址 ID:", addressId);
+
+      // 获取地址详情，确保数据完整
+      const response = await request.get(`address/detail/${addressId}&wxapp_id=10001`);
+
+      if (response.code === 1 && response.data.detail) {
+        console.log("获取到的地址详情:", response.data.detail);
+        setAddressInfo(response.data.detail);
+      } else {
+        // 如果API失败，使用列表中的数据
+        console.warn("获取地址详情失败，使用列表数据:", list[index]);
+        setAddressInfo(list[index]);
+      }
+
+      navigate("/address/create");
+    } catch (error) {
+      console.error("获取地址详情失败:", error);
+      // 出错时使用列表中的数据
+      setAddressInfo(list[index]);
+      navigate("/address/create");
+    }
   };
 
   // Xử lý xác nhận modal

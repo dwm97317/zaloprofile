@@ -80,8 +80,71 @@ const AddressPage = () => {
   };
 
   const initCreate = () => {
-    if (addressInfo) {
-      // Logic khởi tạo (giữ nguyên)
+    if (addressInfo && addressInfo.address_id) {
+      console.log("=== 编辑地址数据回填 ===");
+      console.log("原始地址信息:", addressInfo);
+
+      // 解析后端返回的地区信息
+      // 后端存储格式: country,province,city,region
+      const regionParts = addressInfo.region ? addressInfo.region.split(',') : [];
+
+      const editForm = {
+        ...form,
+        // 基本信息
+        name: addressInfo.name || '',
+        userphones: addressInfo.phone || '',
+        identitycard: addressInfo.identitycard || '',
+        clearancecode: addressInfo.clearancecode || '',
+        telcode: addressInfo.tel_code || '84',
+
+        // 地区信息回填 - 从后端的 region 字段解析
+        userProvince: addressInfo.province || regionParts[1] || '',
+        userchengshi: addressInfo.city || regionParts[2] || '',
+        userregion: addressInfo.region_name || regionParts[3] || '',
+
+        // 详细地址信息
+        userstree: addressInfo.street || '',
+        userdoor: addressInfo.door || '',
+        usercode: addressInfo.code || '',
+        useremils: addressInfo.email || '',
+        detail: addressInfo.detail || '',
+
+        // 坐标信息
+        latitude: addressInfo.latitude || '',
+        longitude: addressInfo.longitude || '',
+
+        // 国家信息
+        country_id: addressInfo.country_id || 1,
+
+        // 构建用于显示的地区字符串
+        region: [
+          addressInfo.country || 'Việt Nam',
+          addressInfo.province || regionParts[1] || '',
+          addressInfo.city || regionParts[2] || '',
+          addressInfo.region_name || regionParts[3] || ''
+        ].filter(Boolean).join(', ')
+      };
+
+      console.log("回填后的表单数据:", editForm);
+      console.log("解析的地区信息:", {
+        country: regionParts[0] || 'Việt Nam',
+        province: regionParts[1] || '',
+        city: regionParts[2] || '',
+        region: regionParts[3] || ''
+      });
+
+      setForm(editForm);
+      saveAddressFormState(editForm);
+
+      // 如果有坐标信息，设置地图中心
+      if (addressInfo.latitude && addressInfo.longitude) {
+        setMapCenter({
+          lat: parseFloat(addressInfo.latitude),
+          lng: parseFloat(addressInfo.longitude)
+        });
+      }
+
+      console.log("=== 地址数据回填完成 ===");
     }
   };
 
@@ -174,7 +237,13 @@ const AddressPage = () => {
         door: form.userdoor || '',        // 门牌号
         code: form.usercode || '',        // 邮编
         email: form.useremils || '',      // 邮箱
-        detail: form.detail || '',        // 详细地址
+
+        // 构建完整的详细地址 - 确保不为空
+        detail: [
+          form.userstree || '',           // 街道
+          form.userdoor || '',            // 门牌号
+          form.detail || ''               // 其他详细信息
+        ].filter(Boolean).join(', ') || '详细地址信息',
 
         // 坐标信息
         latitude: form.latitude || '',
