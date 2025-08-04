@@ -99,7 +99,7 @@ const ListItem = (lists) => {
     }
 
     request
-      .post("/address/setDefault&wxapp_id=10001", {
+      .post("address/setDefault&wxapp_id=10001", {
         address_id: id,
         token: token
       })
