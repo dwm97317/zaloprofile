@@ -575,7 +575,8 @@ const AddressPage = () => {
               type="tel"
               data-field="userphones"
               onInput={(e) => handleInput(e)}
-              defaultValue={addressForm["phone"]}
+              defaultValue={form.userphones || addressForm["userphones"] || ''}
+              value={form.userphones || ''}
               className="field-input"
               placeholder="Số điện thoại*"
             />
@@ -601,7 +602,8 @@ const AddressPage = () => {
               type="text"
               data-field="name"
               onInput={(e) => handleInput(e)}
-              defaultValue={addressForm["name"]}
+              defaultValue={form.name || addressForm["name"] || ''}
+              value={form.name || ''}
               className="field-input"
               placeholder="Họ và tên*"
             />
