@@ -7,11 +7,7 @@ import Header from "../../components/Header/Header";
 import DynamicAddressForm from "../../components/DynamicAddressForm";
 import AddressApi from "../../utils/addressApi";
 import {
-  formatVietnameseAddress,
-  parseVietnameseAddress,
-  validateVietnameseAddress,
-  getAddressSuggestions,
-  expandVietnameseAbbreviations
+  formatVietnameseAddress
 } from "../../utils/vietnameseAddress";
 import "./Index.scss";
 import "./Create.scss";
@@ -51,12 +47,7 @@ const AddressPage = () => {
   // 地址选择器状态
   const [addressPicker, setaddressPicker] = useState(false);
 
-  // 越南地址验证和建议状态
-  const [addressValidation, setAddressValidation] = useState({
-    isValid: true,
-    errors: [],
-    suggestions: []
-  });
+
 
   // 新增：专用地址显示栏状态
   const [confirmedAddress, setConfirmedAddress] = useState({
@@ -89,21 +80,25 @@ const AddressPage = () => {
     console.log("=== 动态地址表单变化 ===");
     console.log("接收到的地址数据:", addressData);
 
-    // 使用越南地址格式化工具处理地址数据
-    const vietnameseAddressData = {
-      houseNumber: addressData.houseNumber || '',
-      street: addressData.street || '',
-      ward: addressData.ward || '',
-      district: addressData.district || '',
-      province: addressData.province || '',
-      country: 'Việt Nam'
-    };
+    // 智能处理地址数据，避免重复
+    let fullDetailAddress = '';
 
-    // 格式化为越南标准地址格式
-    const formattedAddress = formatVietnameseAddress(vietnameseAddressData);
+    if (addressData.detail && addressData.detail.trim().length > 0) {
+      // 如果已有完整地址，直接使用
+      fullDetailAddress = addressData.detail.trim();
+    } else {
+      // 否则使用越南地址格式化工具构建
+      const vietnameseAddressData = {
+        houseNumber: addressData.houseNumber || '',
+        street: addressData.street || '',
+        ward: addressData.ward || '',
+        district: addressData.district || '',
+        province: addressData.province || '',
+        country: 'Việt Nam'
+      };
 
-    // 使用完整的详细地址，符合越南人的使用习惯
-    const fullDetailAddress = addressData.detail || formattedAddress || '';
+      fullDetailAddress = formatVietnameseAddress(vietnameseAddressData);
+    }
 
     // 更新新的地址显示栏
     const newConfirmedAddress = {
@@ -143,9 +138,12 @@ const AddressPage = () => {
       ].filter(Boolean).join(', ')
     };
 
-    console.log("越南格式化地址:", formattedAddress);
+    console.log("=== 地址数据处理结果 ===");
+    console.log("原始地址数据:", addressData.detail);
+    console.log("格式化地址:", fullDetailAddress);
     console.log("新的确认地址栏数据:", newConfirmedAddress);
     console.log("更新后的表单数据:", updatedForm);
+    console.log("========================");
 
     if (addressData.coordinates) {
       setMapCenter({
@@ -160,50 +158,7 @@ const AddressPage = () => {
     console.log("=== 动态地址表单变化完成 ===");
   };
 
-  // 越南地址输入处理函数
-  const handleVietnameseAddressInput = (value, fieldName) => {
-    // 更新表单数据
-    const updatedForm = {
-      ...form,
-      [fieldName]: value
-    };
-    setForm(updatedForm);
-    saveAddressFormState(updatedForm);
 
-    // 如果是详细地址字段，进行越南地址验证
-    if (fieldName === 'detail' && value.trim().length > 0) {
-      // 展开常见缩写
-      const expandedAddress = expandVietnameseAbbreviations(value);
-
-      // 验证地址格式
-      const validation = validateVietnameseAddress(expandedAddress);
-      setAddressValidation(validation);
-
-      // 如果地址有效，尝试解析地址组件
-      if (validation.isValid) {
-        const parsedAddress = parseVietnameseAddress(expandedAddress);
-        console.log("解析的越南地址组件:", parsedAddress);
-
-        // 可以在这里添加更多的地址处理逻辑
-        if (parsedAddress.province || parsedAddress.district) {
-          console.log("识别到的行政区域:", {
-            province: parsedAddress.province,
-            district: parsedAddress.district,
-            ward: parsedAddress.ward
-          });
-        }
-      }
-
-      // 提供地址建议
-      if (value.trim().length >= 2) {
-        const suggestions = getAddressSuggestions(value);
-        setAddressValidation(prev => ({
-          ...prev,
-          suggestions
-        }));
-      }
-    }
-  };
 
   const initCreate = () => {
     if (addressInfo && addressInfo.address_id) {
@@ -647,23 +602,15 @@ const AddressPage = () => {
                   <span className="address-text-inline">{confirmedAddress.fullAddress}</span>
                 </div>
 
-                <div className="address-components-inline">
-                  {confirmedAddress.province && (
-                    <span className="component-inline">
-                      <strong>Tỉnh/TP:</strong> {confirmedAddress.province}
+                {/* 只在有坐标信息时显示额外信息 */}
+                {confirmedAddress.coordinates && (
+                  <div className="address-coordinates-inline">
+                    <span className="coordinates-label-inline">📍</span>
+                    <span className="coordinates-value-inline">
+                      {confirmedAddress.coordinates.lat.toFixed(4)}, {confirmedAddress.coordinates.lng.toFixed(4)}
                     </span>
-                  )}
-                  {confirmedAddress.district && (
-                    <span className="component-inline">
-                      <strong>Quận/Huyện:</strong> {confirmedAddress.district}
-                    </span>
-                  )}
-                  {confirmedAddress.ward && (
-                    <span className="component-inline">
-                      <strong>Phường/Xã:</strong> {confirmedAddress.ward}
-                    </span>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -692,19 +639,18 @@ const AddressPage = () => {
           <DynamicAddressForm
             onAddressChange={handleDynamicAddressChange}
             initialAddress={{
-              detail: form.userdoor || '',
-              province: form.userProvince || '',
-              district: form.userchengshi || '',
-              ward: form.userregion || '',
-              street: form.userstree || '',
-              coordinates: form.latitude && form.longitude ? {
+              detail: confirmedAddress.isConfirmed ? confirmedAddress.fullAddress : '',
+              province: confirmedAddress.province || form.userProvince || '',
+              district: confirmedAddress.district || form.userchengshi || '',
+              ward: confirmedAddress.ward || form.userregion || '',
+              street: confirmedAddress.street || form.userstree || '',
+              coordinates: confirmedAddress.coordinates || (form.latitude && form.longitude ? {
                 lat: parseFloat(form.latitude),
                 lng: parseFloat(form.longitude)
-              } : null
+              } : null)
             }}
           />
         </div>
-
 
 
         {/* Thời gian hẹn giao */}
