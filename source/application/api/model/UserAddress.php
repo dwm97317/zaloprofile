@@ -92,7 +92,7 @@ class UserAddress extends UserAddressModel
                 'code' => isset($data['code'])?$data['code']:'',
                 'detail' => isset($data['detail'])?$data['detail']:'',
                 'user_id' => $user['user_id'],
-                'street' => '', // 不使用street字段，避免长度限制
+                'street' => isset($data['userstree'])?$data['userstree']:'', // 使用前端提交的街道信息
                 'address_type' => 0, // 0 集运地址
                 'addressty' => 0, // 0 收件人
                 'is_moren' => 0, // 默认不是默认地址
@@ -126,7 +126,7 @@ class UserAddress extends UserAddressModel
                 'city' => isset($region[2])?$region[2]:'',
                 'region' => isset($region[3])?$region[3]:'',
                 'email' => isset($data['email'])?$data['email']:'',
-                'street' => '', // 不使用street字段，避免长度限制
+                'street' => isset($data['userstree'])?$data['userstree']:'', // 使用前端提交的街道信息
                 'door' => isset($data['door'])?$data['door']:'',
                 'code' => isset($data['code'])?$data['code']:'',
                 'detail' => isset($data['detail'])?$data['detail']:'',

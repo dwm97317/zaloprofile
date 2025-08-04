@@ -94,6 +94,7 @@ class UserAddress extends UserAddressModel
                 'tel_code' => isset($data['tel_code'])?$data['tel_code']:'',
                 'addressty' => isset($data['addressty'])?$data['addressty']:0,
                 'detail' => isset($data['detail'])?$data['detail']:'',
+                'street' => isset($data['userstree'])?$data['userstree']:'',
                 'user_id' => $user['user_id'],
                 'wxapp_id' => self::$wxapp_id
             ]);
@@ -124,7 +125,7 @@ class UserAddress extends UserAddressModel
                 'province' => isset($data['province'])?$data['province']:0,
                 'city' => isset($data['city'])?$data['city']:'',
                 'region' => isset($data['region'])?$data['region']:0,
-                'street' => isset($data['street'])?$data['street']:'',
+                'street' => isset($data['userstree'])?$data['userstree']:(isset($data['street'])?$data['street']:''),
                 'email' => isset($data['email'])?$data['email']:'',
                 'door' => isset($data['door'])?$data['door']:'',
                 'tel_code' => isset($data['tel_code'])?$data['tel_code']:'',
