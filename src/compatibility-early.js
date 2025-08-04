@@ -5,9 +5,67 @@
 
 (function() {
   'use strict';
-  
+
   console.log('早期兼容性修复开始执行...');
-  
+
+  // 0. 拦截脚本加载，修复 eruda 源码
+  var originalCreateElement = document.createElement;
+  document.createElement = function(tagName) {
+    var element = originalCreateElement.call(document, tagName);
+
+    if (tagName.toLowerCase() === 'script') {
+      var originalSetAttribute = element.setAttribute;
+      element.setAttribute = function(name, value) {
+        if (name === 'src' && value && value.indexOf('eruda') !== -1) {
+          console.log('[兼容性修复] 拦截到 eruda 脚本加载:', value);
+
+          // 创建一个修复版本的 eruda 加载器
+          var fixedScript = originalCreateElement.call(document, 'script');
+          fixedScript.textContent = `
+            (function() {
+              console.log('[兼容性修复] 加载兼容版本的调试工具');
+
+              // 创建一个简化的调试工具替代品
+              window.eruda = {
+                init: function() {
+                  console.log('[兼容性修复] eruda.init() 已被安全替换');
+                  return this;
+                },
+                show: function() {
+                  console.log('[兼容性修复] eruda.show() 已被安全替换');
+                  return this;
+                },
+                hide: function() {
+                  console.log('[兼容性修复] eruda.hide() 已被安全替换');
+                  return this;
+                },
+                destroy: function() {
+                  console.log('[兼容性修复] eruda.destroy() 已被安全替换');
+                  return this;
+                }
+              };
+
+              // 触发加载完成事件
+              if (typeof window.erudaLoaded === 'function') {
+                window.erudaLoaded();
+              }
+            })();
+          `;
+
+          // 替换原始脚本
+          if (element.parentNode) {
+            element.parentNode.replaceChild(fixedScript, element);
+          }
+          return;
+        }
+
+        return originalSetAttribute.call(element, name, value);
+      };
+    }
+
+    return element;
+  };
+
   // 1. 立即设置全局错误处理
   window.onerror = function(message, source, lineno, colno, error) {
     // 忽略 eruda 和其他调试工具的语法错误

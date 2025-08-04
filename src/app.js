@@ -1,6 +1,9 @@
 // 早期兼容性修复 - 必须在所有其他导入之前
 import "./compatibility-early.js";
 
+// JavaScript 兼容性 polyfills
+import "./polyfills.js";
+
 // Import React and ReactDOM
 import React from "react";
 import { createRoot } from "react-dom/client";

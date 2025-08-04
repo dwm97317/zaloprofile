@@ -16,6 +16,66 @@
     <meta name="msapplication-tap-highlight" content="no" />
     <link rel="icon" href="/src/static/icons/favicon.png" />
     <title>Bộ sưu tập</title>
+
+    <!-- Zalo Mini App Studio 兼容性修复 - 必须在所有脚本之前 -->
+    <script>
+      (function() {
+        'use strict';
+        console.log('[HTML兼容性修复] 开始执行最早期修复...');
+
+        // 1. 立即拦截所有脚本加载
+        var originalCreateElement = document.createElement;
+        document.createElement = function(tagName) {
+          var element = originalCreateElement.call(document, tagName);
+
+          if (tagName.toLowerCase() === 'script') {
+            var originalSrc = '';
+            Object.defineProperty(element, 'src', {
+              get: function() { return originalSrc; },
+              set: function(value) {
+                originalSrc = value;
+                if (value && value.indexOf('eruda') !== -1) {
+                  console.log('[HTML兼容性修复] 阻止 eruda 脚本加载:', value);
+                  // 不设置 src，阻止加载
+                  return;
+                }
+                // 正常设置 src
+                element.setAttribute('src', value);
+              }
+            });
+          }
+
+          return element;
+        };
+
+        // 2. 全局错误处理
+        window.onerror = function(message, source, lineno, colno, error) {
+          if (message && (
+            message.indexOf('Unexpected reserved word') !== -1 ||
+            message.indexOf('eruda') !== -1 ||
+            (source && source.indexOf('eruda') !== -1)
+          )) {
+            console.warn('[HTML兼容性修复] 忽略语法错误:', message);
+            return true;
+          }
+          return false;
+        };
+
+        // 3. Promise 错误处理
+        window.addEventListener('unhandledrejection', function(event) {
+          var error = event.reason;
+          if (error && error.message && (
+            error.message.indexOf('Unexpected reserved word') !== -1 ||
+            error.message.indexOf('eruda') !== -1
+          )) {
+            console.warn('[HTML兼容性修复] 忽略 Promise 错误:', error);
+            event.preventDefault();
+          }
+        });
+
+        console.log('[HTML兼容性修复] 最早期修复完成');
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>
