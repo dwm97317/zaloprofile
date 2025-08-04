@@ -137,12 +137,17 @@ class UserAddress extends UserAddressModel
     /**
      * 设为默认收货地址
      * @param User $user
-     * @return int
+     * @return bool
      */
     public function setDefault($user)
     {
-        // 设为默认地址
-        return $user->save(['address_id' => $this['address_id']]);
+        // 先将该用户的所有地址设为非默认
+        self::where('user_id', $user['user_id'])
+            ->where('wxapp_id', self::$wxapp_id)
+            ->update(['is_moren' => 0]);
+
+        // 将当前地址设为默认
+        return $this->save(['is_moren' => 1]);
     }
 
     /**
