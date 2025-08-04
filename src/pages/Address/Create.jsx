@@ -72,23 +72,54 @@ const AddressPage = () => {
 
 
 
-  // 处理动态地址表单变化
+  // 处理动态地址表单变化 - 越南文化特色优化
   const handleDynamicAddressChange = (addressData) => {
+    console.log("=== 动态地址表单变化 ===");
+    console.log("接收到的地址数据:", addressData);
+
+    // 使用越南地址格式化工具处理地址数据
+    const vietnameseAddressData = {
+      houseNumber: addressData.houseNumber || '',
+      street: addressData.street || '',
+      ward: addressData.ward || '',
+      district: addressData.district || '',
+      province: addressData.province || '',
+      country: 'Việt Nam'
+    };
+
+    // 格式化为越南标准地址格式
+    const formattedAddress = formatVietnameseAddress(vietnameseAddressData);
+
+    // 使用完整的详细地址，符合越南人的使用习惯
+    const fullDetailAddress = addressData.detail || formattedAddress || '';
+
     const updatedForm = {
       ...form,
+      // 越南文化特色的地址处理
+      detail: fullDetailAddress,        // 主要的详细地址字段
+      userstree: fullDetailAddress,     // 街道字段也使用完整地址
+
+      // 保留原有的省市区字段（虽然后台已关闭，但保持兼容性）
       userProvince: addressData.province || '',
       userchengshi: addressData.district || '',
       userregion: addressData.ward || '',
-      userstree: addressData.street || '',
-      userdoor: addressData.detail || '',
+      userdoor: addressData.houseNumber || '',
+
+      // 坐标信息
       latitude: addressData.coordinates?.lat || '',
       longitude: addressData.coordinates?.lng || '',
+
+      // 构建用于显示的地区字符串
       region: [
         addressData.province,
         addressData.district,
         addressData.ward
       ].filter(Boolean).join(', ')
     };
+
+    console.log("越南格式化地址:", formattedAddress);
+    console.log("完整详细地址:", fullDetailAddress);
+    console.log("更新后的表单数据:", updatedForm);
 
     if (addressData.coordinates) {
       setMapCenter({
@@ -99,6 +130,8 @@ const AddressPage = () => {
 
     setForm(updatedForm);
     saveAddressFormState(updatedForm);
+
+    console.log("=== 动态地址表单变化完成 ===");
   };
 
   // 越南地址输入处理函数

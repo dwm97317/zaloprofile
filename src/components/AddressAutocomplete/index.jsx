@@ -24,6 +24,72 @@ const AddressAutocomplete = ({
   const inputRef = useRef(null);
   const suggestionsRef = useRef(null);
 
+  // 越南地址解析辅助函数
+  const extractProvinceFromInput = (input) => {
+    const provincePatterns = [
+      /Thành phố ([^,]+)/i,
+      /Tỉnh ([^,]+)/i,
+      /(Hồ Chí Minh|Hà Nội|Đà Nẵng|Hải Phòng|Cần Thơ)/i
+    ];
+
+    for (const pattern of provincePatterns) {
+      const match = input.match(pattern);
+      if (match) {
+        return match[1] || match[0];
+      }
+    }
+    return '';
+  };
+
+  const extractDistrictFromInput = (input) => {
+    const districtPatterns = [
+      /Quận ([^,]+)/i,
+      /Huyện ([^,]+)/i,
+      /Thành phố ([^,]+)/i,
+      /Thị xã ([^,]+)/i
+    ];
+
+    for (const pattern of districtPatterns) {
+      const match = input.match(pattern);
+      if (match) {
+        return match[1];
+      }
+    }
+    return '';
+  };
+
+  const extractWardFromInput = (input) => {
+    const wardPatterns = [
+      /Phường ([^,]+)/i,
+      /Xã ([^,]+)/i,
+      /Thị trấn ([^,]+)/i
+    ];
+
+    for (const pattern of wardPatterns) {
+      const match = input.match(pattern);
+      if (match) {
+        return match[1];
+      }
+    }
+    return '';
+  };
+
+  const extractStreetFromInput = (input) => {
+    const streetPatterns = [
+      /(\d+\s+)?Đường ([^,]+)/i,
+      /(\d+\s+)?Phố ([^,]+)/i,
+      /(\d+\s+)([^,]+)/i
+    ];
+
+    for (const pattern of streetPatterns) {
+      const match = input.match(pattern);
+      if (match) {
+        return match[2] || match[4] || match[0];
+      }
+    }
+    return '';
+  };
+
   // 监听外部值变化
   useEffect(() => {
     setInputValue(initialValue);
@@ -94,6 +160,28 @@ const AddressAutocomplete = ({
     debounceTimer.current = setTimeout(() => {
       searchAddresses(value);
     }, 300);
+
+    // 处理用户直接输入的地址（不选择建议）
+    // 这对于越南用户很重要，他们可能直接输入完整地址
+    if (value.trim().length > 10 && onAddressSelect) {
+      // 延迟处理，给用户时间完成输入
+      setTimeout(() => {
+        if (inputValue === value && !showSuggestions) {
+          // 用户没有选择建议，直接使用输入的地址
+          onAddressSelect({
+            detail: value,
+            description: value,
+            formatted_address: value,
+            // 尝试从输入中解析地址组件
+            province: extractProvinceFromInput(value),
+            district: extractDistrictFromInput(value),
+            ward: extractWardFromInput(value),
+            street: extractStreetFromInput(value),
+            is_manual_input: true
+          });
+        }
+      }, 1000);
+    }
   };
 
   // 处理地址选择
