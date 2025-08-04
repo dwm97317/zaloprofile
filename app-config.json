@@ -13,7 +13,7 @@
     "hideIOSSafeAreaBottom": false,
     "selfControlLoading": false
   },
-  "debug": false,
+  "debug": true,
   "pages": [],
   "listCSS": [],
   "listSyncJS": [],
