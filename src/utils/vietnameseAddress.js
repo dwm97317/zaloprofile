@@ -98,8 +98,30 @@ export const formatVietnameseAddress = (addressData) => {
     }
   }
   
-  // 过滤空值并用逗号连接
-  return parts.filter(Boolean).join(', ');
+  // 过滤空值和重复项，然后用逗号连接
+  const filteredParts = parts.filter(Boolean);
+
+  // 去除重复的地址组件
+  const uniqueParts = [];
+  for (const part of filteredParts) {
+    // 检查是否已存在相同或相似的部分
+    const isDuplicate = uniqueParts.some(existingPart => {
+      // 完全相同
+      if (existingPart === part) return true;
+
+      // 去除前缀后相同 (例如: "Tỉnh Quảng Ninh" 和 "Quảng Ninh")
+      const cleanExisting = existingPart.replace(/^(Tỉnh|Thành phố|Quận|Huyện|Phường|Xã|Thị trấn|Đường|Phố)\s+/, '');
+      const cleanCurrent = part.replace(/^(Tỉnh|Thành phố|Quận|Huyện|Phường|Xã|Thị trấn|Đường|Phố)\s+/, '');
+
+      return cleanExisting === cleanCurrent;
+    });
+
+    if (!isDuplicate) {
+      uniqueParts.push(part);
+    }
+  }
+
+  return uniqueParts.join(', ');
 };
 
 /**

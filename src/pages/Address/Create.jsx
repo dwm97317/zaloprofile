@@ -294,9 +294,35 @@ const AddressPage = () => {
 
       // 越南文化特色的地址处理 - 优先使用确认地址栏的数据
       // 如果有确认地址，使用确认地址栏的数据；否则使用表单数据
-      const fullDetailAddress = confirmedAddress.isConfirmed
+      let fullDetailAddress = confirmedAddress.isConfirmed
         ? confirmedAddress.fullAddress
         : (form.detail || form.userstree || form.region || '');
+
+      // 清理地址数据，移除可能的重复
+      if (fullDetailAddress) {
+        // 使用越南地址格式化工具重新格式化，确保去重
+        const addressParts = fullDetailAddress.split(',').map(part => part.trim());
+        const uniqueParts = [];
+
+        for (const part of addressParts) {
+          const isDuplicate = uniqueParts.some(existing => {
+            // 完全相同
+            if (existing === part) return true;
+
+            // 去除前缀后相同
+            const cleanExisting = existing.replace(/^(Tỉnh|Thành phố|Quận|Huyện|Phường|Xã|Thị trấn|Đường|Phố)\s+/, '');
+            const cleanCurrent = part.replace(/^(Tỉnh|Thành phố|Quận|Huyện|Phường|Xã|Thị trấn|Đường|Phố)\s+/, '');
+
+            return cleanExisting === cleanCurrent;
+          });
+
+          if (!isDuplicate && part.length > 0) {
+            uniqueParts.push(part);
+          }
+        }
+
+        fullDetailAddress = uniqueParts.join(', ');
+      }
 
       // 构建简化的地区字符串 - 只包含越南国家信息
       const regionString = 'Việt Nam,,,'; // 国家,省,市,区 - 省市区留空

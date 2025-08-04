@@ -84,8 +84,20 @@ const ListItem = (lists) => {
 
   // Đặt địa chỉ mặc định
   const doRequestDeafult = (e) => {
+    // 获取token
+    const token = util.getToken();
+    if (!token) {
+      showToast({
+        message: "Vui lòng đăng nhập lại",
+      });
+      return;
+    }
+
     request
-      .post("/address/setDefault&wxapp_id=10001", { address_id: id })
+      .post("/address/setDefault&wxapp_id=10001", {
+        address_id: id,
+        token: token
+      })
       .then((res) => {
         if (res && res.code == 1) {
           showToast({
@@ -94,7 +106,7 @@ const ListItem = (lists) => {
           onRefresh();
         } else {
           showToast({
-            message: "Không thể đặt địa chỉ mặc định",
+            message: res.msg || "Không thể đặt địa chỉ mặc định",
           });
         }
       })
@@ -108,8 +120,20 @@ const ListItem = (lists) => {
 
   // Xử lý xóa
   const doRequestDelete = (e) => {
+    // 获取token
+    const token = util.getToken();
+    if (!token) {
+      showToast({
+        message: "Vui lòng đăng nhập lại",
+      });
+      return;
+    }
+
     request
-      .post("/address/delete&wxapp_id=10001", { address_id: id })
+      .post("/address/delete&wxapp_id=10001", {
+        address_id: id,
+        token: token
+      })
       .then((res) => {
         if (res && res.code == 1) {
           showToast({
@@ -118,7 +142,7 @@ const ListItem = (lists) => {
           onRefresh();
         } else {
           showToast({
-            message: "Không thể xóa địa chỉ",
+            message: res.msg || "Không thể xóa địa chỉ",
           });
         }
       })
