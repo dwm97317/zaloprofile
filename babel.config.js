@@ -16,10 +16,10 @@ module.exports = {
         // 确保兼容性
         useBuiltIns: 'entry',
         corejs: 3,
-        // 避免使用可能不兼容的语法
-        exclude: [
+        // 包含必要的转换以支持现代语法
+        include: [
           'transform-async-generator-functions',
-          'transform-for-of'
+          'transform-for-await'
         ]
       }
     ],
