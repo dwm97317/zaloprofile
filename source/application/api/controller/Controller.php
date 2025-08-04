@@ -122,51 +122,54 @@ class Controller extends \think\Controller
     protected function getUser($is_force = true)
     {
         if (!$token = $this->request->param('token')) {
-            // 在开发环境中，如果没有token，尝试使用测试token
-            if ($this->isDevelopmentEnv() && !$is_force) {
-                return $this->createDevUser();
-            }
             $is_force && $this->throwError('缺少必要的参数：token', -1);
             return false;
         }
-        
+
+        // 记录token验证日志
+        $this->logTokenValidation($token, 'start');
+
         $user = UserModel::getUser($token);
-        
-        // 如果在开发环境中token验证失败，尝试宽松处理
-        if (!$user && $this->isDevelopmentEnv()) {
-            // 写入调试日志
-            file_put_contents('debug_token.log', date('Y-m-d H:i:s') . " - Token验证失败，开发环境宽松处理: " . $token . "\n", FILE_APPEND);
-            
-            // 在开发环境中，如果token验证失败，返回一个测试用户而不是抛出错误
-            if (!$is_force) {
-                return $this->createDevUser();
-            }
-            
-            // 修改错误消息，提示这是开发环境
-            $this->throwError('开发环境：token验证失败，请检查zalo认证状态', -2);
-        }
-        
+
         if (!$user) {
-            $is_force && $this->throwError('没有找到用户信息', -1);
+            // 记录token验证失败
+            $this->logTokenValidation($token, 'failed');
+
+            // 在开发环境中提供更详细的错误信息，但不使用测试用户替代
+            if ($this->isDevelopmentEnv()) {
+                $this->throwError('开发环境：token验证失败，请检查zalo认证状态。Token: ' . substr($token, 0, 10) . '...', -2);
+            } else {
+                $is_force && $this->throwError('没有找到用户信息', -1);
+            }
             return false;
         }
+
+        // 记录token验证成功
+        $this->logTokenValidation($token, 'success', $user['user_id'] ?? 'unknown');
+
         return $user;
     }
 
     /**
-     * 创建开发环境测试用户
-     * @return array
+     * 记录token验证日志
+     * @param string $token
+     * @param string $status
+     * @param string $userId
      */
-    private function createDevUser()
+    private function logTokenValidation($token, $status, $userId = '')
     {
-        return [
-            'user_id' => 999999,
-            'nickName' => 'ZaloStudio测试用户',
-            'avatarUrl' => '',
-            'mobile' => '1234567890',
-            'balance' => 0,
-            'open_id' => 'dev_test_user'
+        $logData = [
+            'time' => date('Y-m-d H:i:s'),
+            'token' => substr($token, 0, 10) . '...',
+            'status' => $status,
+            'user_id' => $userId,
+            'ip' => $this->request->ip(),
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+            'referer' => $_SERVER['HTTP_REFERER'] ?? ''
         ];
+
+        $logLine = json_encode($logData, JSON_UNESCAPED_UNICODE) . "\n";
+        file_put_contents('token_validation.log', $logLine, FILE_APPEND | LOCK_EX);
     }
 
     /**

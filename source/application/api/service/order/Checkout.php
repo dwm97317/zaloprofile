@@ -578,15 +578,40 @@ class Checkout
         helper::setDataAttribute($this->goodsList, [
             'express_price' => 0,
         ], true);
-        if (empty($this->param['address_id'])){
-             // 当前用户收货城市id
-            $cityId = $this->user['address_default'] ? $this->user['address_default']['city'] : null;
+        $cityId = null;
+        $userAddress = null;
 
-        }else{
+        if (empty($this->param['address_id'])){
+            // 没有指定地址ID，尝试使用用户默认地址
+            if ($this->user['address_default']) {
+                $userAddress = $this->user['address_default'];
+                $cityId = $userAddress['city'];
+            } else {
+                // 用户没有默认地址，尝试获取用户的第一个地址
+                $userAddressModel = new UserAddress();
+                $firstAddress = $userAddressModel->where('user_id', $this->user['user_id'])
+                                                 ->where('is_delete', 0)
+                                                 ->order('create_time desc')
+                                                 ->find();
+                if ($firstAddress) {
+                    $userAddress = $firstAddress;
+                    $cityId = $firstAddress['city'];
+                    $this->user['address_default'] = $firstAddress;
+                } else {
+                    // 用户没有任何地址，设置错误信息
+                    $this->setError('请先添加收货地址');
+                    return false;
+                }
+            }
+        } else {
+            // 指定了地址ID，获取对应地址
             $userAddress = (new UserAddress())->find($this->param['address_id']);
-            if ($userAddress){
+            if ($userAddress && $userAddress['user_id'] == $this->user['user_id']) {
                 $this->user['address_default'] = $userAddress;
                 $cityId = $userAddress['city'];
+            } else {
+                $this->setError('收货地址不存在或不属于当前用户');
+                return false;
             }
         }
        

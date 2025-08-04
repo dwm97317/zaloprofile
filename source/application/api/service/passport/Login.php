@@ -379,43 +379,40 @@ class Login extends Basics
      */
     public function loginMpZalo(array $form){
        // 调试日志
-       file_put_contents("debug.txt",var_export($form,true));
-       
+       file_put_contents("debug.txt", date('Y-m-d H:i:s') . " - 开始Zalo登录: " . var_export($form, true) . "\n");
+
+       // 验证accesstoken是否存在且有效
+       if (empty($form['accesstoken']) || $form['accesstoken'] === '' || $form['accesstoken'] === null) {
+           file_put_contents("debug.txt", date('Y-m-d H:i:s') . " - accesstoken为空或无效: " . var_export($form['accesstoken'], true) . "\n", FILE_APPEND);
+           $this->error = 'accesstoken参数为空，请重新授权登录';
+           return false;
+       }
+
        // 检查是否为开发环境
        $isDev = $this->isDevelopmentEnv();
-       
+
        try {
-       $zaloLib = (new Zalo());
-       $ouath = $zaloLib->getProfile($form['accesstoken']);
-       file_put_contents("debug.txt",var_export($ouath,true),FILE_APPEND);
+           $zaloLib = (new Zalo());
+           $ouath = $zaloLib->getProfile($form['accesstoken']);
+           file_put_contents("debug.txt", date('Y-m-d H:i:s') . " - Zalo API响应: " . var_export($ouath, true) . "\n", FILE_APPEND);
+
+           // 检查API响应是否有效
+           if (isset($ouath['error']) && $ouath['error'] !== 0) {
+               throw new \Exception('Zalo API错误: ' . ($ouath['message'] ?? 'Unknown error'));
+           }
+
        } catch (\Exception $e) {
-           // 在开发环境中，如果Zalo认证失败，提供备用方案
-           if ($isDev) {
-               file_put_contents("debug.txt", "开发环境：Zalo认证失败，使用测试数据: " . $e->getMessage() . "\n", FILE_APPEND);
-               
-               // 创建测试用户数据
-               $ouath = [
-                   'id' => 'dev_test_' . time(),
-                   'name' => '开发测试用户_' . substr(md5($form['accesstoken'] ?? 'default'), 0, 8),
-                   'picture' => [
-                       'data' => [
-                           'url' => 'https://via.placeholder.com/100x100?text=DEV'
-                       ]
-                   ]
-               ];
-           } else {
-               $ouath = false;
-           }
+           file_put_contents("debug.txt", date('Y-m-d H:i:s') . " - Zalo API调用失败: " . $e->getMessage() . "\n", FILE_APPEND);
+
+           // 不再在开发环境中使用测试数据，而是返回真实的错误
+           $this->error = 'Zalo授权验证失败: ' . $e->getMessage();
+           return false;
        }
-       
-       if (!$ouath){
-           // 在开发环境中提供更友好的错误信息
-           if ($isDev) {
-               $this->error = '开发环境：Zalo授权失败，请检查网络连接或使用测试模式';
-           } else {
-          $this->error = 'zalo授权失败错误';
-           }
-          return false;
+
+       if (!$ouath || empty($ouath['id'])){
+           file_put_contents("debug.txt", date('Y-m-d H:i:s') . " - Zalo用户信息获取失败\n", FILE_APPEND);
+           $this->error = 'Zalo用户信息获取失败，请重新授权';
+           return false;
        }
        
        // 判断openid是否存在
@@ -577,7 +574,13 @@ class Login extends Basics
             'platform' => getPlatform(),
             'last_login_time' => date('Y-m-d H:i:s'),
             'wxapp_id' =>(new UserModel)->getWxappid() ,
-            'birthday' => $partyData['birthday'] ?? date('Y-m-d H:i:s')
+            'birthday' => $partyData['birthday'] ?? date('Y-m-d H:i:s'),
+            'balance' => 0.00,  // 确保余额字段初始化为0
+            'points' => 0,      // 确保积分字段初始化为0
+            'pay_money' => 0.00, // 确保支付金额字段初始化为0
+            'expend_money' => 0.00, // 确保消费金额字段初始化为0
+            'grade_id' => 0,    // 确保会员等级字段初始化为0
+            'address_id' => 0,  // 确保默认地址字段初始化为0
         ];
         if ($partyData['refereeId']){
             $data['referee_id'] = $partyData['refereeId'];
