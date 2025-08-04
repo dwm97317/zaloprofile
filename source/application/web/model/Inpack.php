@@ -114,7 +114,7 @@ class Inpack extends InpackModel
     }
     
     public function address(){
-        return $this->belongsTo('app\web\model\UserAddress','address_id');
+        return $this->belongsTo('app\web\model\UserAddress','address_id')->field('address_id,name,phone,country,province,city,region,detail,street,door,code,email,identitycard,clearancecode,tel_code');
     }
     
     public function storage(){
