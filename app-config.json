@@ -4,8 +4,6 @@
     "headerTitle": "Bộ sưu tập",
     "headerColor": "#1843EF",
     "textColor": "white",
-    "textAlign": "left",
-    "statusBarColor": "#1843EF",
     "leftButton": "back",
     "statusBar": "normal",
     "actionBarHidden": false,
@@ -13,41 +11,6 @@
     "hideIOSSafeAreaBottom": false,
     "selfControlLoading": false
   },
-  "debug": true,
-  "pages": [
-    {
-      "path": "/",
-      "title": "Trang chủ"
-    },
-    {
-      "path": "/query",
-      "title": "Tra cứu"
-    },
-    {
-      "path": "/freight",
-      "title": "Tính cước"
-    },
-    {
-      "path": "/mine",
-      "title": "Cá nhân"
-    },
-    {
-      "path": "/qr-login",
-      "title": "Đăng nhập QR"
-    },
-    {
-      "path": "/address",
-      "title": "Địa chỉ"
-    },
-    {
-      "path": "/storage",
-      "title": "Kho hàng"
-    },
-    {
-      "path": "/order",
-      "title": "Đơn hàng"
-    }
-  ],
   "listCSS": [
     "zmp-ui/zaui.css",
     "css/tailwind.css",

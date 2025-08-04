@@ -390,8 +390,8 @@ const MinePage = () => {
   const location = useLocation();
   const queryParams = location.search || "";
   if (queryParams) {
-    const queryParamsArr = util.parseQuery(queryParams);
-    oaUserId = queryParamsArr["oa_user_id"];
+    const urlParams = new URLSearchParams(queryParams);
+    oaUserId = urlParams.get("oa_user_id");
   }
   useEffect(() => {
     initMine();
