@@ -16,6 +16,14 @@ const PackDetailPage = () => {
   const [detail, setDetail] = useState({ item: [], line: {}, address: [] });
   const [status, setStatus] = useState({});
 
+  // 安全的数值显示函数
+  const safeValue = (value) => {
+    if (value === null || value === undefined || value === '' || isNaN(value)) {
+      return '0';
+    }
+    return String(value);
+  };
+
   const statusMap = [
     {
       id: 1,
@@ -172,7 +180,7 @@ const PackDetailPage = () => {
             {detail["address"] ? (
               <div>
                 <p className="address-name">
-                  {detail["address"]["name"] + detail["address"]["phone"]}
+                  {safeValue(detail["address"]["name"]) + " " + safeValue(detail["address"]["phone"])}
                 </p>
                 <p>
                   {detail["address"]["province"] +
@@ -204,7 +212,7 @@ const PackDetailPage = () => {
         <div className="container-label">Thông tin kiện hàng</div>
         {detail["item"].map((item, index) => {
           return (
-            <div>
+            <div key={index}>
               <div className="container-item border-bottom" key={index}>
                 <div className="container-icon">
                   <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img30.png" />
@@ -232,13 +240,13 @@ const PackDetailPage = () => {
                 </div>{" "}
                 Dài/Rộng/Cao/Trọng lượng
                 <div className="container-text">
-                  {item["length"] +
+                  {safeValue(item["length"]) +
                     "/" +
-                    item["width"] +
+                    safeValue(item["width"]) +
                     "/" +
-                    item["height"] +
+                    safeValue(item["height"]) +
                     "/" +
-                    item["weight"]}
+                    safeValue(item["weight"])}
                 </div>
               </div>
               <div className="container-item border-bottom">
@@ -300,7 +308,7 @@ const PackDetailPage = () => {
             <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img50.png" />
           </div>{" "}
           Trọng lượng
-          <div className="container-text">{detail["weight"]}</div>
+          <div className="container-text">{safeValue(detail["weight"])}</div>
         </div>
         <div className="container-item border-bottom">
           <div className="container-icon">
@@ -308,13 +316,13 @@ const PackDetailPage = () => {
           </div>{" "}
           Dài/Rộng/Cao/Trọng lượng thể tích
           <div className="container-text">
-            {detail["length"] +
+            {safeValue(detail["length"]) +
               "/" +
-              detail["width"] +
+              safeValue(detail["width"]) +
               "/" +
-              detail["height"] +
+              safeValue(detail["height"]) +
               "/" +
-              detail["volume"]}
+              safeValue(detail["volume"])}
           </div>
         </div>
         <div className="container-item border-bottom">
@@ -322,7 +330,7 @@ const PackDetailPage = () => {
             <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img50.png" />
           </div>{" "}
           Trọng lượng tính cước
-          <div className="container-text">{detail["cale_weight"]}</div>
+          <div className="container-text">{safeValue(detail["cale_weight"])}</div>
         </div>
       </div>
       <div className="detail-container">
@@ -332,21 +340,21 @@ const PackDetailPage = () => {
             <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img29.png" />
           </div>
           Cước vận chuyển cơ bản
-          <div className="container-text">{detail["free"]}</div>
+          <div className="container-text">{safeValue(detail["free"])}</div>
         </div>
         <div className="container-item border-bottom">
           <div className="container-icon">
             <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img50.png" />
           </div>{" "}
           Dịch vụ đóng gói
-          <div className="container-text">{detail["pack_free"]}</div>
+          <div className="container-text">{safeValue(detail["pack_free"])}</div>
         </div>
         <div className="container-item border-bottom">
           <div className="container-icon">
             <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img50.png" />
           </div>{" "}
           Chi phí khác
-          <div className="container-text">{detail["other_free"]}</div>
+          <div className="container-text">{safeValue(detail["other_free"])}</div>
         </div>
       </div>
       <div className="detail-container" style={{ marginBottom: 80 + "px" }}>
