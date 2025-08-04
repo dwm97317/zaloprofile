@@ -20,6 +20,11 @@ class Controller extends \think\Controller
     /* @ver $wxapp_id 小程序id */
     protected $wxapp_id;
 
+    /** @var array $noWxappIdAction 不需要wxapp_id验证的白名单 */
+    protected $noWxappIdAction = [
+        'user/getsiteurl'
+    ];
+
     /**
      * API基类初始化
      * @throws BaseException
@@ -27,8 +32,17 @@ class Controller extends \think\Controller
      */
     public function _initialize()
     {
+        // 获取当前路由
+        $controller = toUnderScore($this->request->controller());
+        $action = $this->request->action();
+        $routeUri = $controller . '/' . $action;
+
+        // 检查是否在白名单中
+        if (in_array($routeUri, $this->noWxappIdAction)) {
+            return; // 跳过wxapp_id验证
+        }
+
         // 当前小程序id
-        
         if(is_numeric($this->request->param('wxapp_id'))){
             $this->wxapp_id = $this->getWxappId();
         }else{
@@ -36,7 +50,7 @@ class Controller extends \think\Controller
         }
         // 验证当前小程序状态
         $this->checkWxapp();
-        
+
     }
 
     /**

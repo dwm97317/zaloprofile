@@ -80,19 +80,22 @@ class UserAddress extends UserAddressModel
                 'name' => $data['name'],
                 'phone' => isset($data['phone'])?$data['phone']:'',
                 'identitycard'=>isset($data['identitycard'])?$data['identitycard']:'',
-                'tel_code'=>isset($data['telcode'])?$data['telcode']:'',
+                'tel_code'=>isset($data['telcode'])?$data['telcode']:'86',
                 'clearancecode'=>isset($data['clearancecode'])?$data['clearancecode']:'',
                 'country' => isset($region[0])?$region[0]:'',
-                'country_id' => isset($data['country_id'])?$data['country_id']:'',
+                'country_id' => isset($data['country_id'])?$data['country_id']:1,
                 'province' => isset($region[1])?$region[1]:'',
                 'city' => isset($region[2])?$region[2]:'',
-                'region' => isset($region[3])?$region:0,
+                'region' => isset($region[3])?$region[3]:'',
                 'email' => isset($data['email'])?$data['email']:'',
                 'door' => isset($data['door'])?$data['door']:'',
                 'code' => isset($data['code'])?$data['code']:'',
                 'detail' => isset($data['detail'])?$data['detail']:'',
                 'user_id' => $user['user_id'],
                 'street' => isset($data['userstree'])?$data['userstree']:'',
+                'address_type' => 0, // 0 集运地址
+                'addressty' => 0, // 0 收件人
+                'is_moren' => 0, // 默认不是默认地址
                 'wxapp_id' => self::$wxapp_id
             ]);
             // 设为默认收货地址
@@ -114,14 +117,14 @@ class UserAddress extends UserAddressModel
         return $this->allowField(true)->save([
                 'name' => $data['name'],
                 'phone' => isset($data['phone'])?$data['phone']:'',
-                'tel_code'=>isset($data['telcode'])?$data['telcode']:'',
+                'tel_code'=>isset($data['telcode'])?$data['telcode']:'86',
                 'identitycard'=>isset($data['identitycard'])?$data['identitycard']:'',
                 'country' => isset($region[0])?$region[0]:'',
-                'country_id' => isset($data['country_id'])?$data['country_id']:'',
+                'country_id' => isset($data['country_id'])?$data['country_id']:1,
                 'clearancecode'=>isset($data['clearancecode'])?$data['clearancecode']:'',
                 'province' => isset($region[1])?$region[1]:'',
                 'city' => isset($region[2])?$region[2]:'',
-                'region' => isset($region[3])?$region:0,
+                'region' => isset($region[3])?$region[3]:'',
                 'email' => isset($data['email'])?$data['email']:'',
                 'street' => isset($data['userstree'])?$data['userstree']:'',
                 'door' => isset($data['door'])?$data['door']:'',
