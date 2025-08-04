@@ -31,7 +31,7 @@ const ListItem = (lists) => {
       console.log("编辑地址 ID:", addressId);
 
       // 获取地址详情，确保数据完整
-      const response = await request.get(`address/detail/${addressId}&wxapp_id=10001`);
+      const response = await request.get(`address/detail&address_id=${addressId}&wxapp_id=10001`);
 
       if (response.code === 1 && response.data.detail) {
         console.log("获取到的地址详情:", response.data.detail);
