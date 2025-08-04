@@ -3,23 +3,12 @@ module.exports = {
     [
       '@babel/preset-env',
       {
-        // 针对移动端和较老的 JavaScript 引擎
-        targets: {
-          browsers: [
-            'Android >= 5',
-            'iOS >= 9.3',
-            'Chrome >= 49',
-            'Safari >= 9.1',
-            'Samsung >= 5'
-          ]
-        },
-        // 确保兼容性
+        // 使用 package.json 中的 browserslist 配置
         useBuiltIns: 'entry',
         corejs: 3,
-        // 包含必要的转换以支持现代语法
+        // 明确包含必要的转换以支持现代语法
         include: [
-          'transform-async-generator-functions',
-          'transform-for-await'
+          'proposal-async-generator-functions'
         ]
       }
     ],
