@@ -681,12 +681,31 @@ class Package extends Controller
      
      // 提交打包处理
      public function postPack(){
-        $ids = $this->postData('packids')[0];
-        $line_id = $this->postData('line_id')[0];
-        $pack_ids = $this->postData('pack_ids')[0];
-        $address_id = $this->postData('address_id')[0];
-        $waitreceivedmoney = $this->postData('waitreceivedmoney')[0];
-        $remark = $this->postData('remark')[0];
+        // 获取参数，支持数组和字符串格式
+        $packids = $this->request->post('packids');
+        $ids = is_array($packids) ? $packids[0] : $packids;
+
+        $line_id_param = $this->request->post('line_id');
+        $line_id = is_array($line_id_param) ? $line_id_param[0] : $line_id_param;
+
+        $pack_ids_param = $this->request->post('pack_ids');
+        $pack_ids = is_array($pack_ids_param) ? $pack_ids_param[0] : $pack_ids_param;
+
+        $address_id_param = $this->request->post('address_id');
+        $address_id = is_array($address_id_param) ? $address_id_param[0] : $address_id_param;
+
+        $waitreceivedmoney_param = $this->request->post('waitreceivedmoney');
+        $waitreceivedmoney_raw = is_array($waitreceivedmoney_param) ? $waitreceivedmoney_param[0] : $waitreceivedmoney_param;
+
+        // 验证和处理 waitreceivedmoney
+        if (empty($waitreceivedmoney_raw) || !is_numeric($waitreceivedmoney_raw)) {
+            $waitreceivedmoney = 0; // 默认值为0
+        } else {
+            $waitreceivedmoney = floatval($waitreceivedmoney_raw);
+        }
+
+        $remark_param = $this->request->post('remark');
+        $remark = is_array($remark_param) ? $remark_param[0] : $remark_param;
         if (!$ids){
             return $this->renderError('请选择要打包的包裹');
         }
