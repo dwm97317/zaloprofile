@@ -9,7 +9,7 @@ export default () => {
     plugins: [reactRefresh()],
 
     build: {
-      target: 'es2015', // 更保守的目标，确保兼容性
+      target: 'es2018', // 支持 async/await 和 async generators
       minify: 'terser',
       terserOptions: {
         compress: {
@@ -20,16 +20,16 @@ export default () => {
     },
 
     esbuild: {
-      target: 'es2015', // 更保守的目标，避免现代语法
+      target: 'es2018', // 支持现代语法但保持兼容性
       logLevel: 'info',
       legalComments: 'none',
-      // 禁用可能导致兼容性问题的特性
+      // 启用必要的特性
       supported: {
-        'async-generator': false,
-        'for-await': false,
+        'async-generator': true,
+        'for-await': true,
         'top-level-await': false,
         'import-assertions': false,
-        'dynamic-import': true, // 保留动态导入
+        'dynamic-import': true,
         'import-meta': false
       }
     },
