@@ -53,9 +53,12 @@ const ListItem = (lists) => {
 
   // Xử lý xác nhận modal
   const doHandle = (e) => {
+    console.log("doHandle called, confirmModalType:", confirmModalType);
     if (confirmModalType == "delete") {
+      console.log("Calling doRequestDelete");
       doRequestDelete();
     } else {
+      console.log("Calling doRequestDeafult");
       doRequestDeafult();
     }
     setConfirmModal(false);
@@ -77,9 +80,11 @@ const ListItem = (lists) => {
 
   // Xóa
   const handleDelete = (e, id) => {
+    console.log("handleDelete called, id:", id);
     setConfirmModal(true);
     setId(id);
     setConfirmModalType("delete");
+    console.log("confirmModalType set to: delete");
   };
 
   // Đặt địa chỉ mặc định
