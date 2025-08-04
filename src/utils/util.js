@@ -51,4 +51,8 @@ export default {
       },
     });
   },
+  // 获取token
+  getToken: () => {
+    return localStorage.getItem('token');
+  },
 };

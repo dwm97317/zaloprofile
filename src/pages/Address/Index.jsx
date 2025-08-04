@@ -130,8 +130,7 @@ const ListItem = (lists) => {
     }
 
     request
-      .post("/address/delete&wxapp_id=10001", {
-        address_id: id,
+      .post(`/address/delete/${id}&wxapp_id=10001`, {
         token: token
       })
       .then((res) => {
