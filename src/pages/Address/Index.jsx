@@ -170,7 +170,7 @@ const ListItem = (lists) => {
                 <span>{item.country || 'Việt Nam'}</span>
                 {item.province && <span>, {item.province}</span>}
                 {item.city && <span>, {item.city}</span>}
-                {item.region && <span>, {item.region}</span>
+                {item.region && <span>, {item.region}</span>}
               </div>
               <div className="address-row">
                 {item.street && <span>{item.street}, </span>}
