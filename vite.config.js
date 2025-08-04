@@ -9,7 +9,7 @@ export default defineConfig({
 
   // 强制设置构建目标，确保兼容 Zalo Mini App Studio
   build: {
-    target: ['es2020', 'chrome80', 'safari13'], // 使用更具体的目标，支持 async generators
+    target: 'esnext', // 使用 esnext 避免任何 es2015 限制
     minify: 'terser',
     terserOptions: {
       compress: {
@@ -21,17 +21,19 @@ export default defineConfig({
     rollupOptions: {
       output: {
         format: 'es',
-        // 强制设置目标环境
+        // 完全移除 generatedCode 限制
         generatedCode: {
-          preset: 'es2015'
+          arrowFunctions: true,
+          constBindings: true,
+          objectShorthand: true
         }
       }
     }
   },
 
-  // 强制 esbuild 使用兼容的目标
+  // 强制 esbuild 使用最新目标
   esbuild: {
-    target: 'es2020', // 支持 async generators 但保持较好兼容性
+    target: 'esnext', // 使用最新语法支持
     logLevel: 'info',
     legalComments: 'none'
   },
@@ -45,13 +47,13 @@ export default defineConfig({
   // 优化依赖预构建
   optimizeDeps: {
     esbuildOptions: {
-      target: 'es2020'
+      target: 'esnext'
     }
   },
 
   // 定义全局常量，确保构建时的一致性
   define: {
-    __BUILD_TARGET__: '"es2020"'
+    __BUILD_TARGET__: '"esnext"'
   }
 
 });

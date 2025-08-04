@@ -6,11 +6,9 @@
   "repository": "",
   "license": "UNLICENSED",
   "browserslist": [
-    "Chrome >= 80",
-    "Safari >= 13",
-    "iOS >= 13",
-    "Android >= 80",
-    "Samsung >= 12"
+    "last 1 chrome version",
+    "last 1 safari version",
+    "last 1 ios version"
   ],
   "scripts": {
     "start": "zmp start",
