@@ -6,6 +6,13 @@ import request from "../../utils/request";
 import Header from "../../components/Header/Header";
 import DynamicAddressForm from "../../components/DynamicAddressForm";
 import AddressApi from "../../utils/addressApi";
+import {
+  formatVietnameseAddress,
+  parseVietnameseAddress,
+  validateVietnameseAddress,
+  getAddressSuggestions,
+  expandVietnameseAbbreviations
+} from "../../utils/vietnameseAddress";
 import "./Index.scss";
 import "./Create.scss";
 import { getAccessToken, getLocation, showToast } from "zmp-sdk";
@@ -35,6 +42,13 @@ const AddressPage = () => {
 
   // 地址选择器状态
   const [addressPicker, setaddressPicker] = useState(false);
+
+  // 越南地址验证和建议状态
+  const [addressValidation, setAddressValidation] = useState({
+    isValid: true,
+    errors: [],
+    suggestions: []
+  });
 
 
 
@@ -79,22 +93,71 @@ const AddressPage = () => {
     saveAddressFormState(updatedForm);
   };
 
+  // 越南地址输入处理函数
+  const handleVietnameseAddressInput = (value, fieldName) => {
+    // 更新表单数据
+    const updatedForm = {
+      ...form,
+      [fieldName]: value
+    };
+    setForm(updatedForm);
+    saveAddressFormState(updatedForm);
+
+    // 如果是详细地址字段，进行越南地址验证
+    if (fieldName === 'detail' && value.trim().length > 0) {
+      // 展开常见缩写
+      const expandedAddress = expandVietnameseAbbreviations(value);
+
+      // 验证地址格式
+      const validation = validateVietnameseAddress(expandedAddress);
+      setAddressValidation(validation);
+
+      // 如果地址有效，尝试解析地址组件
+      if (validation.isValid) {
+        const parsedAddress = parseVietnameseAddress(expandedAddress);
+        console.log("解析的越南地址组件:", parsedAddress);
+
+        // 可以在这里添加更多的地址处理逻辑
+        if (parsedAddress.province || parsedAddress.district) {
+          console.log("识别到的行政区域:", {
+            province: parsedAddress.province,
+            district: parsedAddress.district,
+            ward: parsedAddress.ward
+          });
+        }
+      }
+
+      // 提供地址建议
+      if (value.trim().length >= 2) {
+        const suggestions = getAddressSuggestions(value);
+        setAddressValidation(prev => ({
+          ...prev,
+          suggestions
+        }));
+      }
+    }
+  };
+
   const initCreate = () => {
     if (addressInfo && addressInfo.address_id) {
-      console.log("=== 编辑地址数据回填 ===");
+      console.log("=== 越南地址数据回填 ===");
       console.log("原始地址信息:", addressInfo);
 
-      // 构建完整的详细地址字符串
-      // 包含所有行政区域信息：国家、省、市、区、街道、门牌号
-      const fullAddress = [
-        addressInfo.country || 'Việt Nam',
-        addressInfo.province || '',
-        addressInfo.city || '',
-        addressInfo.region || '',
-        addressInfo.street || '',
-        addressInfo.door || '',
-        addressInfo.detail || ''
-      ].filter(Boolean).join(', ');
+      // 使用越南地址格式化工具构建人性化的地址
+      const vietnameseAddressData = {
+        houseNumber: addressInfo.door || '',
+        street: addressInfo.street || '',
+        ward: addressInfo.region || '',
+        district: addressInfo.city || '',
+        province: addressInfo.province || '',
+        country: addressInfo.country || 'Việt Nam'
+      };
+
+      // 按越南人习惯格式化地址：门牌号 + 街道 + 坊 + 区 + 省
+      const formattedAddress = formatVietnameseAddress(vietnameseAddressData);
+
+      // 如果格式化后的地址为空，使用原始detail字段
+      const finalAddress = formattedAddress || addressInfo.detail || '';
 
       const editForm = {
         ...form,
@@ -105,12 +168,12 @@ const AddressPage = () => {
         clearancecode: addressInfo.clearancecode || '',
         telcode: addressInfo.tel_code || '84',
 
-        // 简化地址回填 - 只填入详细地址字段
-        // 详细地址包含完整的地址信息
-        detail: fullAddress,
-        userstree: fullAddress, // 也填入街道字段作为备用
+        // 越南文化特色的地址回填
+        // 使用格式化后的完整地址，符合越南人的阅读习惯
+        detail: finalAddress,
+        userstree: finalAddress, // 街道字段也使用完整地址
 
-        // 清空省市区字段，因为后台已关闭
+        // 清空省市区字段，因为后台已关闭行政区域选择
         userProvince: '',
         userchengshi: '',
         userregion: '',
@@ -128,8 +191,10 @@ const AddressPage = () => {
         country_id: addressInfo.country_id || 1
       };
 
+      console.log("越南格式化地址数据:", vietnameseAddressData);
+      console.log("格式化后的地址:", formattedAddress);
+      console.log("最终回填地址:", finalAddress);
       console.log("回填后的表单数据:", editForm);
-      console.log("构建的完整地址:", fullAddress);
 
       setForm(editForm);
       saveAddressFormState(editForm);
@@ -142,7 +207,7 @@ const AddressPage = () => {
         });
       }
 
-      console.log("=== 地址数据回填完成 ===");
+      console.log("=== 越南地址数据回填完成 ===");
     }
   };
 
@@ -266,16 +331,19 @@ const AddressPage = () => {
         const address = response.data.address;
         const vietnameseAddress = address.vietnamese_address || {};
         
-        // 简化反向地理编码 - 构建完整详细地址
-        // 将所有地址信息组合成一个完整的详细地址字符串
-        const fullAddress = [
-          'Việt Nam',                                    // 国家
-          vietnameseAddress.province || '',              // 省份 (Tỉnh)
-          vietnameseAddress.district || '',              // 市/县 (Thành phố/Huyện)
-          vietnameseAddress.ward || '',                  // 坊/社 (Phường/Xã)
-          vietnameseAddress.street || '',                // 街道
-          vietnameseAddress.house_number || ''           // 门牌号
-        ].filter(Boolean).join(', ');
+        // 越南文化特色的反向地理编码处理
+        // 构建符合越南人习惯的地址格式
+        const vietnameseAddressData = {
+          houseNumber: vietnameseAddress.house_number || '',
+          street: vietnameseAddress.street || '',
+          ward: vietnameseAddress.ward || '',           // 坊/社 (Phường/Xã)
+          district: vietnameseAddress.district || '',   // 区/县 (Quận/Huyện)
+          province: vietnameseAddress.province || '',   // 省/市 (Tỉnh/Thành phố)
+          country: 'Việt Nam'
+        };
+
+        // 使用越南地址格式化工具，按越南人习惯排序
+        const formattedAddress = formatVietnameseAddress(vietnameseAddressData);
 
         // 简化的地区字符串 - 只包含越南
         const regionString = 'Việt Nam,,,'; // 国家,省,市,区 - 省市区留空
@@ -288,12 +356,12 @@ const AddressPage = () => {
           country_id: 1,
           telcode: '84',
 
-          // 简化地址信息 - 只使用详细地址字段
-          detail: fullAddress,              // 完整详细地址
-          userstree: fullAddress,           // 街道字段也使用完整地址
+          // 越南文化特色的地址信息处理
+          detail: formattedAddress,         // 使用格式化后的越南地址
+          userstree: formattedAddress,      // 街道字段也使用格式化地址
           userdoor: vietnameseAddress.house_number || '',
 
-          // 清空省市区字段
+          // 清空省市区字段，因为使用完整地址格式
           userProvince: '',
           userchengshi: '',
           userregion: '',
@@ -302,12 +370,13 @@ const AddressPage = () => {
           region: regionString
         };
 
-        console.log("=== 反向地理编码数据构建 ===");
-        console.log("原始越南地址数据:", vietnameseAddress);
-        console.log("构建的完整地址:", fullAddress);
+        console.log("=== 越南文化特色反向地理编码 ===");
+        console.log("原始地理编码数据:", vietnameseAddress);
+        console.log("越南地址数据结构:", vietnameseAddressData);
+        console.log("格式化后的越南地址:", formattedAddress);
         console.log("简化的 region 字符串:", regionString);
         console.log("更新后的表单数据:", updatedForm);
-        console.log("==============================");
+        console.log("=====================================");
         
         setForm(updatedForm);
         saveAddressFormState(updatedForm);
