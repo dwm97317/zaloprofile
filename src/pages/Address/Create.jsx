@@ -122,7 +122,7 @@ const AddressPage = () => {
     setLoadingText("Đang lưu địa chỉ...");
     
     try {
-      // 准备地址数据，确保格式正确
+      // 准备地址数据，确保格式正确，国家统一为越南
       const addressData = {
         ...form,
         // 确保地址字段映射正确
@@ -130,8 +130,9 @@ const AddressPage = () => {
         phone: form.userphones,
         identity_card: form.identitycard,
         clearance_code: form.clearancecode,
-        tel_code: form.telcode,
-        country_id: form.country_id || 1, // 默认越南
+        tel_code: form.telcode || '84', // 越南国际区号
+        country_id: 1, // 强制设置为越南 ID
+        country: 'Việt Nam', // 强制设置国家名称为越南
         province: form.userProvince,
         city: form.userchengshi,
         region: form.userregion,
@@ -144,6 +145,8 @@ const AddressPage = () => {
         latitude: form.latitude,
         longitude: form.longitude
       };
+
+      console.log("提交地址数据:", addressData);
       
       const response = await request.post("address/add&wxapp_id=10001", addressData);
       
@@ -185,6 +188,11 @@ const AddressPage = () => {
           ...form,
           latitude: data.latitude,
           longitude: data.longitude,
+          // 强制设置国家信息为越南
+          country_id: 1,
+          country: 'Việt Nam',
+          telcode: '84',
+          // 设置省市区信息
           userProvince: vietnameseAddress.province || '',
           userchengshi: vietnameseAddress.district || '',
           userregion: vietnameseAddress.ward || '',
@@ -196,6 +204,8 @@ const AddressPage = () => {
             vietnameseAddress.ward
           ].filter(Boolean).join(', ')
         };
+
+        console.log("反向地理编码更新表单:", updatedForm);
         
         setForm(updatedForm);
         saveAddressFormState(updatedForm);

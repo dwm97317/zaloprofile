@@ -128,11 +128,15 @@ const PackConfirmPage = () => {
       return;
     }
 
-    // 修复：将数组转换为字符串格式，符合后端 API 期望
+    // 修复：后端使用 postData()[0] 获取数据，需要发送数组格式
+    // 确保 packids 和 pack_ids 都是逗号分隔的字符串，然后包装在数组中
+    const packidsStr = Array.isArray(form["packids"]) ? form["packids"].join(',') : form["packids"];
+    const packIdsStr = Array.isArray(service) ? service.join(',') : service;
+
     const submitData = {
       ...form,
-      pack_ids: Array.isArray(service) ? service.join(',') : service,
-      packids: Array.isArray(form["packids"]) ? form["packids"].join(',') : form["packids"]
+      pack_ids: [packIdsStr],
+      packids: [packidsStr]
     };
 
     console.log("提交打包数据:", submitData);
