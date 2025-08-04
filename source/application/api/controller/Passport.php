@@ -130,7 +130,7 @@ class Passport extends Controller
             $state = md5(uniqid() . time());
 
             // 设置回调URL
-            $redirectUri = $this->request->domain() . '/api/passport/zaloCallback';
+            $redirectUri = $this->request->domain() . '/index.php?s=api/passport/zaloCallback';
 
             // 创建Zalo实例并生成OAuth URL
             $zalo = new \app\common\library\ZaloSdk\Zalo();
