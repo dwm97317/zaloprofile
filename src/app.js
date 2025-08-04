@@ -2,6 +2,12 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
+// 导入兼容性修复
+import { initCompatibilityFixes } from "./utils/compatibility";
+
+// 立即执行兼容性修复
+initCompatibilityFixes();
+
 // Import tailwind styles
 import "./css/tailwind.css";
 
