@@ -74,8 +74,9 @@ const MinePage = () => {
         // 登录成功
         console.log("登录成功，用户数据:", res.data);
 
-        // 验证返回的用户数据完整性
-        if (!res.data.user_id || !res.data.token) {
+        // 验证返回的用户数据完整性 - 适配 API 返回的字段名
+        const userId = res.data.userId || res.data.user_id;
+        if (!userId || !res.data.token) {
           console.error("用户数据不完整:", res.data);
           showToast({
             message: "登录数据异常，请重试",
@@ -89,9 +90,9 @@ const MinePage = () => {
           type: "success"
         });
 
-        // 构建完整的用户信息对象
+        // 构建完整的用户信息对象 - 使用统一的字段名
         const completeUserInfo = {
-          user_id: res.data.user_id,
+          user_id: userId, // 使用上面解析的 userId
           nickname: res.data.nickname || res.data.nickName || 'Zalo用户',
           token: res.data.token,
           avatarUrl: res.data.avatarUrl || '',
@@ -408,13 +409,17 @@ const MinePage = () => {
 
   const getUserData = () => {
     request.post("user/detail&wxapp_id=10001").then((res) => {
+      console.log("获取用户详细信息响应:", res);
+
       if (res.code == -1) {
+        console.log("用户未登录，清除登录状态");
         setStorage({
           data: {
             isLogin: false,
           },
         });
       } else if (res.data && res.data.userInfo) {
+        console.log("用户信息获取成功:", res.data.userInfo);
         let assets = [];
         assets["balance"] = res.data.userInfo["balance"] || 0;
         assets["sms"] = res.data.userInfo["sms"] || 0;
@@ -425,7 +430,12 @@ const MinePage = () => {
         setUserData(userData);
         setAsssets(assets);
       } else {
-        console.warn("用户信息数据格式不正确:", res.data);
+        console.warn("用户信息数据格式不正确:", res);
+        console.warn("响应数据结构:", {
+          hasData: !!res.data,
+          hasUserInfo: !!(res.data && res.data.userInfo),
+          dataKeys: res.data ? Object.keys(res.data) : 'no data'
+        });
         // 设置默认值
         setAsssets({
           balance: 0,
@@ -434,6 +444,15 @@ const MinePage = () => {
           points: 0
         });
       }
+    }).catch((error) => {
+      console.error("获取用户信息失败:", error);
+      // 设置默认值
+      setAsssets({
+        balance: 0,
+        sms: 0,
+        coupon: 0,
+        points: 0
+      });
     });
   };
 

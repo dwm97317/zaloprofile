@@ -40,7 +40,12 @@ const MyApp = () => {
     <RecoilRoot>
       <App>
         <SnackbarProvider>
-          <ZMPRouter>
+          <ZMPRouter
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true
+            }}
+          >
             <AnimationRoutes>
               <Route path="/" element={<HomePage></HomePage>}></Route>
               <Route path="/query" element={<QueryPage></QueryPage>}></Route>
