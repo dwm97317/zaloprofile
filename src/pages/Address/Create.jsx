@@ -125,12 +125,33 @@ const AddressPage = () => {
       // 准备地址数据，确保格式符合后端 API 期望
       // 后端通过 explode(',', $data['region']) 解析地区信息
       // region[0] = country, region[1] = province, region[2] = city, region[3] = region
-      const regionString = [
+
+      // 确保所有字段都有值，避免空字符串导致的问题
+      const province = form.userProvince || '';
+      const city = form.userchengshi || '';
+      const region = form.userregion || '';
+
+      // 构建地区字符串，确保没有重复和空值
+      const regionParts = [
         'Việt Nam',                    // 国家统一为越南
-        form.userProvince || '',       // 省份
-        form.userchengshi || '',       // 城市
-        form.userregion || ''          // 区域
-      ].join(',');
+        province,                      // 省份 (Tỉnh)
+        city,                          // 城市/县 (Thành phố/Huyện)
+        region                         // 区域/坊 (Quận/Phường)
+      ];
+
+      // 过滤空值并确保不重复
+      const filteredParts = regionParts.filter((part, index) => {
+        if (!part) return false;
+        // 检查是否与前面的部分重复
+        return !regionParts.slice(0, index).includes(part);
+      });
+
+      // 如果过滤后少于4个部分，补充空字符串确保数组长度
+      while (filteredParts.length < 4) {
+        filteredParts.push('');
+      }
+
+      const regionString = filteredParts.join(',');
 
       const addressData = {
         // 基本信息
@@ -160,8 +181,17 @@ const AddressPage = () => {
         longitude: form.longitude || ''
       };
 
+      console.log("=== 地址数据构建详情 ===");
+      console.log("原始表单数据:", {
+        userProvince: form.userProvince,
+        userchengshi: form.userchengshi,
+        userregion: form.userregion
+      });
+      console.log("构建的 regionParts:", regionParts);
+      console.log("过滤后的 filteredParts:", filteredParts);
+      console.log("最终 region 字符串:", regionString);
       console.log("提交地址数据 (符合后端格式):", addressData);
-      console.log("region 字符串:", regionString);
+      console.log("========================");
       
       const response = await request.post("address/add&wxapp_id=10001", addressData);
       
@@ -200,12 +230,32 @@ const AddressPage = () => {
         const vietnameseAddress = address.vietnamese_address || {};
         
         // 构建符合后端期望的地区字符串格式
-        const regionString = [
+        // 越南行政区划：Tỉnh(省) -> Thành phố/Huyện(市/县) -> Phường/Xã(坊/社)
+        const province = vietnameseAddress.province || '';
+        const city = vietnameseAddress.district || '';     // district 在越南是市/县级别
+        const region = vietnameseAddress.ward || '';       // ward 在越南是坊/社级别
+
+        // 构建地区数组，避免重复
+        const regionParts = [
           'Việt Nam',                                    // 国家统一为越南
-          vietnameseAddress.province || '',              // 省份
-          vietnameseAddress.district || '',              // 城市
-          vietnameseAddress.ward || ''                   // 区域
-        ].join(',');
+          province,                                      // 省份 (Tỉnh)
+          city,                                          // 城市/县 (Thành phố/Huyện)
+          region                                         // 区域/坊 (Phường/Xã)
+        ];
+
+        // 过滤空值和重复值
+        const filteredParts = regionParts.filter((part, index) => {
+          if (!part) return false;
+          // 检查是否与前面的部分重复
+          return !regionParts.slice(0, index).includes(part);
+        });
+
+        // 确保数组长度为4，不足的补空字符串
+        while (filteredParts.length < 4) {
+          filteredParts.push('');
+        }
+
+        const regionString = filteredParts.join(',');
 
         const updatedForm = {
           ...form,
@@ -224,8 +274,14 @@ const AddressPage = () => {
           region: regionString
         };
 
-        console.log("反向地理编码更新表单:", updatedForm);
-        console.log("构建的 region 字符串:", regionString);
+        console.log("=== 反向地理编码数据构建 ===");
+        console.log("原始越南地址数据:", vietnameseAddress);
+        console.log("解析的地区信息:", { province, city, region });
+        console.log("构建的 regionParts:", regionParts);
+        console.log("过滤后的 filteredParts:", filteredParts);
+        console.log("最终 region 字符串:", regionString);
+        console.log("更新后的表单数据:", updatedForm);
+        console.log("==============================");
         
         setForm(updatedForm);
         saveAddressFormState(updatedForm);
