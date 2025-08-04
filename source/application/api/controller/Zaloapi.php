@@ -8,6 +8,11 @@ use app\common\library\ZaloSdk\ZaloOfficialApi;
 class Zaloapi {
     
     public function event(){
+      // 处理OAuth回调 - 检查是否有code和state参数
+      if (isset($_GET['code']) && isset($_GET['state'])) {
+          return $this->handleOAuthCallback();
+      }
+
       if (isset($_GET['verify_token']) && $_GET['verify_token'] === 'YOUR_VERIFY_TOKEN') {
           echo $_GET['challenge']; // 返回 challenge 字符串完成验证
           exit;
@@ -72,5 +77,93 @@ class Zaloapi {
     public function getZaloAccessToken(){
         file_put_contents('debug.log',var_dump(1111));
     }
-    
+
+    /**
+     * 处理OAuth回调
+     * @return \think\response\Json
+     */
+    private function handleOAuthCallback(){
+        try {
+            $code = $_GET['code'];
+            $state = $_GET['state'];
+            $error = $_GET['error'] ?? null;
+
+            // 记录回调日志
+            file_put_contents('oauth_callback.log', date('Y-m-d H:i:s') . " - OAuth Callback: code={$code}, state={$state}, error={$error}\n", FILE_APPEND);
+
+            if ($error) {
+                // 处理授权错误
+                \think\Cache::set('zalo_oauth_state_' . $state, [
+                    'login_status' => 'error',
+                    'error' => $error,
+                    'updated_at' => time()
+                ], 600);
+
+                // 返回错误页面或重定向
+                return $this->renderError('授权失败: ' . $error);
+            }
+
+            // 验证state参数
+            $stateData = \think\Cache::get('zalo_oauth_state_' . $state);
+            if (!$stateData) {
+                file_put_contents('oauth_callback.log', date('Y-m-d H:i:s') . " - Invalid state: {$state}\n", FILE_APPEND);
+                return $this->renderError('无效的授权状态');
+            }
+
+            // 使用授权码获取访问令牌
+            $zalo = new \app\common\library\ZaloSdk\Zalo();
+            $redirectUri = 'https://zalonew.itaoth.com/index.php?s=/api/zaloapi/event';
+            $tokenResult = $zalo->getAccessTokenByCode($code, $redirectUri);
+
+            if (!$tokenResult || !isset($tokenResult['access_token'])) {
+                file_put_contents('oauth_callback.log', date('Y-m-d H:i:s') . " - Token exchange failed\n", FILE_APPEND);
+                return $this->renderError('获取访问令牌失败');
+            }
+
+            // 获取用户信息
+            $userInfo = $zalo->getUserInfo($tokenResult['access_token']);
+            if (!$userInfo || !isset($userInfo['id'])) {
+                file_put_contents('oauth_callback.log', date('Y-m-d H:i:s') . " - Get user info failed\n", FILE_APPEND);
+                return $this->renderError('获取用户信息失败');
+            }
+
+            // 更新缓存状态为成功
+            \think\Cache::set('zalo_oauth_state_' . $state, [
+                'login_status' => 'success',
+                'user_info' => $userInfo,
+                'access_token' => $tokenResult['access_token'],
+                'updated_at' => time()
+            ], 600);
+
+            file_put_contents('oauth_callback.log', date('Y-m-d H:i:s') . " - OAuth success for user: " . $userInfo['id'] . "\n", FILE_APPEND);
+
+            // 返回成功页面
+            return $this->renderSuccess('授权成功！请返回应用继续操作。');
+
+        } catch (\Exception $e) {
+            file_put_contents('oauth_callback.log', date('Y-m-d H:i:s') . " - Exception: " . $e->getMessage() . "\n", FILE_APPEND);
+            return $this->renderError('处理授权回调时发生错误: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 渲染成功响应
+     */
+    private function renderSuccess($message) {
+        return json([
+            'code' => 1,
+            'msg' => $message
+        ]);
+    }
+
+    /**
+     * 渲染错误响应
+     */
+    private function renderError($message) {
+        return json([
+            'code' => 0,
+            'msg' => $message
+        ]);
+    }
+
 }

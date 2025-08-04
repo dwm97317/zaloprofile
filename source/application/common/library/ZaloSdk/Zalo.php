@@ -165,4 +165,55 @@ class Zalo {
 
         return $decodedResponse;
     }
+
+    /**
+     * 获取用户信息
+     * @param string $accessToken 访问令牌
+     * @return array
+     * @throws Exception
+     */
+    public function getUserInfo($accessToken) {
+        $url = "https://graph.zalo.me/v2.0/me?fields=id,name,picture";
+
+        $headers = [
+            'access_token: ' . $accessToken
+        ];
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false
+        ]);
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $error = curl_error($curl);
+
+        if ($error) {
+            curl_close($curl);
+            throw new \Exception("CURL Error: " . $error);
+        }
+
+        curl_close($curl);
+
+        if ($httpCode != 200) {
+            throw new \Exception("API Request Error: HTTP Code " . $httpCode . ", Response: " . $response);
+        }
+
+        $decodedResponse = json_decode($response, true);
+
+        if ($decodedResponse === null && json_last_error() !== JSON_ERROR_NONE) {
+            throw new \Exception("JSON Decode Error: " . json_last_error_msg());
+        }
+
+        if (isset($decodedResponse['error'])) {
+            throw new \Exception("Graph API Error: " . $decodedResponse['error']['message'] ?? 'Unknown error');
+        }
+
+        return $decodedResponse;
+    }
 }
