@@ -1,0 +1,217 @@
+.zalo-qr-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 320px;
+  margin: 0 auto;
+
+  .qr-login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #999;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #f5f5f5;
+        color: #666;
+      }
+    }
+  }
+
+  .qr-code-container {
+    position: relative;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 2px dashed #ddd;
+
+    .qr-canvas {
+      display: block;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+
+      &.loading {
+        opacity: 0.5;
+      }
+
+      &.expired {
+        filter: grayscale(100%);
+        opacity: 0.6;
+      }
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .spinner {
+        width: 30px;
+        height: 30px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #2196F3;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+
+  .status-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    text-align: center;
+
+    .status-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    .status-message {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+  }
+
+  .qr-actions {
+    width: 100%;
+
+    .refresh-btn {
+      width: 100%;
+      padding: 12px 20px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #1976D2;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    .qr-tips {
+      text-align: left;
+      
+      p {
+        margin: 8px 0;
+        font-size: 13px;
+        color: #666;
+        display: flex;
+        align-items: center;
+
+        &:before {
+          content: '•';
+          color: #2196F3;
+          font-weight: bold;
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}
+
+// 动画
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.7; 
+    transform: scale(1.05);
+  }
+}
+
+// 响应式设计
+@media (max-width: 480px) {
+  .zalo-qr-login {
+    padding: 16px;
+    max-width: 280px;
+
+    .qr-code-container {
+      padding: 16px;
+    }
+
+    .qr-login-header h3 {
+      font-size: 16px;
+    }
+
+    .status-info .status-icon {
+      font-size: 28px;
+    }
+
+    .status-info .status-message {
+      font-size: 13px;
+    }
+  }
+}
+
+// 暗色主题支持
+@media (prefers-color-scheme: dark) {
+  .zalo-qr-login {
+    background: #2d2d2d;
+    color: #fff;
+
+    .qr-login-header h3 {
+      color: #fff;
+    }
+
+    .qr-code-container {
+      background: #3d3d3d;
+      border-color: #555;
+    }
+
+    .qr-tips p {
+      color: #ccc;
+    }
+  }
+}

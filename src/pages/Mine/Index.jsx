@@ -4,6 +4,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { orderStatusState, userState, guideTypeState } from "../../state";
 import Tab from "../../components/Tab/Tab";
 import Loading from "../../components/Loading/Index";
+import ZaloQRLogin from "../../components/ZaloQRLogin";
 import request from "../../utils/request";
 import util from "../../utils/util";
 import "./Mine.scss";
@@ -33,47 +34,101 @@ const HomePage = () => {
   const [userData, setUserData] = useState({});
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
+  const [showQRLogin, setShowQRLogin] = useState(false);
   let oaUserId = "";
   let oAflag = false;
   // Xử lý đăng nhập dịch vụ
   const doLogin = (access) => {
+    console.log("开始登录，accesstoken:", access);
+
+    // 验证accesstoken是否有效
+    if (!access || access === '' || access === null || access === undefined) {
+      console.error("传入的accesstoken无效:", access);
+      showToast({
+        message: "获取用户授权失败，请重试",
+        type: "fail"
+      });
+      setLoading(false);
+      setLoadingText("");
+      return;
+    }
+
     request
-      .post("passport/loginByZalo&wxapp_id=10001", {
+      .post("passport/loginbyzalo&wxapp_id=10001", {
         form: { accesstoken: access },
       })
       .then((res) => {
-        console.log(res, "eee");
+        console.log("登录响应:", res);
         setLoading(false);
         setLoadingText("");
-        setConfirmVisable(true);
+
         if (res.code == 0) {
-          console.log("error");
+          console.error("登录失败:", res.msg);
           showToast({
-            message: res.msg,
+            message: res.msg || "登录失败，请重试",
+            type: "fail"
           });
           return;
         }
+
+        // 登录成功
+        console.log("登录成功，用户数据:", res.data);
+
+        // 验证返回的用户数据完整性
+        if (!res.data.user_id || !res.data.token) {
+          console.error("用户数据不完整:", res.data);
+          showToast({
+            message: "登录数据异常，请重试",
+            type: "fail"
+          });
+          return;
+        }
+
         showToast({
           message: "Đăng nhập thành công",
+          type: "success"
         });
-        setUserInfo({
+
+        // 构建完整的用户信息对象
+        const completeUserInfo = {
           user_id: res.data.user_id,
-          nickname: res.data.nickname,
+          nickname: res.data.nickname || res.data.nickName || 'Zalo用户',
           token: res.data.token,
-          avatarUrl: res.data.avatarUrl,
+          avatarUrl: res.data.avatarUrl || '',
+          mobile: res.data.mobile || '',
+          balance: res.data.balance || 0,
           isLogin: true,
+        };
+
+        console.log("完整用户信息:", completeUserInfo);
+
+        // 更新本地状态
+        setUserInfo(completeUserInfo);
+        setUserState({
+          token: res.data.token,
+          userInfo: completeUserInfo
         });
-        setUserState({ token: res.data.token });
+
+        // 存储到本地存储
         setStorage({
           data: {
             isLogin: true,
-            nickname: res.data.nickname,
-            avatarUrl: res.data.avatarUrl,
+            user_id: res.data.user_id,
+            nickname: completeUserInfo.nickname,
+            avatarUrl: completeUserInfo.avatarUrl,
             token: res.data.token,
+            userInfo: completeUserInfo
           },
         });
+
+        setConfirmVisable(true);
       })
-      .fail((res) => {
+      .catch((err) => {
+        console.error("登录请求失败:", err);
+        showToast({
+          message: "网络错误，登录失败",
+          type: "fail"
+        });
         setLoading(false);
         setLoadingText("");
       });
@@ -87,31 +142,170 @@ const HomePage = () => {
           success: (accesstoken) => {
             setLoading(true);
             setLoadingText("Đang đăng nhập");
-            console.log(accesstoken, "access");
+            console.log("获取到的accesstoken:", accesstoken);
+
+            // 验证accesstoken是否有效
+            if (!accesstoken || accesstoken === '' || accesstoken === null) {
+              console.error("获取到的accesstoken为空:", accesstoken);
+              showToast({
+                message: "获取用户授权失败，请重试",
+                type: "fail"
+              });
+              setLoading(false);
+              setLoadingText("");
+              return;
+            }
+
             doLogin(accesstoken);
           },
+          fail: (error) => {
+            console.error("获取accesstoken失败:", error);
+            showToast({
+              message: "获取用户授权失败，请重试",
+              type: "fail"
+            });
+            setLoading(false);
+            setLoadingText("");
+          }
         });
       },
       fail: (err) => {
-        console.log(err, "err");
+        console.log("登录失败:", err);
+        showToast({
+          message: "登录失败，请重试",
+          type: "fail"
+        });
       },
     });
   };
 
-  const getUserInfos = async () => {
-    console.log("Lấy thông tin người dùng");
-    const { isLogin, nickname, avatarUrl } = await getStorage({
-      keys: ["isLogin", "nickname", "avatarUrl"],
-    });
-    let user = {
-      isLogin: isLogin,
-      nickname: nickname,
-      avatarUrl: avatarUrl,
-    };
-    if (isLogin) {
+  // 处理二维码登录成功
+  const handleQRLoginSuccess = async (loginData) => {
+    console.log("二维码登录成功:", loginData);
+
+    try {
+      const { user_id, nickname, avatarUrl, token } = loginData;
+
+      // 构建用户信息
+      const userInfo = {
+        isLogin: true,
+        user_id: user_id,
+        nickname: nickname || '',
+        avatarUrl: avatarUrl || '',
+        token: token
+      };
+
+      // 存储用户信息
+      await setStorage({
+        isLogin: true,
+        nickname: nickname || '',
+        avatarUrl: avatarUrl || '',
+        token: token,
+        user_id: user_id,
+        userInfo: userInfo
+      });
+
+      // 更新状态
+      setUserInfo(userInfo);
+      setUserState({
+        token: token,
+        user_id: user_id,
+        nickname: nickname || '',
+        avatarUrl: avatarUrl || ''
+      });
+
+      // 关闭二维码登录弹窗
+      setShowQRLogin(false);
+
+      // 获取用户详细数据
       getUserData();
+
+      showToast({
+        message: "登录成功！",
+        type: "success"
+      });
+
+    } catch (error) {
+      console.error("处理二维码登录成功回调失败:", error);
+      showToast({
+        message: "登录处理失败，请重试",
+        type: "fail"
+      });
     }
-    setUserInfo(user);
+  };
+
+  // 处理二维码登录失败
+  const handleQRLoginError = (error) => {
+    console.error("二维码登录失败:", error);
+    showToast({
+      message: error.message || "登录失败，请重试",
+      type: "fail"
+    });
+  };
+
+  // 打开二维码登录
+  const openQRLogin = () => {
+    setShowQRLogin(true);
+  };
+
+  // 关闭二维码登录
+  const closeQRLogin = () => {
+    setShowQRLogin(false);
+  };
+
+  const getUserInfos = async () => {
+    console.log("加载用户信息");
+    try {
+      const { isLogin, nickname, avatarUrl, token, user_id, userInfo } = await getStorage({
+        keys: ["isLogin", "nickname", "avatarUrl", "token", "user_id", "userInfo"],
+      });
+
+      console.log("从存储加载的数据:", { isLogin, nickname, avatarUrl, token, user_id, userInfo });
+
+      // 构建用户信息对象，优先使用完整的userInfo
+      let user = {};
+      if (userInfo && typeof userInfo === 'object') {
+        user = {
+          ...userInfo,
+          isLogin: isLogin || userInfo.isLogin || false
+        };
+      } else {
+        user = {
+          isLogin: isLogin || false,
+          nickname: nickname || '',
+          avatarUrl: avatarUrl || '',
+          token: token || '',
+          user_id: user_id || '',
+        };
+      }
+
+      console.log("构建的用户信息:", user);
+
+      // 如果用户已登录且有token，验证token有效性并获取最新数据
+      if (user.isLogin && user.token) {
+        getUserData();
+      }
+
+      setUserInfo(user);
+
+      // 同步到Recoil状态
+      if (user.token) {
+        setUserState({
+          token: user.token,
+          userInfo: user
+        });
+      }
+
+    } catch (error) {
+      console.error("加载用户信息失败:", error);
+      setUserInfo({
+        isLogin: false,
+        nickname: '',
+        avatarUrl: '',
+        token: '',
+        user_id: '',
+      });
+    }
   };
 
   // 关注公众号
@@ -243,9 +437,23 @@ const HomePage = () => {
             {userInfo.isLogin ? (
               ""
             ) : (
-              <Button className="loginBtn" onClick={() => handleLogin()}>
-                Đăng nhập ngay
-              </Button>
+              <div className="login-buttons">
+                <Button className="loginBtn" onClick={() => handleLogin()}>
+                  Đăng nhập ngay
+                </Button>
+                <Button
+                  className="qr-login-btn"
+                  onClick={openQRLogin}
+                  style={{
+                    marginTop: '8px',
+                    backgroundColor: '#0084ff',
+                    fontSize: '12px',
+                    padding: '6px 12px'
+                  }}
+                >
+                  📱 扫码登录
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -417,6 +625,25 @@ const HomePage = () => {
           },
         ]}
       />
+
+      {/* 二维码登录弹窗 */}
+      <Modal
+        visible={showQRLogin}
+        title=""
+        onClose={closeQRLogin}
+        actions={[]}
+        style={{
+          '--zm-modal-content-padding': '0',
+          '--zm-modal-header-padding': '0'
+        }}
+      >
+        <ZaloQRLogin
+          onLoginSuccess={handleQRLoginSuccess}
+          onLoginError={handleQRLoginError}
+          onClose={closeQRLogin}
+        />
+      </Modal>
+
       <Tab current="mine" />
     </Page>
   );

@@ -7,6 +7,7 @@ import FreightPage from "../pages/Freight/Index";
 import FreightResultPage from "../pages/Freight/Result";
 import QueryPage from "../pages/Query/Index";
 import MinePage from "../pages/Mine/Index";
+import QRLoginPage from "../pages/QRLogin/index";
 import RechargePage from "../pages/Mine/Recharge";
 import BalancePage from "../pages/Mine/Balance";
 import StoragePage from "../pages/Storage/Index";
@@ -52,6 +53,7 @@ const MyApp = () => {
                 element={<FreightResultPage></FreightResultPage>}
               ></Route>
               <Route path="/mine" element={<MinePage></MinePage>}></Route>
+              <Route path="/qr-login" element={<QRLoginPage></QRLoginPage>}></Route>
               <Route
                 path="/article/help/order"
                 element={<OrderHelperPage></OrderHelperPage>}
