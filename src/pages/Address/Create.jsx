@@ -84,9 +84,17 @@ const AddressPage = () => {
       console.log("=== 编辑地址数据回填 ===");
       console.log("原始地址信息:", addressInfo);
 
-      // 解析后端返回的地区信息
-      // 后端存储格式: country,province,city,region
-      const regionParts = addressInfo.region ? addressInfo.region.split(',') : [];
+      // 构建完整的详细地址字符串
+      // 包含所有行政区域信息：国家、省、市、区、街道、门牌号
+      const fullAddress = [
+        addressInfo.country || 'Việt Nam',
+        addressInfo.province || '',
+        addressInfo.city || '',
+        addressInfo.region || '',
+        addressInfo.street || '',
+        addressInfo.door || '',
+        addressInfo.detail || ''
+      ].filter(Boolean).join(', ');
 
       const editForm = {
         ...form,
@@ -97,41 +105,31 @@ const AddressPage = () => {
         clearancecode: addressInfo.clearancecode || '',
         telcode: addressInfo.tel_code || '84',
 
-        // 地区信息回填 - 从后端的 region 字段解析
-        userProvince: addressInfo.province || regionParts[1] || '',
-        userchengshi: addressInfo.city || regionParts[2] || '',
-        userregion: addressInfo.region_name || regionParts[3] || '',
+        // 简化地址回填 - 只填入详细地址字段
+        // 详细地址包含完整的地址信息
+        detail: fullAddress,
+        userstree: fullAddress, // 也填入街道字段作为备用
 
-        // 详细地址信息
-        userstree: addressInfo.street || '',
+        // 清空省市区字段，因为后台已关闭
+        userProvince: '',
+        userchengshi: '',
+        userregion: '',
+
+        // 其他信息
         userdoor: addressInfo.door || '',
         usercode: addressInfo.code || '',
         useremils: addressInfo.email || '',
-        detail: addressInfo.detail || '',
 
         // 坐标信息
         latitude: addressInfo.latitude || '',
         longitude: addressInfo.longitude || '',
 
         // 国家信息
-        country_id: addressInfo.country_id || 1,
-
-        // 构建用于显示的地区字符串
-        region: [
-          addressInfo.country || 'Việt Nam',
-          addressInfo.province || regionParts[1] || '',
-          addressInfo.city || regionParts[2] || '',
-          addressInfo.region_name || regionParts[3] || ''
-        ].filter(Boolean).join(', ')
+        country_id: addressInfo.country_id || 1
       };
 
       console.log("回填后的表单数据:", editForm);
-      console.log("解析的地区信息:", {
-        country: regionParts[0] || 'Việt Nam',
-        province: regionParts[1] || '',
-        city: regionParts[2] || '',
-        region: regionParts[3] || ''
-      });
+      console.log("构建的完整地址:", fullAddress);
 
       setForm(editForm);
       saveAddressFormState(editForm);
@@ -189,32 +187,12 @@ const AddressPage = () => {
       // 后端通过 explode(',', $data['region']) 解析地区信息
       // region[0] = country, region[1] = province, region[2] = city, region[3] = region
 
-      // 确保所有字段都有值，避免空字符串导致的问题
-      const province = form.userProvince || '';
-      const city = form.userchengshi || '';
-      const region = form.userregion || '';
+      // 简化地址处理 - 后台已关闭行政区域选择
+      // 只使用详细地址字段，包含完整地址信息
+      const fullDetailAddress = form.detail || form.userstree || '';
 
-      // 构建地区字符串，确保没有重复和空值
-      const regionParts = [
-        'Việt Nam',                    // 国家统一为越南
-        province,                      // 省份 (Tỉnh)
-        city,                          // 城市/县 (Thành phố/Huyện)
-        region                         // 区域/坊 (Quận/Phường)
-      ];
-
-      // 过滤空值并确保不重复
-      const filteredParts = regionParts.filter((part, index) => {
-        if (!part) return false;
-        // 检查是否与前面的部分重复
-        return !regionParts.slice(0, index).includes(part);
-      });
-
-      // 如果过滤后少于4个部分，补充空字符串确保数组长度
-      while (filteredParts.length < 4) {
-        filteredParts.push('');
-      }
-
-      const regionString = filteredParts.join(',');
+      // 构建简化的地区字符串 - 只包含越南国家信息
+      const regionString = 'Việt Nam,,,'; // 国家,省,市,区 - 省市区留空
 
       const addressData = {
         // 基本信息
@@ -232,18 +210,14 @@ const AddressPage = () => {
         // 地区信息 - 后端通过 region 字段解析
         region: regionString,
 
-        // 详细地址信息
-        userstree: form.userstree || '',  // 街道 - 后端映射到 street 字段
+        // 详细地址信息 - 简化处理
+        userstree: fullDetailAddress,     // 街道字段也使用完整地址
         door: form.userdoor || '',        // 门牌号
         code: form.usercode || '',        // 邮编
         email: form.useremils || '',      // 邮箱
 
-        // 构建完整的详细地址 - 确保不为空
-        detail: [
-          form.userstree || '',           // 街道
-          form.userdoor || '',            // 门牌号
-          form.detail || ''               // 其他详细信息
-        ].filter(Boolean).join(', ') || '详细地址信息',
+        // 详细地址 - 包含完整的地址信息
+        detail: fullDetailAddress || '详细地址信息',
 
         // 坐标信息
         latitude: form.latitude || '',
@@ -251,14 +225,8 @@ const AddressPage = () => {
       };
 
       console.log("=== 地址数据构建详情 ===");
-      console.log("原始表单数据:", {
-        userProvince: form.userProvince,
-        userchengshi: form.userchengshi,
-        userregion: form.userregion
-      });
-      console.log("构建的 regionParts:", regionParts);
-      console.log("过滤后的 filteredParts:", filteredParts);
-      console.log("最终 region 字符串:", regionString);
+      console.log("完整详细地址:", fullDetailAddress);
+      console.log("简化的 region 字符串:", regionString);
       console.log("提交地址数据 (符合后端格式):", addressData);
       console.log("========================");
       
@@ -298,33 +266,19 @@ const AddressPage = () => {
         const address = response.data.address;
         const vietnameseAddress = address.vietnamese_address || {};
         
-        // 构建符合后端期望的地区字符串格式
-        // 越南行政区划：Tỉnh(省) -> Thành phố/Huyện(市/县) -> Phường/Xã(坊/社)
-        const province = vietnameseAddress.province || '';
-        const city = vietnameseAddress.district || '';     // district 在越南是市/县级别
-        const region = vietnameseAddress.ward || '';       // ward 在越南是坊/社级别
+        // 简化反向地理编码 - 构建完整详细地址
+        // 将所有地址信息组合成一个完整的详细地址字符串
+        const fullAddress = [
+          'Việt Nam',                                    // 国家
+          vietnameseAddress.province || '',              // 省份 (Tỉnh)
+          vietnameseAddress.district || '',              // 市/县 (Thành phố/Huyện)
+          vietnameseAddress.ward || '',                  // 坊/社 (Phường/Xã)
+          vietnameseAddress.street || '',                // 街道
+          vietnameseAddress.house_number || ''           // 门牌号
+        ].filter(Boolean).join(', ');
 
-        // 构建地区数组，避免重复
-        const regionParts = [
-          'Việt Nam',                                    // 国家统一为越南
-          province,                                      // 省份 (Tỉnh)
-          city,                                          // 城市/县 (Thành phố/Huyện)
-          region                                         // 区域/坊 (Phường/Xã)
-        ];
-
-        // 过滤空值和重复值
-        const filteredParts = regionParts.filter((part, index) => {
-          if (!part) return false;
-          // 检查是否与前面的部分重复
-          return !regionParts.slice(0, index).includes(part);
-        });
-
-        // 确保数组长度为4，不足的补空字符串
-        while (filteredParts.length < 4) {
-          filteredParts.push('');
-        }
-
-        const regionString = filteredParts.join(',');
+        // 简化的地区字符串 - 只包含越南
+        const regionString = 'Việt Nam,,,'; // 国家,省,市,区 - 省市区留空
 
         const updatedForm = {
           ...form,
@@ -333,22 +287,25 @@ const AddressPage = () => {
           // 强制设置国家信息为越南
           country_id: 1,
           telcode: '84',
-          // 设置省市区信息
-          userProvince: vietnameseAddress.province || '',
-          userchengshi: vietnameseAddress.district || '',
-          userregion: vietnameseAddress.ward || '',
-          userstree: vietnameseAddress.street || '',
+
+          // 简化地址信息 - 只使用详细地址字段
+          detail: fullAddress,              // 完整详细地址
+          userstree: fullAddress,           // 街道字段也使用完整地址
           userdoor: vietnameseAddress.house_number || '',
+
+          // 清空省市区字段
+          userProvince: '',
+          userchengshi: '',
+          userregion: '',
+
           // 后端期望的 region 格式
           region: regionString
         };
 
         console.log("=== 反向地理编码数据构建 ===");
         console.log("原始越南地址数据:", vietnameseAddress);
-        console.log("解析的地区信息:", { province, city, region });
-        console.log("构建的 regionParts:", regionParts);
-        console.log("过滤后的 filteredParts:", filteredParts);
-        console.log("最终 region 字符串:", regionString);
+        console.log("构建的完整地址:", fullAddress);
+        console.log("简化的 region 字符串:", regionString);
         console.log("更新后的表单数据:", updatedForm);
         console.log("==============================");
         
