@@ -179,6 +179,73 @@ const MinePage = () => {
     });
   };
 
+  // 处理退出登录
+  const handleLogout = async () => {
+    try {
+      console.log("开始退出登录...");
+
+      // 清除本地存储的用户信息 - 使用正确的 setStorage 格式
+      await setStorage({
+        data: {
+          isLogin: false,
+          nickname: '',
+          avatarUrl: '',
+          token: '',
+          user_id: '',
+          userInfo: {
+            isLogin: false,
+            nickname: '',
+            avatarUrl: '',
+            token: '',
+            user_id: ''
+          }
+        }
+      });
+
+      // 重置用户状态
+      setUserInfo({
+        isLogin: false,
+        nickname: '',
+        avatarUrl: '',
+        token: '',
+        user_id: ''
+      });
+
+      // 重置全局状态
+      setUserState({
+        token: '',
+        user_id: '',
+        nickname: '',
+        avatarUrl: ''
+      });
+
+      // 重置资产信息
+      setAsssets({
+        balance: 0,
+        sms: 0,
+        coupon: 0,
+        points: 0
+      });
+
+      // 重置用户数据
+      setUserData({});
+
+      // 显示退出成功提示
+      showToast({
+        type: "success",
+        text: "Đã đăng xuất thành công!"
+      });
+
+      console.log("退出登录完成");
+    } catch (error) {
+      console.error("退出登录失败:", error);
+      showToast({
+        type: "fail",
+        text: "Đăng xuất thất bại, vui lòng thử lại!"
+      });
+    }
+  };
+
   // 处理二维码登录成功
   const handleQRLoginSuccess = async (loginData) => {
     console.log("二维码登录成功:", loginData);
@@ -347,16 +414,25 @@ const MinePage = () => {
             isLogin: false,
           },
         });
-      } else {
+      } else if (res.data && res.data.userInfo) {
         let assets = [];
-        assets["balance"] = res.data.userInfo["balance"];
-        assets["sms"] = res.data.userInfo["sms"];
-        assets["coupon"] = res.data.userInfo["coupon"];
-        assets["points"] = res.data.userInfo["points"];
+        assets["balance"] = res.data.userInfo["balance"] || 0;
+        assets["sms"] = res.data.userInfo["sms"] || 0;
+        assets["coupon"] = res.data.userInfo["coupon"] || 0;
+        assets["points"] = res.data.userInfo["points"] || 0;
         let userData = res.data.userInfo;
         bindOaUserId(res.data.userInfo["user_id"]);
         setUserData(userData);
         setAsssets(assets);
+      } else {
+        console.warn("用户信息数据格式不正确:", res.data);
+        // 设置默认值
+        setAsssets({
+          balance: 0,
+          sms: 0,
+          coupon: 0,
+          points: 0
+        });
       }
     });
   };
@@ -435,7 +511,21 @@ const MinePage = () => {
           </div>
           <div className="header-user-right">
             {userInfo.isLogin ? (
-              ""
+              <div className="logout-buttons">
+                <Button
+                  className="logout-btn"
+                  onClick={handleLogout}
+                  style={{
+                    backgroundColor: '#ff4757',
+                    color: 'white',
+                    fontSize: '12px',
+                    padding: '6px 12px',
+                    border: 'none'
+                  }}
+                >
+                  🚪 Đăng xuất
+                </Button>
+              </div>
             ) : (
               <div className="login-buttons">
                 <Button className="loginBtn" onClick={() => handleLogin()}>

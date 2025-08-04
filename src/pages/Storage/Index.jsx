@@ -17,8 +17,18 @@ const StoragePage = () => {
   const getStorageList = () => {
     const url = "page/storageList";
     request.get(url + "&wxapp_id=10001").then((res) => {
+      console.log("Storage list response:", res);
       const list = res.data;
-      setList(list);
+      // 确保 list 是数组
+      if (Array.isArray(list)) {
+        setList(list);
+      } else {
+        console.warn("Storage list data is not an array:", list);
+        setList([]);
+      }
+    }).catch((error) => {
+      console.error("获取仓库列表失败:", error);
+      setList([]);
     });
   };
   
@@ -45,29 +55,32 @@ const StoragePage = () => {
   return (
     <Page className="page storage">
       <Header></Header>
-      {list.map((item, index) => {
+      {Array.isArray(list) && list.map((item, index) => {
         return (
           <div
             className="container"
             key={index}
             onClick={(e) => targetDetail(e, item["shop_id"])}
           >
-            <div className="storage-title">{item["shop_name"]}</div>
+            <div className="storage-title">{item["shop_name"] || "未知仓库"}</div>
             <div className="storage-content">
               <div className="storage-row">
                 <div className="storage-row-icon">
                   <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img198.png" />
                 </div>
-                {item["region"]["province"] +
+                {item["region"] && item["region"]["province"] ?
+                  (item["region"]["province"] +
                   item["region"]["city"] +
                   item["region"]["region"] +
-                  item["address"]}
+                  item["address"]) :
+                  (item["address"] || "地址信息不完整")
+                }
               </div>
               <div className="storage-row">
                 <div className="storage-row-icon">
                   <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img199.png" />
                 </div>
-                {item["phone"]}
+                {item["phone"] || "电话未提供"}
               </div>
               <div className="storage-row" style={{ height: 70 + "px" }}>
                 <Button className="storage-view-btn">Xem chi tiết</Button>
