@@ -110,10 +110,11 @@ class Zaloapi {
                 return $this->renderError('无效的授权状态');
             }
 
-            // 使用授权码获取访问令牌
+            // 使用授权码获取访问令牌 (使用code_verifier)
             $zalo = new \app\common\library\ZaloSdk\Zalo();
             $redirectUri = 'https://zalonew.itaoth.com/index.php?s=/api/zaloapi/event';
-            $tokenResult = $zalo->getAccessTokenByCode($code, $redirectUri);
+            $codeVerifier = $stateData['code_verifier'] ?? null;
+            $tokenResult = $zalo->getAccessTokenByCode($code, $redirectUri, $codeVerifier);
 
             if (!$tokenResult || !isset($tokenResult['access_token'])) {
                 file_put_contents('oauth_callback.log', date('Y-m-d H:i:s') . " - Token exchange failed\n", FILE_APPEND);

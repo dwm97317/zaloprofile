@@ -132,21 +132,22 @@ class Passport extends Controller
             // 设置回调URL - 使用用户在开发者控制台配置的回调URL
             $redirectUri = 'https://zalonew.itaoth.com/index.php?s=/api/zaloapi/event';
 
-            // 创建Zalo实例并生成OAuth URL
+            // 创建Zalo实例并生成OAuth URL (使用PKCE)
             $zalo = new \app\common\library\ZaloSdk\Zalo();
-            $oauthUrl = $zalo->getOAuthUrl($redirectUri, $state);
+            $oauthData = $zalo->getOAuthUrl($redirectUri, $state);
 
-            // 将state存储到缓存中，有效期10分钟
+            // 将state存储到缓存中，包括code_verifier用于后续验证
             \think\Cache::set('zalo_oauth_state_' . $state, [
                 'created_at' => time(),
                 'redirect_uri' => $redirectUri,
-                'login_status' => 'pending'
+                'login_status' => 'pending',
+                'code_verifier' => $oauthData['code_verifier']
             ], 600);
 
             return $this->renderSuccess([
-                'oauth_url' => $oauthUrl,
+                'oauth_url' => $oauthData['oauth_url'],
                 'state' => $state,
-                'qr_data' => $oauthUrl, // 用于生成二维码的数据
+                'qr_data' => $oauthData['oauth_url'], // 用于生成二维码的数据
                 'expires_in' => 600 // 10分钟有效期
             ]);
 

@@ -94,37 +94,76 @@ class Zalo {
     }
 
     /**
-     * 生成OAuth授权URL
+     * 生成OAuth授权URL (使用PKCE)
      * @param string $redirectUri 回调URL
      * @param string $state 状态参数，用于防CSRF攻击
-     * @return string
+     * @return array 包含oauth_url, code_verifier, code_challenge
      */
     public function getOAuthUrl($redirectUri, $state) {
+        // 生成code_verifier (43个字符的随机字符串)
+        $codeVerifier = $this->generateCodeVerifier();
+
+        // 生成code_challenge
+        $codeChallenge = $this->generateCodeChallenge($codeVerifier);
+
         $params = [
             'app_id' => $this->config['appid'],
             'redirect_uri' => $redirectUri,
+            'code_challenge' => $codeChallenge,
             'state' => $state
         ];
 
-        return 'https://oauth.zaloapp.com/v4/permission?' . http_build_query($params);
+        return [
+            'oauth_url' => 'https://oauth.zaloapp.com/v4/permission?' . http_build_query($params),
+            'code_verifier' => $codeVerifier,
+            'code_challenge' => $codeChallenge
+        ];
     }
 
     /**
-     * 使用authorization code换取access token
+     * 生成code_verifier
+     * @return string
+     */
+    private function generateCodeVerifier() {
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        $codeVerifier = '';
+        for ($i = 0; $i < 43; $i++) {
+            $codeVerifier .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        return $codeVerifier;
+    }
+
+    /**
+     * 生成code_challenge
+     * @param string $codeVerifier
+     * @return string
+     */
+    private function generateCodeChallenge($codeVerifier) {
+        $hash = hash('sha256', $codeVerifier, true);
+        return rtrim(strtr(base64_encode($hash), '+/', '-_'), '=');
+    }
+
+    /**
+     * 使用authorization code换取access token (OAuth V4)
      * @param string $code 授权码
      * @param string $redirectUri 回调URL（必须与获取code时使用的相同）
+     * @param string $codeVerifier code verifier用于PKCE验证
      * @return array
      * @throws Exception
      */
-    public function getAccessTokenByCode($code, $redirectUri) {
+    public function getAccessTokenByCode($code, $redirectUri, $codeVerifier = null) {
         $url = "https://oauth.zaloapp.com/v4/access_token";
 
         $postData = [
-            'app_id' => $this->config['appid'],
-            'app_secret' => $this->config['secret'],
             'code' => $code,
+            'app_id' => $this->config['appid'],
             'grant_type' => 'authorization_code'
         ];
+
+        // 如果提供了code_verifier，添加到请求中
+        if ($codeVerifier) {
+            $postData['code_verifier'] = $codeVerifier;
+        }
 
         $curl = curl_init();
 
@@ -134,7 +173,8 @@ class Zalo {
             CURLOPT_POSTFIELDS => http_build_query($postData),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => [
-                'Content-Type: application/x-www-form-urlencoded'
+                'Content-Type: application/x-www-form-urlencoded',
+                'secret_key: ' . $this->config['secret']
             ]
         ]);
 
