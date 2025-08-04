@@ -48,6 +48,7 @@ const MyApp = () => {
           >
             <AnimationRoutes>
               <Route path="/" element={<HomePage></HomePage>}></Route>
+              <Route path="/zapps/757872350750612320/" element={<HomePage></HomePage>}></Route>
               <Route path="/query" element={<QueryPage></QueryPage>}></Route>
               <Route
                 path="/freight"
@@ -128,7 +129,15 @@ const MyApp = () => {
                 element={<AddressPage></AddressPage>}
               ></Route>
               <Route
+                path="/zapps/757872350750612320/address/index"
+                element={<AddressPage></AddressPage>}
+              ></Route>
+              <Route
                 path="/address/create"
+                element={<AddressCreatePage></AddressCreatePage>}
+              ></Route>
+              <Route
+                path="/zapps/757872350750612320/address/create"
                 element={<AddressCreatePage></AddressCreatePage>}
               ></Route>
               <Route
