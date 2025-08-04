@@ -618,28 +618,71 @@ const AddressPage = () => {
             </div>
           </div>
 
-          {/* Địa chỉ chi tiết */}
-          <div className="form-field" onClick={() => setaddressPicker(true)}>
-            <div className="field-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="2"/>
-                <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2"/>
-              </svg>
+          {/* 确认地址栏 - 替换原来的 Địa chỉ chi tiết */}
+          {confirmedAddress.isConfirmed ? (
+            <div className="confirmed-address-section-inline">
+              <div className="confirmed-address-header-inline">
+                <div className="address-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#4CAF50" strokeWidth="2" fill="none"/>
+                    <circle cx="12" cy="10" r="3" stroke="#4CAF50" strokeWidth="2" fill="none"/>
+                  </svg>
+                </div>
+                <span className="confirmed-label-inline">Địa chỉ đã xác nhận</span>
+                <button
+                  className="edit-address-btn-inline"
+                  onClick={() => setConfirmedAddress(prev => ({ ...prev, isConfirmed: false }))}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" fill="none"/>
+                    <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div className="confirmed-address-content-inline">
+                <div className="full-address-inline">
+                  <span className="address-text-inline">{confirmedAddress.fullAddress}</span>
+                </div>
+
+                <div className="address-components-inline">
+                  {confirmedAddress.province && (
+                    <span className="component-inline">
+                      <strong>Tỉnh/TP:</strong> {confirmedAddress.province}
+                    </span>
+                  )}
+                  {confirmedAddress.district && (
+                    <span className="component-inline">
+                      <strong>Quận/Huyện:</strong> {confirmedAddress.district}
+                    </span>
+                  )}
+                  {confirmedAddress.ward && (
+                    <span className="component-inline">
+                      <strong>Phường/Xã:</strong> {confirmedAddress.ward}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="field-input address-field">
-              {form.region ? (
-                <span className="address-text">{form.region}</span>
-              ) : (
+          ) : (
+            <div className="form-field" onClick={() => setaddressPicker(true)}>
+              <div className="field-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="2"/>
+                  <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </div>
+              <div className="field-input address-field">
                 <span className="address-placeholder">Địa chỉ chi tiết*</span>
-              )}
+              </div>
+              <div className="field-action">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
+                  <polyline points="9,11 12,14 15,10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                </svg>
+              </div>
             </div>
-            <div className="field-action">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
-                <polyline points="9,11 12,14 15,10" stroke="currentColor" strokeWidth="2" fill="none"/>
-              </svg>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Dynamic Address Form - Powered by Goong API */}
@@ -660,65 +703,7 @@ const AddressPage = () => {
           />
         </div>
 
-        {/* 新增：确认地址显示栏 */}
-        {confirmedAddress.isConfirmed && (
-          <div className="confirmed-address-section">
-            <div className="confirmed-address-header">
-              <div className="address-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#4CAF50" strokeWidth="2" fill="none"/>
-                  <circle cx="12" cy="10" r="3" stroke="#4CAF50" strokeWidth="2" fill="none"/>
-                </svg>
-              </div>
-              <span className="confirmed-label">Địa chỉ đã xác nhận</span>
-              <button
-                className="edit-address-btn"
-                onClick={() => setConfirmedAddress(prev => ({ ...prev, isConfirmed: false }))}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" fill="none"/>
-                </svg>
-              </button>
-            </div>
 
-            <div className="confirmed-address-content">
-              <div className="full-address">
-                <span className="address-text">{confirmedAddress.fullAddress}</span>
-              </div>
-
-              <div className="address-components">
-                {confirmedAddress.province && (
-                  <div className="address-component">
-                    <span className="component-label">Tỉnh/TP:</span>
-                    <span className="component-value">{confirmedAddress.province}</span>
-                  </div>
-                )}
-                {confirmedAddress.district && (
-                  <div className="address-component">
-                    <span className="component-label">Quận/Huyện:</span>
-                    <span className="component-value">{confirmedAddress.district}</span>
-                  </div>
-                )}
-                {confirmedAddress.ward && (
-                  <div className="address-component">
-                    <span className="component-label">Phường/Xã:</span>
-                    <span className="component-value">{confirmedAddress.ward}</span>
-                  </div>
-                )}
-              </div>
-
-              {confirmedAddress.coordinates && (
-                <div className="address-coordinates">
-                  <span className="coordinates-label">Tọa độ:</span>
-                  <span className="coordinates-value">
-                    {confirmedAddress.coordinates.lat.toFixed(6)}, {confirmedAddress.coordinates.lng.toFixed(6)}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Thời gian hẹn giao */}
         <div className="delivery-time-section">
