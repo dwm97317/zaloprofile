@@ -4,6 +4,9 @@ import "./compatibility-early.js";
 // JavaScript 兼容性 polyfills
 import "./polyfills.js";
 
+// Zalo Mini App 专用修复
+import "./zalo-miniapp-fixes.js";
+
 // Import React and ReactDOM
 import React from "react";
 import { createRoot } from "react-dom/client";

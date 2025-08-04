@@ -17,7 +17,7 @@ import {
   showToast,
 } from "zmp-sdk";
 
-const HomePage = () => {
+const MinePage = () => {
   const user = useRecoilValue(userState);
   const navigate = useNavigate();
   const setGuideId = useSetRecoilState(guideTypeState);
@@ -649,4 +649,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default MinePage;
