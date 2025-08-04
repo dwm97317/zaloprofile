@@ -76,7 +76,24 @@ const PackConfirmPage = () => {
   // Xử lý sự kiện nhập liệu
   const handleInput = (e) => {
     const field = e.target.dataset.field;
-    form[field] = e.target.value;
+    let value = e.target.value;
+
+    // 特殊处理金额字段
+    if (field === 'waitreceivedmoney') {
+      // 只允许数字和小数点
+      value = value.replace(/[^\d.]/g, '');
+      // 确保只有一个小数点
+      const parts = value.split('.');
+      if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+      }
+      // 限制小数位数为2位
+      if (parts[1] && parts[1].length > 2) {
+        value = parts[0] + '.' + parts[1].substring(0, 2);
+      }
+    }
+
+    form[field] = value;
   };
 
   // Đặt chấp nhận chính sách bảo mật
@@ -128,15 +145,22 @@ const PackConfirmPage = () => {
       return;
     }
 
-    // 修复：后端使用 postData()[0] 获取数据，需要发送数组格式
-    // 确保 packids 和 pack_ids 都是逗号分隔的字符串，然后包装在数组中
+    // 后端已修复，现在可以处理字符串和数组格式
+    // 确保 packids 和 pack_ids 都是逗号分隔的字符串
     const packidsStr = Array.isArray(form["packids"]) ? form["packids"].join(',') : form["packids"];
     const packIdsStr = Array.isArray(service) ? service.join(',') : service;
 
+    // 验证和处理 waitreceivedmoney
+    let waitreceivedmoney = form["waitreceivedmoney"] || "0";
+    if (isNaN(parseFloat(waitreceivedmoney))) {
+      waitreceivedmoney = "0";
+    }
+
     const submitData = {
       ...form,
-      pack_ids: [packIdsStr],
-      packids: [packidsStr]
+      pack_ids: packIdsStr,
+      packids: packidsStr,
+      waitreceivedmoney: waitreceivedmoney
     };
 
     console.log("提交打包数据:", submitData);
