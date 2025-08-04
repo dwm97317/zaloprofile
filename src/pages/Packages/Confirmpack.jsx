@@ -127,23 +127,44 @@ const PackConfirmPage = () => {
       });
       return;
     }
-    form["pack_ids"] = service;
+
+    // 修复：将数组转换为字符串格式，符合后端 API 期望
+    const submitData = {
+      ...form,
+      pack_ids: Array.isArray(service) ? service.join(',') : service,
+      packids: Array.isArray(form["packids"]) ? form["packids"].join(',') : form["packids"]
+    };
+
+    console.log("提交打包数据:", submitData);
+
     setLoading(true);
     setLoadingText("Vui lòng đợi");
-    request.post("package/postpack&wxapp_id=10001", { ...form }).then((res) => {
+    request.post("package/postpack&wxapp_id=10001", submitData).then((res) => {
       setLoading(false);
       setLoadingText("");
+      console.log("打包响应:", res);
       if (res.code == 1) {
         showToast({
           message: "Đóng gói thành công",
         });
+        // 成功后跳转到包裹列表页面
+        setTimeout(() => {
+          navigate("/package");
+        }, 1500);
         return;
       } else {
         showToast({
-          message: res.msg,
+          message: res.msg || "Đóng gói thất bại, vui lòng thử lại",
         });
         return;
       }
+    }).catch((error) => {
+      setLoading(false);
+      setLoadingText("");
+      console.error("打包请求失败:", error);
+      showToast({
+        message: "Lỗi kết nối, vui lòng thử lại",
+      });
     });
   };
 
@@ -159,7 +180,9 @@ const PackConfirmPage = () => {
       getAddressSList();
     }
     util.setBarPageView("Xác nhận đóng gói");
-    form["packids"] = packInfos["ids"];
+    // 修复：确保 packids 是字符串格式
+    form["packids"] = Array.isArray(packInfos["ids"]) ? packInfos["ids"].join(',') : packInfos["ids"];
+    console.log("初始化包裹信息:", { packInfos, packids: form["packids"] });
     return () => {};
   }, []);
   
