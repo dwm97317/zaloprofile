@@ -463,3 +463,60 @@
     }
   }
 }
+
+// 当前位置按钮区域
+.current-location-section {
+  margin: 16px 0;
+  text-align: center;
+
+  .current-location-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    transition: all 0.3s ease;
+    min-width: 180px;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      background: #ccc;
+      box-shadow: none;
+      transform: none;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// 地址下拉框增强样式
+.address-selection {
+  .dropdown-field {
+    &:disabled {
+      opacity: 0.6;
+
+      .address-dropdown {
+        background: #f5f5f5;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .address-dropdown {
+    &:disabled {
+      background: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+    }
+  }
+}

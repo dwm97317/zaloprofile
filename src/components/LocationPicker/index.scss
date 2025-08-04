@@ -1,0 +1,240 @@
+.location-picker {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .map-container {
+    width: 100%;
+    background: #f0f0f0;
+  }
+
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+
+    .loading-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #ff4757;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      .loading-text {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .current-location-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+    background: white;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    transition: all 0.2s;
+    z-index: 100;
+
+    &:hover {
+      background: #f8f9fa;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none;
+    }
+
+    .btn-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #ff4757;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    svg {
+      color: #666;
+    }
+  }
+
+  .address-display {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    z-index: 100;
+
+    .address-icon {
+      color: #ff4757;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .address-text {
+      flex: 1;
+      font-size: 14px;
+      color: #333;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .location-picker {
+    .current-location-btn {
+      width: 40px;
+      height: 40px;
+      top: 8px;
+      right: 8px;
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .address-display {
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      padding: 10px;
+
+      .address-text {
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+// 地图控件样式覆盖
+.location-picker {
+  :global {
+    .goong-ctrl-bottom-left,
+    .goong-ctrl-bottom-right {
+      display: none;
+    }
+
+    .goong-ctrl-top-right {
+      top: 60px;
+      right: 12px;
+    }
+
+    .goong-ctrl-zoom {
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+      button {
+        background: white;
+        border: none;
+        color: #333;
+        font-size: 18px;
+        font-weight: bold;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          background: #f8f9fa;
+        }
+
+        &:first-child {
+          border-radius: 6px 6px 0 0;
+        }
+
+        &:last-child {
+          border-radius: 0 0 6px 6px;
+          border-top: 1px solid #e1e5e9;
+        }
+      }
+    }
+  }
+}
+
+// 暗色主题支持
+@media (prefers-color-scheme: dark) {
+  .location-picker {
+    .current-location-btn {
+      background: #2d3748;
+      color: #e2e8f0;
+
+      &:hover {
+        background: #4a5568;
+      }
+
+      svg {
+        color: #e2e8f0;
+      }
+    }
+
+    .address-display {
+      background: #2d3748;
+      color: #e2e8f0;
+
+      .address-text {
+        color: #e2e8f0;
+      }
+    }
+
+    .loading-overlay {
+      background: rgba(45, 55, 72, 0.9);
+
+      .loading-content {
+        .loading-text {
+          color: #e2e8f0;
+        }
+      }
+    }
+  }
+}

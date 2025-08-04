@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goong API 测试页面</title>
+    <link href='https://cdn.jsdelivr.net/npm/@goongmaps/goong-js@1.0.9/dist/goong-js.css' rel='stylesheet' />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+        .section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .suggestions {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 5px;
+        }
+        .suggestion-item {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+        }
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        .result {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .coordinates {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .coord-input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Goong API 功能测试</h1>
+            <p>测试越南地址搜索、地图显示和地理编码功能</p>
+        </div>
+        
+        <div class="content">
+            <!-- 地图和地址搜索 -->
+            <div class="section">
+                <h3>📍 地图和地址搜索</h3>
+                <div id="map"></div>
+                
+                <div class="search-container">
+                    <input type="text" id="searchInput" class="search-input" 
+                           placeholder="输入地址搜索 (例如: Ho Chi Minh City, Hanoi)">
+                    <div id="suggestions" class="suggestions" style="display: none;"></div>
+                </div>
+                
+                <div>
+                    <button class="btn" onclick="getCurrentLocation()">📍 获取当前位置</button>
+                    <button class="btn" onclick="clearMap()">🗑️ 清除标记</button>
+                </div>
+                
+                <div id="mapStatus" class="status" style="display: none;"></div>
+            </div>
+            
+            <!-- API测试工具 -->
+            <div class="section">
+                <h3>🔧 API 测试工具</h3>
+                
+                <!-- 地址自动补全测试 -->
+                <div style="margin-bottom: 20px;">
+                    <h4>地址自动补全</h4>
+                    <input type="text" id="autocompleteInput" class="search-input" 
+                           placeholder="输入地址关键词">
+                    <button class="btn" onclick="testAutocomplete()">测试自动补全</button>
+                    <div id="autocompleteResult" class="result"></div>
+                </div>
+                
+                <!-- 反向地理编码测试 -->
+                <div style="margin-bottom: 20px;">
+                    <h4>反向地理编码 (坐标转地址)</h4>
+                    <div class="coordinates">
+                        <input type="number" id="latInput" class="coord-input" 
+                               placeholder="纬度 (例如: 10.762622)" step="any">
+                        <input type="number" id="lngInput" class="coord-input" 
+                               placeholder="经度 (例如: 106.660172)" step="any">
+                    </div>
+                    <button class="btn" onclick="testReverseGeocode()">测试反向地理编码</button>
+                    <div id="reverseResult" class="result"></div>
+                </div>
+                
+                <!-- 地理编码测试 -->
+                <div style="margin-bottom: 20px;">
+                    <h4>地理编码 (地址转坐标)</h4>
+                    <input type="text" id="geocodeInput" class="search-input" 
+                           placeholder="输入完整地址">
+                    <button class="btn" onclick="testGeocode()">测试地理编码</button>
+                    <div id="geocodeResult" class="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src='https://cdn.jsdelivr.net/npm/@goongmaps/goong-js@1.0.9/dist/goong-js.js'></script>
+    <script>
+        // Goong API 配置
+        const GOONG_API_KEY = '5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj';
+        const GOONG_BASE_URL = 'https://rsapi.goong.io';
+        
+        // 设置访问令牌
+        goongjs.accessToken = GOONG_API_KEY;
+        
+        // 地图实例
+        let map;
+        let marker;
+        let searchTimeout;
+        
+        // 初始化地图
+        function initMap() {
+            try {
+                map = new goongjs.Map({
+                    container: 'map',
+                    style: 'https://tiles.goong.io/assets/goong_map_web.json',
+                    center: [106.660172, 10.762622], // Ho Chi Minh City
+                    zoom: 12
+                });
+                
+                map.on('load', function() {
+                    showStatus('mapStatus', '地图加载成功！', 'success');
+                });
+                
+                map.on('click', function(e) {
+                    const coords = e.lngLat;
+                    addMarker(coords.lng, coords.lat);
+                    reverseGeocode(coords.lat, coords.lng);
+                });
+                
+            } catch (error) {
+                showStatus('mapStatus', '地图初始化失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 添加标记
+        function addMarker(lng, lat) {
+            if (marker) {
+                marker.remove();
+            }
+            
+            marker = new goongjs.Marker()
+                .setLngLat([lng, lat])
+                .addTo(map);
+                
+            map.flyTo({
+                center: [lng, lat],
+                zoom: 15
+            });
+        }
+        
+        // 清除地图标记
+        function clearMap() {
+            if (marker) {
+                marker.remove();
+                marker = null;
+            }
+        }
+        
+        // 显示状态信息
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            element.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // 显示结果
+        function showResult(elementId, data) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        // 地址搜索输入处理
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                hideSuggestions();
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                searchAddresses(query);
+            }, 300);
+        });
+        
+        // 搜索地址
+        async function searchAddresses(query) {
+            try {
+                const response = await fetch(`${GOONG_BASE_URL}/Place/AutoComplete?api_key=${GOONG_API_KEY}&input=${encodeURIComponent(query)}&limit=5`);
+                const data = await response.json();
+                
+                if (data.status === 'OK' && data.predictions) {
+                    showSuggestions(data.predictions);
+                } else {
+                    hideSuggestions();
+                }
+            } catch (error) {
+                console.error('搜索地址失败:', error);
+                hideSuggestions();
+            }
+        }
+        
+        // 显示搜索建议
+        function showSuggestions(predictions) {
+            const suggestionsDiv = document.getElementById('suggestions');
+            suggestionsDiv.innerHTML = '';
+            
+            predictions.forEach(prediction => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.textContent = prediction.description;
+                item.onclick = () => selectSuggestion(prediction);
+                suggestionsDiv.appendChild(item);
+            });
+            
+            suggestionsDiv.style.display = 'block';
+        }
+        
+        // 隐藏搜索建议
+        function hideSuggestions() {
+            document.getElementById('suggestions').style.display = 'none';
+        }
+        
+        // 选择搜索建议
+        async function selectSuggestion(prediction) {
+            document.getElementById('searchInput').value = prediction.description;
+            hideSuggestions();
+            
+            // 获取地点详情
+            try {
+                const response = await fetch(`${GOONG_BASE_URL}/Place/Detail?api_key=${GOONG_API_KEY}&place_id=${prediction.place_id}`);
+                const data = await response.json();
+                
+                if (data.status === 'OK' && data.result && data.result.geometry) {
+                    const location = data.result.geometry.location;
+                    addMarker(location.lng, location.lat);
+                    showStatus('mapStatus', `已定位到: ${prediction.description}`, 'success');
+                }
+            } catch (error) {
+                console.error('获取地点详情失败:', error);
+            }
+        }
+        
+        // 获取当前位置
+        function getCurrentLocation() {
+            if (!navigator.geolocation) {
+                showStatus('mapStatus', '浏览器不支持地理定位', 'error');
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    addMarker(lng, lat);
+                    reverseGeocode(lat, lng);
+                    showStatus('mapStatus', '已获取当前位置', 'success');
+                },
+                function(error) {
+                    showStatus('mapStatus', '获取位置失败: ' + error.message, 'error');
+                }
+            );
+        }
+        
+        // 测试地址自动补全
+        async function testAutocomplete() {
+            const input = document.getElementById('autocompleteInput').value.trim();
+            if (!input) {
+                alert('请输入地址关键词');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${GOONG_BASE_URL}/Place/AutoComplete?api_key=${GOONG_API_KEY}&input=${encodeURIComponent(input)}&limit=10`);
+                const data = await response.json();
+                showResult('autocompleteResult', data);
+            } catch (error) {
+                showResult('autocompleteResult', { error: error.message });
+            }
+        }
+        
+        // 测试反向地理编码
+        async function testReverseGeocode() {
+            const lat = document.getElementById('latInput').value;
+            const lng = document.getElementById('lngInput').value;
+            
+            if (!lat || !lng) {
+                alert('请输入纬度和经度');
+                return;
+            }
+            
+            reverseGeocode(lat, lng);
+        }
+        
+        // 反向地理编码
+        async function reverseGeocode(lat, lng) {
+            try {
+                const response = await fetch(`${GOONG_BASE_URL}/Geocode?api_key=${GOONG_API_KEY}&latlng=${lat},${lng}`);
+                const data = await response.json();
+                showResult('reverseResult', data);
+            } catch (error) {
+                showResult('reverseResult', { error: error.message });
+            }
+        }
+        
+        // 测试地理编码
+        async function testGeocode() {
+            const address = document.getElementById('geocodeInput').value.trim();
+            if (!address) {
+                alert('请输入地址');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${GOONG_BASE_URL}/Geocode?api_key=${GOONG_API_KEY}&address=${encodeURIComponent(address)}`);
+                const data = await response.json();
+                showResult('geocodeResult', data);
+                
+                // 如果有结果，在地图上显示
+                if (data.status === 'OK' && data.results && data.results[0] && data.results[0].geometry) {
+                    const location = data.results[0].geometry.location;
+                    addMarker(location.lng, location.lat);
+                }
+            } catch (error) {
+                showResult('geocodeResult', { error: error.message });
+            }
+        }
+        
+        // 页面加载完成后初始化地图
+        window.addEventListener('load', function() {
+            initMap();
+            
+            // 设置默认测试值
+            document.getElementById('latInput').value = '10.762622';
+            document.getElementById('lngInput').value = '106.660172';
+            document.getElementById('autocompleteInput').value = 'Ho Chi Minh City';
+            document.getElementById('geocodeInput').value = 'Hồ Chí Minh, Quận 1, Phường Bến Nghé';
+        });
+        
+        // 点击页面其他地方隐藏建议
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                hideSuggestions();
+            }
+        });
+    </script>
+</body>
+</html>

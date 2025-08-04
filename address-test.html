@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地址功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .test-result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border-left: 4px solid #007bff;
+        }
+        .address-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        .label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .value {
+            color: #212529;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .coordinates {
+            font-family: monospace;
+            background: #f1f3f4;
+            padding: 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>地址解析功能测试</h1>
+    
+    <div class="test-section">
+        <div class="test-title">1. 地址自动完成测试</div>
+        <p>测试地址补全后提取行政区划信息的功能</p>
+        <button onclick="testAddressAutocomplete()">测试地址自动完成</button>
+        <div id="autocomplete-result" class="test-result" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">2. 反向地理编码测试</div>
+        <p>测试从坐标获取地址信息的功能</p>
+        <button onclick="testReverseGeocode()">测试反向地理编码</button>
+        <div id="reverse-result" class="test-result" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">3. 地址解析工具测试</div>
+        <p>测试地址组件解析功能</p>
+        <button onclick="testAddressParser()">测试地址解析</button>
+        <div id="parser-result" class="test-result" style="display:none;"></div>
+    </div>
+
+    <script>
+        const GOONG_API_KEY = '5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj';
+        const GOONG_BASE_URL = 'https://rsapi.goong.io';
+
+        // 地址解析工具函数（复制自addressParser.js）
+        function parseAddressComponents(addressComponents) {
+            if (!addressComponents || !Array.isArray(addressComponents)) {
+                return { province: '', district: '', ward: '', street: '' };
+            }
+
+            let province = '', district = '', ward = '', street = '';
+
+            addressComponents.forEach(component => {
+                if (component.types && Array.isArray(component.types)) {
+                    if (component.types.includes('administrative_area_level_1')) {
+                        province = component.long_name || component.short_name;
+                    }
+                    else if (component.types.includes('administrative_area_level_2')) {
+                        district = component.long_name || component.short_name;
+                    }
+                    else if (component.types.includes('administrative_area_level_3') || 
+                             component.types.includes('sublocality_level_1') ||
+                             component.types.includes('sublocality')) {
+                        ward = component.long_name || component.short_name;
+                    }
+                    else if (component.types.includes('route') || 
+                             component.types.includes('street_address')) {
+                        street = component.long_name || component.short_name;
+                    }
+                }
+            });
+
+            return { province, district, ward, street };
+        }
+
+        function parseAddressData(addressData) {
+            let result = {
+                province: '', district: '', ward: '', street: '',
+                coordinates: null, formatted_address: ''
+            };
+
+            if (!addressData) return result;
+
+            if (addressData.address_components) {
+                const componentResult = parseAddressComponents(addressData.address_components);
+                result = { ...result, ...componentResult };
+            }
+
+            if (addressData.geometry && addressData.geometry.location) {
+                result.coordinates = {
+                    lat: addressData.geometry.location.lat,
+                    lng: addressData.geometry.location.lng
+                };
+            }
+
+            result.formatted_address = addressData.formatted_address || addressData.description || '';
+            return result;
+        }
+
+        function displayAddressInfo(containerId, addressData) {
+            const container = document.getElementById(containerId);
+            container.style.display = 'block';
+            
+            container.innerHTML = `
+                <div class="address-info">
+                    <div class="info-item">
+                        <span class="label">Tỉnh/Thành phố:</span>
+                        <span class="value">${addressData.province || 'Chưa xác định'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Quận/Huyện:</span>
+                        <span class="value">${addressData.district || 'Chưa xác định'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Phường/Xã:</span>
+                        <span class="value">${addressData.ward || 'Chưa xác định'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Đường:</span>
+                        <span class="value">${addressData.street || 'Chưa xác định'}</span>
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <strong>Địa chỉ đầy đủ:</strong><br>
+                    ${addressData.formatted_address || 'Không có'}
+                </div>
+                ${addressData.coordinates ? `
+                <div style="margin-top: 10px;">
+                    <strong>Tọa độ:</strong><br>
+                    <span class="coordinates">Lat: ${addressData.coordinates.lat}, Lng: ${addressData.coordinates.lng}</span>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        async function testAddressAutocomplete() {
+            try {
+                // 测试地址搜索
+                const searchQuery = 'Quận 1, Thành phố Hồ Chí Minh';
+                const response = await fetch(`${GOONG_BASE_URL}/Place/AutoComplete?` + new URLSearchParams({
+                    api_key: GOONG_API_KEY,
+                    input: searchQuery,
+                    location: '10.762622,106.660172',
+                    radius: 50000,
+                    language: 'vi'
+                }));
+
+                const data = await response.json();
+                
+                if (data && data.predictions && data.predictions.length > 0) {
+                    const firstResult = data.predictions[0];
+                    
+                    // 获取详细信息
+                    const detailResponse = await fetch(`${GOONG_BASE_URL}/Place/Detail?` + new URLSearchParams({
+                        api_key: GOONG_API_KEY,
+                        place_id: firstResult.place_id
+                    }));
+                    
+                    const detailData = await detailResponse.json();
+                    
+                    if (detailData && detailData.result) {
+                        const parsedAddress = parseAddressData(detailData.result);
+                        displayAddressInfo('autocomplete-result', parsedAddress);
+                    }
+                }
+            } catch (error) {
+                console.error('Address autocomplete test error:', error);
+                document.getElementById('autocomplete-result').innerHTML = `<div style="color: red;">错误: ${error.message}</div>`;
+                document.getElementById('autocomplete-result').style.display = 'block';
+            }
+        }
+
+        async function testReverseGeocode() {
+            try {
+                // 测试反向地理编码 (胡志明市市中心)
+                const lat = 10.762622;
+                const lng = 106.660172;
+                
+                const response = await fetch(`${GOONG_BASE_URL}/Geocode?` + new URLSearchParams({
+                    api_key: GOONG_API_KEY,
+                    latlng: `${lat},${lng}`
+                }));
+
+                const data = await response.json();
+
+                if (data && data.results && data.results.length > 0) {
+                    const parsedAddress = parseAddressData(data.results[0]);
+                    displayAddressInfo('reverse-result', parsedAddress);
+                }
+            } catch (error) {
+                console.error('Reverse geocode test error:', error);
+                document.getElementById('reverse-result').innerHTML = `<div style="color: red;">错误: ${error.message}</div>`;
+                document.getElementById('reverse-result').style.display = 'block';
+            }
+        }
+
+        async function testAddressParser() {
+            // 模拟地址组件数据
+            const mockAddressComponents = [
+                {
+                    long_name: "Thành phố Hồ Chí Minh",
+                    short_name: "TP.HCM",
+                    types: ["administrative_area_level_1", "political"]
+                },
+                {
+                    long_name: "Quận 1",
+                    short_name: "Q.1",
+                    types: ["administrative_area_level_2", "political"]
+                },
+                {
+                    long_name: "Phường Bến Nghé",
+                    short_name: "P.Bến Nghé",
+                    types: ["administrative_area_level_3", "political"]
+                },
+                {
+                    long_name: "Đường Nguyễn Huệ",
+                    short_name: "Đ.Nguyễn Huệ",
+                    types: ["route"]
+                }
+            ];
+
+            const mockAddressData = {
+                address_components: mockAddressComponents,
+                formatted_address: "Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, Thành phố Hồ Chí Minh",
+                geometry: {
+                    location: {
+                        lat: 10.762622,
+                        lng: 106.660172
+                    }
+                }
+            };
+
+            const parsedAddress = parseAddressData(mockAddressData);
+            displayAddressInfo('parser-result', parsedAddress);
+        }
+    </script>
+</body>
+</html>

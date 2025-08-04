@@ -1,0 +1,473 @@
+.enhanced-address-selector {
+  max-width: 100%;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  // 地址搜索
+  .address-search {
+    margin-bottom: 20px;
+
+    .search-input-container {
+      position: relative;
+
+      .suggestions-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 4px;
+
+        .suggestion-item {
+          padding: 12px 16px;
+          cursor: pointer;
+          border-bottom: 1px solid #f5f5f5;
+          transition: background-color 0.2s ease;
+
+          &:hover {
+            background-color: #f8f9fa;
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .main-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+          }
+
+          .secondary-text {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.3;
+          }
+        }
+      }
+
+      .loading-icon {
+        animation: spin 1s linear infinite;
+        display: inline-block;
+      }
+
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    }
+  }
+
+  // 地址表单
+  .address-form {
+    .form-row {
+      margin-bottom: 16px;
+
+      .form-field {
+        label {
+          display: block;
+          font-size: 14px;
+          font-weight: 500;
+          color: #333;
+          margin-bottom: 6px;
+        }
+
+        .zmp-select,
+        .zmp-input {
+          width: 100%;
+          border-radius: 8px;
+          border: 1px solid #ddd;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+          &:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+          }
+
+          &:disabled {
+            background-color: #f8f9fa;
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+        }
+
+        .zmp-select {
+          .zmp-select-selector {
+            border: none;
+            background: transparent;
+          }
+        }
+      }
+    }
+  }
+
+  // 地图部分
+  .map-section {
+    margin-top: 20px;
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .goong-map-container {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+  }
+
+  // 地址摘要
+  .address-summary {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+      line-height: 1.4;
+    }
+  }
+
+  // 响应式设计
+  @media (max-width: 768px) {
+    padding: 12px;
+    border-radius: 8px;
+
+    .address-search {
+      margin-bottom: 16px;
+
+      .suggestions-dropdown {
+        max-height: 250px;
+
+        .suggestion-item {
+          padding: 10px 12px;
+
+          .main-text {
+            font-size: 13px;
+          }
+
+          .secondary-text {
+            font-size: 11px;
+          }
+        }
+      }
+    }
+
+    .address-form {
+      .form-row {
+        margin-bottom: 12px;
+
+        .form-field {
+          label {
+            font-size: 13px;
+            margin-bottom: 4px;
+          }
+        }
+      }
+    }
+
+    .map-section {
+      margin-top: 16px;
+
+      label {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+    }
+
+    .address-summary {
+      margin-top: 16px;
+      padding: 12px;
+
+      h4 {
+        font-size: 13px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px;
+
+    .address-form {
+      .form-row {
+        margin-bottom: 10px;
+      }
+    }
+
+    .suggestions-dropdown {
+      .suggestion-item {
+        padding: 8px 10px;
+      }
+    }
+  }
+
+  // 深色主题支持
+  @media (prefers-color-scheme: dark) {
+    background: #2a2a2a;
+    color: #e0e0e0;
+
+    .address-search {
+      .suggestions-dropdown {
+        background: #333;
+        border-color: #555;
+
+        .suggestion-item {
+          border-bottom-color: #444;
+
+          &:hover {
+            background-color: #404040;
+          }
+
+          .main-text {
+            color: #e0e0e0;
+          }
+
+          .secondary-text {
+            color: #aaa;
+          }
+        }
+      }
+    }
+
+    .address-form {
+      .form-field {
+        label {
+          color: #e0e0e0;
+        }
+
+        .zmp-select,
+        .zmp-input {
+          background: #333;
+          border-color: #555;
+          color: #e0e0e0;
+
+          &:focus {
+            border-color: #4dabf7;
+            box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.25);
+          }
+
+          &:disabled {
+            background-color: #404040;
+          }
+        }
+      }
+    }
+
+    .map-section {
+      label {
+        color: #e0e0e0;
+      }
+
+      .goong-map-container {
+        border-color: #555;
+      }
+    }
+
+    .address-summary {
+      background: #333;
+      border-left-color: #4dabf7;
+
+      h4 {
+        color: #e0e0e0;
+      }
+
+      p {
+        color: #bbb;
+      }
+    }
+  }
+
+  // 高对比度模式
+  @media (prefers-contrast: high) {
+    border: 2px solid #000;
+
+    .address-form {
+      .form-field {
+        .zmp-select,
+        .zmp-input {
+          border: 2px solid #000;
+
+          &:focus {
+            border-color: #0066cc;
+            box-shadow: 0 0 0 2px #0066cc;
+          }
+        }
+      }
+    }
+
+    .suggestions-dropdown {
+      border: 2px solid #000;
+
+      .suggestion-item {
+        border-bottom: 2px solid #000;
+
+        &:hover {
+          background: #f0f0f0;
+        }
+      }
+    }
+  }
+
+  // 无障碍支持
+  .form-field {
+    .zmp-select:focus,
+    .zmp-input:focus {
+      outline: 2px solid #007bff;
+      outline-offset: 2px;
+    }
+  }
+
+  .suggestion-item {
+    &:focus {
+      outline: 2px solid #007bff;
+      outline-offset: -2px;
+      background-color: #e3f2fd;
+    }
+  }
+
+  // 加载状态
+  &.loading {
+    pointer-events: none;
+    opacity: 0.7;
+
+    .form-field {
+      .zmp-select,
+      .zmp-input {
+        background-color: #f8f9fa;
+      }
+    }
+  }
+
+  // 错误状态
+  &.error {
+    .form-field {
+      .zmp-select,
+      .zmp-input {
+        border-color: #dc3545;
+
+        &:focus {
+          border-color: #dc3545;
+          box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+        }
+      }
+    }
+  }
+
+  // 成功状态
+  &.success {
+    .address-summary {
+      border-left-color: #28a745;
+      background: #d4edda;
+
+      h4 {
+        color: #155724;
+      }
+
+      p {
+        color: #155724;
+      }
+    }
+  }
+
+  // 动画效果
+  .suggestions-dropdown {
+    animation: slideDown 0.2s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .address-summary {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+// 全局样式补充
+.zmp-select-dropdown {
+  .zmp-select-item {
+    padding: 8px 12px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+
+    &.zmp-select-item-option-selected {
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+  }
+}
+
+// 移动端优化
+@media (hover: none) and (pointer: coarse) {
+  .enhanced-address-selector {
+    .suggestion-item {
+      padding: 14px 16px;
+      
+      .main-text {
+        font-size: 15px;
+      }
+
+      .secondary-text {
+        font-size: 13px;
+      }
+    }
+
+    .form-field {
+      .zmp-select,
+      .zmp-input {
+        min-height: 44px;
+        font-size: 16px; // 防止iOS缩放
+      }
+    }
+  }
+} 

@@ -1,7 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Input, Sheet } from 'zmp-ui';
-import request from '../../utils/request';
+import axios from 'axios';
 import './style.scss';
+
+// Goong API 配置
+const GOONG_API_KEY = '5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj';
+const GOONG_BASE_URL = 'https://rsapi.goong.io';
+
+// 解析越南地址组件
+const parseVietnameseAddress = (addressComponents) => {
+  const result = {
+    province: '',
+    district: '',
+    ward: '',
+    street: '',
+    house_number: ''
+  };
+
+  addressComponents.forEach(component => {
+    const types = component.types || [];
+
+    if (types.includes('administrative_area_level_1')) {
+      result.province = component.long_name;
+    } else if (types.includes('administrative_area_level_2')) {
+      result.district = component.long_name;
+    } else if (types.includes('administrative_area_level_3') || types.includes('sublocality_level_1')) {
+      result.ward = component.long_name;
+    } else if (types.includes('route')) {
+      result.street = component.long_name;
+    } else if (types.includes('street_number')) {
+      result.house_number = component.long_name;
+    }
+  });
+
+  return result;
+};
 
 const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,7 +45,7 @@ const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} })
   const searchTimeout = useRef(null);
 
   /**
-   * 搜索地址建议
+   * 直接调用 Goong API 搜索地址建议
    */
   const searchAddresses = async (query) => {
     if (!query || query.length < 2) {
@@ -22,19 +55,23 @@ const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} })
 
     setLoading(true);
     try {
-      const response = await request.get(`goong_address/autocomplete`, {
-        input: query,
-        limit: 10
+      const response = await axios.get(`${GOONG_BASE_URL}/Place/AutoComplete`, {
+        params: {
+          api_key: GOONG_API_KEY,
+          input: query,
+          limit: 10,
+          location: '10.762622,106.660172', // 胡志明市中心坐标
+          radius: 50000 // 50km 半径
+        }
       });
 
-      if (response.code === 1) {
-        setSuggestions(response.data.suggestions || []);
+      if (response.data && response.data.predictions) {
+        setSuggestions(response.data.predictions);
       } else {
-        console.error('地址搜索失败:', response.msg);
         setSuggestions([]);
       }
     } catch (error) {
-      console.error('地址搜索错误:', error);
+      console.error('地址搜索失败:', error);
       setSuggestions([]);
     } finally {
       setLoading(false);
@@ -42,19 +79,25 @@ const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} })
   };
 
   /**
-   * 获取地点详情
+   * 直接调用 Goong API 获取地点详情
    */
   const getPlaceDetail = async (placeId) => {
     setLoading(true);
     try {
-      const response = await request.get(`goong_address/place_detail`, {
-        place_id: placeId
+      const response = await axios.get(`${GOONG_BASE_URL}/Place/Detail`, {
+        params: {
+          api_key: GOONG_API_KEY,
+          place_id: placeId
+        }
       });
 
-      if (response.code === 1 && response.data.place) {
-        const place = response.data.place;
-        const vietnameseAddress = place.vietnamese_address || {};
-        
+      if (response.data && response.data.result) {
+        const place = response.data.result;
+
+        // 解析越南地址组件
+        const addressComponents = place.address_components || [];
+        const vietnameseAddress = parseVietnameseAddress(addressComponents);
+
         const addressData = {
           place_id: place.place_id,
           formatted_address: place.formatted_address,
@@ -79,20 +122,23 @@ const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} })
   };
 
   /**
-   * 反向地理编码
+   * 直接调用 Goong API 反向地理编码
    */
   const reverseGeocode = async (lat, lng) => {
     setLoading(true);
     try {
-      const response = await request.get(`goong_address/reverse_geocode`, {
-        lat: lat,
-        lng: lng
+      const response = await axios.get(`${GOONG_BASE_URL}/Geocode`, {
+        params: {
+          api_key: GOONG_API_KEY,
+          latlng: `${lat},${lng}`
+        }
       });
 
-      if (response.code === 1 && response.data.address) {
-        const address = response.data.address;
-        const vietnameseAddress = address.vietnamese_address || {};
-        
+      if (response.data && response.data.results && response.data.results.length > 0) {
+        const address = response.data.results[0];
+        const addressComponents = address.address_components || [];
+        const vietnameseAddress = parseVietnameseAddress(addressComponents);
+
         const addressData = {
           formatted_address: address.formatted_address,
           province: vietnameseAddress.province || '',
@@ -139,21 +185,65 @@ const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} })
     if (addressData) {
       setSearchQuery(addressData.formatted_address);
       setSuggestions([]);
+
+      // 如果没有获取到完整的省市区信息，尝试从格式化地址中解析
+      if (!addressData.province || !addressData.district) {
+        const fallbackAddress = parseAddressFromFormatted(addressData.formatted_address);
+        const mergedAddress = {
+          ...addressData,
+          province: addressData.province || fallbackAddress.province,
+          district: addressData.district || fallbackAddress.district,
+          ward: addressData.ward || fallbackAddress.ward
+        };
+        setSelectedAddress(mergedAddress);
+      }
     }
+  };
+
+  /**
+   * 从格式化地址中解析省市区信息（备用方案）
+   */
+  const parseAddressFromFormatted = (formattedAddress) => {
+    const result = { province: '', district: '', ward: '' };
+
+    if (formattedAddress) {
+      // 越南地址通常包含这些关键词
+      if (formattedAddress.includes('Hồ Chí Minh') || formattedAddress.includes('Ho Chi Minh')) {
+        result.province = 'Thành phố Hồ Chí Minh';
+      } else if (formattedAddress.includes('Hà Nội') || formattedAddress.includes('Hanoi')) {
+        result.province = 'Hà Nội';
+      } else if (formattedAddress.includes('Đà Nẵng') || formattedAddress.includes('Da Nang')) {
+        result.province = 'Đà Nẵng';
+      }
+
+      // 提取区信息
+      const districtMatch = formattedAddress.match(/Quận\s+(\d+|[A-Za-z\s]+)/i);
+      if (districtMatch) {
+        result.district = `Quận ${districtMatch[1]}`;
+      }
+
+      // 提取坊信息
+      const wardMatch = formattedAddress.match(/Phường\s+([^,]+)/i);
+      if (wardMatch) {
+        result.ward = `Phường ${wardMatch[1]}`;
+      }
+    }
+
+    return result;
   };
 
   /**
    * 确认选择
    */
   const handleConfirm = () => {
-    if (selectedAddress.province && selectedAddress.district && selectedAddress.ward) {
+    if (selectedAddress.formatted_address) {
       // 格式化为旧系统兼容的格式
       const formattedData = {
-        selectedProvinceName: selectedAddress.province,
-        selectedCityName: selectedAddress.district,
-        selectedWardName: selectedAddress.ward,
-        street: selectedAddress.street,
-        house_number: selectedAddress.house_number,
+        selectedProvinceName: selectedAddress.province || 'Thành phố Hồ Chí Minh',
+        selectedCityName: selectedAddress.district || 'Quận 1',
+        selectedWardName: selectedAddress.ward || '',
+        street: selectedAddress.street || '',
+        house_number: selectedAddress.house_number || '',
         formatted_address: selectedAddress.formatted_address,
         latitude: selectedAddress.latitude,
         longitude: selectedAddress.longitude
@@ -162,7 +252,7 @@ const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} })
       onSelect && onSelect(formattedData);
       onClose && onClose();
     } else {
-      alert('请选择完整的地址信息');
+      alert('请选择一个地址');
     }
   };
 
@@ -279,10 +369,10 @@ const GoongAddressPicker = ({ visible, onClose, onSelect, defaultAddress = {} })
           >
             Hủy
           </Button>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             onClick={handleConfirm}
-            disabled={!selectedAddress.province}
+            disabled={!selectedAddress.formatted_address}
           >
             Xác nhận
           </Button>

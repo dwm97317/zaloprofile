@@ -1,0 +1,200 @@
+.dynamic-address-form {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-bottom: 16px;
+
+  .address-toggle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 12px;
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+
+      input[type="checkbox"] {
+        opacity: 0;
+        width: 0;
+        height: 0;
+
+        &:checked + .toggle-label .toggle-slider {
+          background-color: #ff4757;
+          
+          &:before {
+            transform: translateX(24px);
+          }
+        }
+      }
+
+      .toggle-label {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        .toggle-slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          transition: 0.3s;
+          border-radius: 24px;
+
+          &:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          }
+        }
+      }
+    }
+
+    .toggle-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+    }
+  }
+
+  .address-input-section {
+    margin-bottom: 20px;
+
+    .main-address-input {
+      width: 100%;
+    }
+  }
+
+  .address-details {
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #e1e5e9;
+
+    .address-info {
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .label {
+          font-size: 14px;
+          color: #666;
+          font-weight: 500;
+        }
+
+        .value {
+          font-size: 14px;
+          color: #333;
+          font-weight: 400;
+          text-align: right;
+          max-width: 60%;
+          word-break: break-word;
+        }
+      }
+    }
+
+    .address-mode-indicator {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+
+      .mode-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+
+        &.new-mode {
+          background: #e3f2fd;
+          color: #1976d2;
+          border: 1px solid #bbdefb;
+        }
+
+        &.old-mode {
+          background: #fff3e0;
+          color: #f57c00;
+          border: 1px solid #ffcc02;
+        }
+      }
+    }
+  }
+
+  .map-section {
+    margin-bottom: 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .dynamic-address-form {
+    padding: 12px;
+
+    .address-components {
+      .address-row {
+        flex-direction: column;
+        gap: 8px;
+
+        .address-field {
+          &.half-width {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 加载状态
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  z-index: 100;
+
+  .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #ff4757;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

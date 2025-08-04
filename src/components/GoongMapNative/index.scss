@@ -1,0 +1,190 @@
+.goong-map-native {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  min-height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #f8f9fa;
+
+  .map-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+  }
+
+  // 地图错误提示
+  .map-error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-bottom: 1px solid #f5c6cb;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .error-text {
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .retry-button {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: #c82333;
+      }
+    }
+  }
+
+  // 地图加载状态
+  .map-loading,
+  .map-loading-initial {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    span {
+      font-size: 14px;
+      color: #666;
+    }
+  }
+
+  // 地图说明
+  .map-instructions {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+
+    span {
+      font-size: 12px;
+      color: #666;
+      display: block;
+      text-align: center;
+    }
+  }
+
+  // 覆盖Goong Maps默认样式
+  .mapboxgl-ctrl-group {
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .mapboxgl-ctrl-zoom-in,
+  .mapboxgl-ctrl-zoom-out {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background: #f8f9fa;
+    }
+  }
+
+  .mapboxgl-ctrl-geolocate {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background: #f8f9fa;
+    }
+
+    &::before {
+      content: '📍';
+      font-size: 16px;
+    }
+  }
+
+  // 自定义标记样式
+  .mapboxgl-marker {
+    cursor: pointer;
+  }
+
+  // 响应式设计
+  @media (max-width: 768px) {
+    .map-instructions {
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      padding: 6px 10px;
+
+      span {
+        font-size: 11px;
+      }
+    }
+  }
+}
+
+// 动画定义
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// 确保地图容器有正确的尺寸
+.mapboxgl-map {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+// 地图控件位置调整
+.mapboxgl-control-container {
+  .mapboxgl-ctrl-top-right {
+    top: 10px;
+    right: 10px;
+  }
+}

@@ -1,0 +1,422 @@
+.goong-map-container {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #f5f5f5;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    filter: grayscale(50%);
+  }
+
+  .goong-map {
+    width: 100%;
+    border-radius: 12px;
+    transition: filter 0.3s ease;
+  }
+
+  // 加载状态
+  .map-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    span {
+      color: #666;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+
+  // 错误状态
+  .map-error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    text-align: center;
+    padding: 20px;
+
+    .error-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.8;
+    }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .retry-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #0056b3;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  // 当前位置按钮
+  .current-location-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    z-index: 100;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+
+  // 地图控制按钮
+  .map-controls {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+
+    button {
+      width: 36px;
+      height: 36px;
+      background: white;
+      border: none;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #f8f9fa;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+}
+
+// Goong Maps 控件样式覆盖
+.goong-map {
+  .goongjs-ctrl-bottom-left,
+  .goongjs-ctrl-bottom-right {
+    display: none !important;
+  }
+
+  .goongjs-ctrl-top-right {
+    .goongjs-ctrl {
+      margin: 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: none;
+    }
+  }
+
+  .goongjs-ctrl-top-left {
+    .goongjs-ctrl {
+      margin: 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: none;
+    }
+  }
+
+  // 标记样式
+  .goongjs-marker {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  // 弹窗样式
+  .goongjs-popup {
+    .goongjs-popup-content {
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 14px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      border: none;
+      max-width: 280px;
+    }
+
+    .goongjs-popup-tip {
+      border-top-color: white;
+    }
+
+    .goongjs-popup-close-button {
+      font-size: 18px;
+      padding: 4px;
+      color: #999;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #333;
+      }
+    }
+  }
+
+  // 导航控件样式
+  .goongjs-ctrl-group {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    button {
+      border: none;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .goong-map-container {
+    border-radius: 8px;
+    
+    .map-loading {
+      .loading-spinner {
+        width: 24px;
+        height: 24px;
+        border-width: 2px;
+        margin-bottom: 8px;
+      }
+
+      span {
+        font-size: 12px;
+      }
+    }
+
+    .map-error {
+      padding: 16px;
+
+      .error-icon {
+        font-size: 36px;
+        margin-bottom: 12px;
+      }
+
+      .error-message {
+        font-size: 12px;
+        margin-bottom: 12px;
+      }
+
+      .retry-button {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+    }
+
+    .current-location-btn {
+      width: 40px;
+      height: 40px;
+      top: 12px;
+      right: 12px;
+      font-size: 16px;
+    }
+
+    .map-controls {
+      bottom: 12px;
+      right: 12px;
+      gap: 6px;
+
+      button {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .goong-map-container {
+    border-radius: 6px;
+
+    .current-location-btn {
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
+    }
+
+    .map-controls {
+      button {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+      }
+    }
+
+    .map-error {
+      .error-icon {
+        font-size: 32px;
+      }
+
+      .error-message {
+        font-size: 11px;
+      }
+    }
+  }
+}
+
+// 深色主题支持
+@media (prefers-color-scheme: dark) {
+  .goong-map-container {
+    background: #2a2a2a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    .map-loading {
+      background: rgba(42, 42, 42, 0.95);
+
+      span {
+        color: #ccc;
+      }
+    }
+
+    .map-error {
+      background: rgba(42, 42, 42, 0.95);
+
+      .error-message {
+        color: #ff6b6b;
+      }
+    }
+
+    .current-location-btn,
+    .map-controls button {
+      background: #333;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+      &:hover {
+        background: #444;
+      }
+    }
+  }
+}
+
+// 动画优化
+.goong-map-container {
+  * {
+    box-sizing: border-box;
+  }
+}
+
+// 无障碍支持
+.goong-map-container {
+  button:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+  }
+}
+
+// 高对比度模式支持
+@media (prefers-contrast: high) {
+  .goong-map-container {
+    border: 2px solid #000;
+
+    .current-location-btn,
+    .map-controls button {
+      border: 1px solid #000;
+    }
+
+    .retry-button {
+      border: 1px solid #007bff;
+    }
+  }
+}

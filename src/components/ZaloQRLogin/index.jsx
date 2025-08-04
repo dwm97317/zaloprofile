@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { showToast } from 'zmp-ui';
+import { showToast } from 'zmp-sdk';
 import QRCode from 'qrcode';
-import { request } from '../../utils/util';
+import request from '../../utils/request';
 import './index.scss';
 
 const ZaloQRLogin = ({ onLoginSuccess, onLoginError, onClose }) => {
@@ -19,10 +19,7 @@ const ZaloQRLogin = ({ onLoginSuccess, onLoginError, onClose }) => {
       setStatus('loading');
       setMessage('正在生成二维码...');
 
-      const response = await request({
-        url: '/api/passport/getZaloOAuthUrl',
-        method: 'GET'
-      });
+      const response = await request.get('/passport/getZaloOAuthUrl', { wxapp_id: 10001 });
 
       if (response.code === 1) {
         const { oauth_url, state, expires_in } = response.data;
@@ -74,11 +71,7 @@ const ZaloQRLogin = ({ onLoginSuccess, onLoginError, onClose }) => {
 
     pollIntervalRef.current = setInterval(async () => {
       try {
-        const response = await request({
-          url: '/api/passport/checkZaloOAuthStatus',
-          method: 'GET',
-          data: { state }
-        });
+        const response = await request.get('/passport/checkZaloOAuthStatus', { state, wxapp_id: 10001 });
 
         if (response.code === 1) {
           const { status: loginStatus } = response.data;

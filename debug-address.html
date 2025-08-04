@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试地址API数据结构</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border-left: 4px solid #007bff;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .address-components {
+            margin-top: 15px;
+        }
+        .component {
+            background: #e9ecef;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 3px solid #28a745;
+        }
+        .component-name {
+            font-weight: bold;
+            color: #495057;
+        }
+        .component-types {
+            color: #6c757d;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>调试地址API数据结构</h1>
+    
+    <div class="test-section">
+        <h3>测试常见越南地址</h3>
+        <button onclick="testAddress('Quận 1, Thành phố Hồ Chí Minh')">测试: Quận 1, TP.HCM</button>
+        <button onclick="testAddress('Quận Ba Đình, Hà Nội')">测试: Quận Ba Đình, Hà Nội</button>
+        <button onclick="testAddress('Quận Ninh Kiều, Cần Thơ')">测试: Quận Ninh Kiều, Cần Thơ</button>
+        <button onclick="testAddress('Huyện Củ Chi, TP.HCM')">测试: Huyện Củ Chi, TP.HCM</button>
+        
+        <div id="test-result" class="result" style="display:none;"></div>
+        <div id="address-components" class="address-components" style="display:none;"></div>
+    </div>
+
+    <script>
+        const GOONG_API_KEY = '5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj';
+        const GOONG_BASE_URL = 'https://rsapi.goong.io';
+
+        async function testAddress(query) {
+            const resultDiv = document.getElementById('test-result');
+            const componentsDiv = document.getElementById('address-components');
+            
+            resultDiv.style.display = 'block';
+            componentsDiv.style.display = 'block';
+            
+            resultDiv.innerHTML = `正在测试地址: "${query}"...\n`;
+            componentsDiv.innerHTML = '';
+
+            try {
+                // 1. 获取地址建议
+                console.log('=== 测试地址 ===', query);
+                const autocompleteResponse = await fetch(`${GOONG_BASE_URL}/Place/AutoComplete?` + new URLSearchParams({
+                    api_key: GOONG_API_KEY,
+                    input: query,
+                    location: '10.762622,106.660172',
+                    radius: 50000,
+                    language: 'vi'
+                }));
+
+                const autocompleteData = await autocompleteResponse.json();
+                console.log('AutoComplete 响应:', autocompleteData);
+                
+                resultDiv.innerHTML += `\n=== AutoComplete API 响应 ===\n${JSON.stringify(autocompleteData, null, 2)}\n`;
+
+                if (autocompleteData && autocompleteData.predictions && autocompleteData.predictions.length > 0) {
+                    const firstPrediction = autocompleteData.predictions[0];
+                    
+                    // 2. 获取详细信息
+                    const detailResponse = await fetch(`${GOONG_BASE_URL}/Place/Detail?` + new URLSearchParams({
+                        api_key: GOONG_API_KEY,
+                        place_id: firstPrediction.place_id
+                    }));
+                    
+                    const detailData = await detailResponse.json();
+                    console.log('Place Detail 响应:', detailData);
+                    
+                    resultDiv.innerHTML += `\n=== Place Detail API 响应 ===\n${JSON.stringify(detailData, null, 2)}\n`;
+
+                    // 3. 分析地址组件
+                    if (detailData && detailData.result && detailData.result.address_components) {
+                        const components = detailData.result.address_components;
+                        
+                        resultDiv.innerHTML += `\n=== 地址组件分析 ===\n`;
+                        
+                        let componentsHtml = '<h4>地址组件详细分析:</h4>';
+                        
+                        components.forEach((component, index) => {
+                            resultDiv.innerHTML += `组件 ${index}: ${component.long_name} (${component.short_name})\n`;
+                            resultDiv.innerHTML += `  类型: ${component.types.join(', ')}\n\n`;
+                            
+                            componentsHtml += `
+                                <div class="component">
+                                    <div class="component-name">${component.long_name} (${component.short_name})</div>
+                                    <div class="component-types">类型: ${component.types.join(', ')}</div>
+                                </div>
+                            `;
+                        });
+                        
+                        componentsDiv.innerHTML = componentsHtml;
+                        
+                        // 4. 应用我们的解析逻辑
+                        const parsed = parseAddressComponents(components);
+                        resultDiv.innerHTML += `=== 我们的解析结果 ===\n${JSON.stringify(parsed, null, 2)}\n`;
+                    }
+                }
+            } catch (error) {
+                console.error('测试错误:', error);
+                resultDiv.innerHTML += `\n错误: ${error.message}\n`;
+            }
+        }
+
+        // 复制我们的解析函数
+        function parseAddressComponents(addressComponents) {
+            console.log('=== parseAddressComponents 调试 ===');
+            console.log('输入的地址组件:', addressComponents);
+            
+            if (!addressComponents || !Array.isArray(addressComponents)) {
+                console.log('地址组件无效，返回空值');
+                return {
+                    province: '',
+                    district: '',
+                    ward: '',
+                    street: ''
+                };
+            }
+
+            let province = '';
+            let district = '';
+            let ward = '';
+            let street = '';
+
+            addressComponents.forEach((component, index) => {
+                console.log(`处理组件 ${index}:`, component);
+                
+                if (component.types && Array.isArray(component.types)) {
+                    // 省/直辖市
+                    if (component.types.includes('administrative_area_level_1')) {
+                        province = component.long_name || component.short_name;
+                        console.log(`找到省/直辖市: ${province}`);
+                    }
+                    // 区/县
+                    else if (component.types.includes('administrative_area_level_2')) {
+                        district = component.long_name || component.short_name;
+                        console.log(`找到区/县: ${district}`);
+                    }
+                    // 街道/乡镇
+                    else if (component.types.includes('administrative_area_level_3') || 
+                             component.types.includes('sublocality_level_1') ||
+                             component.types.includes('sublocality')) {
+                        ward = component.long_name || component.short_name;
+                        console.log(`找到街道/乡镇: ${ward}`);
+                    }
+                    // 道路
+                    else if (component.types.includes('route') || 
+                             component.types.includes('street_address')) {
+                        street = component.long_name || component.short_name;
+                        console.log(`找到道路: ${street}`);
+                    }
+                }
+            });
+
+            const result = {
+                province,
+                district,
+                ward,
+                street
+            };
+            
+            console.log('解析结果:', result);
+            return result;
+        }
+    </script>
+</body>
+</html>

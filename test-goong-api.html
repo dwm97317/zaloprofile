@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试Goong API实际响应</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .test-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin: 5px; }
+        .result { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 10px; white-space: pre-wrap; font-family: monospace; font-size: 11px; max-height: 300px; overflow-y: auto; }
+        .parsed-result { background: #d4edda; padding: 15px; border-radius: 6px; margin-top: 10px; border-left: 4px solid #28a745; }
+    </style>
+</head>
+<body>
+    <h1>测试Goong API实际响应</h1>
+    
+    <div class="test-section">
+        <h3>快速测试常见地址</h3>
+        <button onclick="quickTest('Quận 1, Thành phố Hồ Chí Minh')">Quận 1, TP.HCM</button>
+        <button onclick="quickTest('Quận Ba Đình, Hà Nội')">Ba Đình, Hà Nội</button>
+        <button onclick="quickTest('Quận Ninh Kiều, Cần Thơ')">Ninh Kiều, Cần Thơ</button>
+        <button onclick="quickTest('Huyện Củ Chi, TP.HCM')">Huyện Củ Chi</button>
+        
+        <div id="quick-result" class="result" style="display:none;"></div>
+        <div id="parsed-result" class="parsed-result" style="display:none;"></div>
+    </div>
+
+    <script>
+        const GOONG_API_KEY = '5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj';
+        const GOONG_BASE_URL = 'https://rsapi.goong.io';
+
+        async function quickTest(query) {
+            const resultDiv = document.getElementById('quick-result');
+            const parsedDiv = document.getElementById('parsed-result');
+            
+            resultDiv.style.display = 'block';
+            parsedDiv.style.display = 'block';
+            
+            resultDiv.innerHTML = `正在测试: "${query}"...\n`;
+            parsedDiv.innerHTML = '';
+
+            try {
+                // 获取地址建议
+                const autocompleteResponse = await fetch(`${GOONG_BASE_URL}/Place/AutoComplete?` + new URLSearchParams({
+                    api_key: GOONG_API_KEY,
+                    input: query,
+                    location: '10.762622,106.660172',
+                    radius: 50000,
+                    language: 'vi'
+                }));
+
+                const autocompleteData = await autocompleteResponse.json();
+                
+                if (autocompleteData && autocompleteData.predictions && autocompleteData.predictions.length > 0) {
+                    const firstPrediction = autocompleteData.predictions[0];
+                    resultDiv.innerHTML = `建议: ${firstPrediction.description}\nPlace ID: ${firstPrediction.place_id}\n\n`;
+                    
+                    // 获取详细信息
+                    const detailResponse = await fetch(`${GOONG_BASE_URL}/Place/Detail?` + new URLSearchParams({
+                        api_key: GOONG_API_KEY,
+                        place_id: firstPrediction.place_id
+                    }));
+                    
+                    const detailData = await detailResponse.json();
+                    
+                    if (detailData && detailData.result) {
+                        resultDiv.innerHTML += `格式化地址: ${detailData.result.formatted_address}\n\n`;
+                        
+                        if (detailData.result.address_components) {
+                            resultDiv.innerHTML += `地址组件:\n`;
+                            detailData.result.address_components.forEach((comp, idx) => {
+                                resultDiv.innerHTML += `${idx}: ${comp.long_name} (${comp.short_name}) - [${comp.types.join(', ')}]\n`;
+                            });
+                            
+                            // 应用解析逻辑
+                            const parsed = smartParseAddress(detailData.result);
+                            parsedDiv.innerHTML = `
+                                <h4>智能解析结果:</h4>
+                                <strong>Tỉnh/Thành phố:</strong> ${parsed.province || '未识别'}<br>
+                                <strong>Quận/Huyện:</strong> ${parsed.district || '未识别'}<br>
+                                <strong>Phường/Xã:</strong> ${parsed.ward || '未识别'}<br>
+                                <strong>Đường:</strong> ${parsed.street || '未识别'}<br>
+                                <strong>完整地址:</strong> ${parsed.formatted_address || '未识别'}
+                            `;
+                        }
+                    }
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `错误: ${error.message}\n`;
+            }
+        }
+
+        function smartParseAddress(addressData) {
+            let province = '';
+            let district = '';
+            let ward = '';
+            let street = '';
+            
+            // 首先尝试从地址组件解析
+            if (addressData.address_components) {
+                addressData.address_components.forEach(component => {
+                    const name = component.long_name || component.short_name;
+                    const types = component.types || [];
+                    
+                    // 省/直辖市识别
+                    if (types.includes('administrative_area_level_1') ||
+                        types.includes('locality') && (name.includes('Thành phố') || name.includes('Tỉnh')) ||
+                        name === 'Hà Nội' || name === 'Đà Nẵng' || name === 'Cần Thơ' ||
+                        name.includes('Thành phố Hồ Chí Minh')) {
+                        province = name;
+                    }
+                    // 区/县识别
+                    else if (types.includes('administrative_area_level_2') ||
+                             types.includes('sublocality_level_1') ||
+                             name.includes('Quận') || name.includes('Huyện') || 
+                             name.includes('Thành phố') || name.includes('Thị xã')) {
+                        district = name;
+                    }
+                    // 街道/乡识别
+                    else if (types.includes('administrative_area_level_3') ||
+                             types.includes('sublocality_level_2') ||
+                             types.includes('sublocality') ||
+                             name.includes('Phường') || name.includes('Xã') || name.includes('Thị trấn')) {
+                        ward = name;
+                    }
+                    // 道路识别
+                    else if (types.includes('route') || types.includes('street_address')) {
+                        if (!street) street = name;
+                    }
+                });
+            }
+            
+            // 如果组件解析不完整，尝试从格式化地址解析
+            if (!province || !district) {
+                const formatted = addressData.formatted_address || '';
+                const parts = formatted.split(',').map(p => p.trim());
+                
+                parts.forEach(part => {
+                    if (!province && (part.includes('Thành phố') || part.includes('Tỉnh') || 
+                                     part === 'Hà Nội' || part === 'Đà Nẵng' || part === 'Cần Thơ' ||
+                                     part.includes('Hồ Chí Minh'))) {
+                        province = part;
+                    }
+                    if (!district && (part.includes('Quận') || part.includes('Huyện') || 
+                                     part.includes('Thành phố') || part.includes('Thị xã'))) {
+                        district = part;
+                    }
+                    if (!ward && (part.includes('Phường') || part.includes('Xã') || part.includes('Thị trấn'))) {
+                        ward = part;
+                    }
+                });
+            }
+            
+            return {
+                province,
+                district,
+                ward,
+                street,
+                formatted_address: addressData.formatted_address || '',
+                coordinates: addressData.geometry?.location || null
+            };
+        }
+    </script>
+</body>
+</html>

@@ -4,13 +4,14 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { addressFormState, addressInfoState, countryState } from "../../state";
 import request from "../../utils/request";
 import Header from "../../components/Header/Header";
-import GoongAddressPicker from "../../components/GoongAddressPicker/index";
+import DynamicAddressForm from "../../components/DynamicAddressForm";
 import AddressApi from "../../utils/addressApi";
 import "./Index.scss";
 import "./Create.scss";
 import { getAccessToken, getLocation, showToast } from "zmp-sdk";
 import util from "../../utils/util";
 import Loading from "../../components/Loading/Index";
+
 
 const AddressPage = () => {
   const country = useRecoilValue(countryState);
@@ -21,32 +22,61 @@ const AddressPage = () => {
   const requireFormFields = ["name", "userphones"]; // Các trường bắt buộc
   const [form, setForm] = useState({ region: "" });
   const [formData, setFormData] = useState([]);
-  const [addressPicker, setaddressPicker] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
   const addressInfo = useRecoilValue(addressInfoState);
 
-  // 处理地址选择器返回的数据
-  const receiveData = (addressData) => {
+  // 地图中心点状态
+  const [mapCenter, setMapCenter] = useState({
+    lat: 10.762622, // 胡志明市中心
+    lng: 106.660172
+  });
+
+  // 地址选择器状态
+  const [addressPicker, setaddressPicker] = useState(false);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // 处理动态地址表单变化
+  const handleDynamicAddressChange = (addressData) => {
     const updatedForm = {
       ...form,
-      userProvince: addressData.selectedProvinceName,
-      userchengshi: addressData.selectedCityName,
-      userregion: addressData.selectedWardName,
+      userProvince: addressData.province || '',
+      userchengshi: addressData.district || '',
+      userregion: addressData.ward || '',
       userstree: addressData.street || '',
-      userdoor: addressData.house_number || '',
-      latitude: addressData.latitude || '',
-      longitude: addressData.longitude || '',
+      userdoor: addressData.detail || '',
+      latitude: addressData.coordinates?.lat || '',
+      longitude: addressData.coordinates?.lng || '',
       region: [
-        addressData.selectedProvinceName,
-        addressData.selectedCityName,
-        addressData.selectedWardName
+        addressData.province,
+        addressData.district,
+        addressData.ward
       ].filter(Boolean).join(', ')
     };
 
+    if (addressData.coordinates) {
+      setMapCenter({
+        lat: addressData.coordinates.lat,
+        lng: addressData.coordinates.lng
+      });
+    }
+
     setForm(updatedForm);
     saveAddressFormState(updatedForm);
-    setaddressPicker(false);
   };
 
   const initCreate = () => {
@@ -58,14 +88,15 @@ const AddressPage = () => {
   // Xử lý nhập liệu
   const handleInput = (e) => {
     const field = e.target.dataset.field;
-    form[field] = e.target.value;
-    saveAddressFormState({ ...form, ...formData });
+    const updatedForm = {
+      ...form,
+      [field]: e.target.value
+    };
+    setForm(updatedForm);
+    saveAddressFormState({ ...updatedForm, ...formData });
   };
 
-  // Chuyển đến trang chọn
-  const toTargetSelect = (e, path) => {
-    navigate(path);
-  };
+
 
   // Kiểm tra form
   const checkForm = () => {
@@ -78,7 +109,7 @@ const AddressPage = () => {
   };
 
   // Gửi dữ liệu
-  const handleSubmit = async (e) => {
+  const handleSubmit = async () => {
     if (!checkForm()) {
       console.log("error");
       showToast({
@@ -212,7 +243,7 @@ const AddressPage = () => {
       saveAddressFormState({ ...form, ...formData });
     }
     util.setBarPageView("Tạo địa chỉ");
-    window.addEventListener("child-data-event", receiveData);
+
     return () => {};
   }, []);
 
@@ -343,81 +374,26 @@ const AddressPage = () => {
           </div>
         </div>
 
-        {/* Địa chỉ selection dropdowns */}
-        <div className="address-selection">
-          <div className="dropdown-row">
-            <div className="dropdown-field">
-              <select className="address-dropdown" defaultValue="">
-                <option value="" disabled>Tỉnh/Thành phố *</option>
-                <option value="ho-chi-minh">Hồ Chí Minh</option>
-                <option value="ha-noi">Hà Nội</option>
-                <option value="da-nang">Đà Nẵng</option>
-              </select>
-              <div className="dropdown-arrow">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <polyline points="6,9 12,15 18,9" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="dropdown-row">
-            <div className="dropdown-field half">
-              <select className="address-dropdown" defaultValue="">
-                <option value="" disabled>Phường/Xã *</option>
-                <option value="phuong-1">Phường 1</option>
-                <option value="phuong-2">Phường 2</option>
-              </select>
-              <div className="dropdown-arrow">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <polyline points="6,9 12,15 18,9" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-              </div>
-            </div>
-            <div className="dropdown-field half">
-              <select className="address-dropdown" defaultValue="">
-                <option value="" disabled>Đường...</option>
-                <option value="duong-1">Đường Nguyễn Huệ</option>
-                <option value="duong-2">Đường Lê Lợi</option>
-              </select>
-              <div className="dropdown-arrow">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <polyline points="6,9 12,15 18,9" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-              </div>
-            </div>
-          </div>
+        {/* Dynamic Address Form - Powered by Goong API */}
+        <div className="dynamic-address-section">
+          <DynamicAddressForm
+            onAddressChange={handleDynamicAddressChange}
+            initialAddress={{
+              detail: form.userdoor || '',
+              province: form.userProvince || '',
+              district: form.userchengshi || '',
+              ward: form.userregion || '',
+              street: form.userstree || '',
+              coordinates: form.latitude && form.longitude ? {
+                lat: parseFloat(form.latitude),
+                lng: parseFloat(form.longitude)
+              } : null
+            }}
+          />
         </div>
 
-        {/* Map section */}
-        <div className="map-section">
-          <div className="map-container">
-            <div className="map-placeholder">
-              <div className="map-content">
-                <div className="location-marker">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#007bff">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3" fill="white"/>
-                  </svg>
-                </div>
-                <div className="map-labels">
-                  <div className="area-label">KHU 2</div>
-                  <div className="street-labels">
-                    <span>Vương</span>
-                    <span>Trường Mầm non Ka Long</span>
-                    <span>Trường THPT Trần Phú</span>
-                    <span>Yết Kiêu</span>
-                    <span>P. Ka Long</span>
-                  </div>
-                </div>
-              </div>
-              <div className="map-error">
-                <span>Không lấy được vị trí</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Thời gian hẹn giao */}
+        {/* Thời gian hẹn giao */}
+        <div className="delivery-time-section">
           <div className="delivery-time">
             <span className="delivery-label">Thời gian hẹn giao</span>
             <div className="delivery-value">
@@ -444,19 +420,7 @@ const AddressPage = () => {
       {/* Loading component */}
       <Loading is={loading} text={loadingText} />
 
-      {/* Address picker modal */}
-      <GoongAddressPicker
-        visible={addressPicker}
-        onClose={() => setaddressPicker(false)}
-        onSelect={receiveData}
-        defaultAddress={{
-          province: form.userProvince || '',
-          district: form.userchengshi || '',
-          ward: form.userregion || '',
-          street: form.userstree || '',
-          house_number: form.userdoor || ''
-        }}
-      />
+
     </Page>
   );
 };

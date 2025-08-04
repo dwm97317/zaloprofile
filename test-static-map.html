@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goong Static Map API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .map-image {
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .url-display {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Goong Static Map API Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Basic Static Map (rsapi.goong.io)</h2>
+        <div class="url-display" id="url1"></div>
+        <img id="map1" class="map-image" alt="Static Map 1" />
+        <div id="status1"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Alternative URL Format (api.goong.io)</h2>
+        <div class="url-display" id="url2"></div>
+        <img id="map2" class="map-image" alt="Static Map 2" />
+        <div id="status2"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Different Parameter Format</h2>
+        <div class="url-display" id="url3"></div>
+        <img id="map3" class="map-image" alt="Static Map 3" />
+        <div id="status3"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Minimal Parameters</h2>
+        <div class="url-display" id="url4"></div>
+        <img id="map4" class="map-image" alt="Static Map 4" />
+        <div id="status4"></div>
+    </div>
+
+    <script>
+        const API_KEY = '5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj';
+        const CENTER_LAT = 10.762622;
+        const CENTER_LNG = 106.660172;
+
+        // Test 1: Original format
+        const url1 = `https://rsapi.goong.io/staticmap?center=${CENTER_LAT},${CENTER_LNG}&zoom=15&size=600x400&markers=color:red|${CENTER_LAT},${CENTER_LNG}&api_key=${API_KEY}`;
+        
+        // Test 2: Alternative base URL
+        const url2 = `https://api.goong.io/staticmap?center=${CENTER_LAT},${CENTER_LNG}&zoom=15&size=600x400&markers=color:red|${CENTER_LAT},${CENTER_LNG}&api_key=${API_KEY}`;
+        
+        // Test 3: Different parameter format
+        const url3 = `https://rsapi.goong.io/staticmap?center=${CENTER_LAT},${CENTER_LNG}&zoom=15&size=600x400&markers=${CENTER_LAT},${CENTER_LNG}&api_key=${API_KEY}`;
+        
+        // Test 4: Minimal parameters
+        const url4 = `https://rsapi.goong.io/staticmap?center=${CENTER_LAT},${CENTER_LNG}&zoom=15&size=600x400&api_key=${API_KEY}`;
+
+        const tests = [
+            { url: url1, imgId: 'map1', statusId: 'status1', urlId: 'url1' },
+            { url: url2, imgId: 'map2', statusId: 'status2', urlId: 'url2' },
+            { url: url3, imgId: 'map3', statusId: 'status3', urlId: 'url3' },
+            { url: url4, imgId: 'map4', statusId: 'status4', urlId: 'url4' }
+        ];
+
+        tests.forEach((test, index) => {
+            const img = document.getElementById(test.imgId);
+            const status = document.getElementById(test.statusId);
+            const urlDisplay = document.getElementById(test.urlId);
+            
+            urlDisplay.textContent = test.url;
+            
+            img.onload = function() {
+                status.innerHTML = '<span class="success">✓ Success - Map loaded successfully</span>';
+                console.log(`Test ${index + 1} SUCCESS:`, test.url);
+            };
+            
+            img.onerror = function() {
+                status.innerHTML = '<span class="error">✗ Failed - Could not load map image</span>';
+                console.log(`Test ${index + 1} FAILED:`, test.url);
+            };
+            
+            img.src = test.url;
+        });
+
+        // Also test the API endpoints directly
+        console.log('Testing Goong API endpoints...');
+        
+        // Test AutoComplete API
+        fetch(`https://rsapi.goong.io/Place/AutoComplete?api_key=${API_KEY}&input=Ho Chi Minh&location=${CENTER_LAT},${CENTER_LNG}&radius=50000`)
+            .then(response => {
+                console.log('AutoComplete API Status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('AutoComplete API Response:', data);
+            })
+            .catch(error => {
+                console.error('AutoComplete API Error:', error);
+            });
+    </script>
+</body>
+</html>

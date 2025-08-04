@@ -1,0 +1,252 @@
+.goong-map-react {
+  position: relative;
+  width: 100%;
+  height: 250px; // 默认高度
+  min-height: 200px; // 最小高度确保地图可见
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  // 确保地图容器有正确的尺寸
+  .mapboxgl-map {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  // 地图错误提示
+  .map-error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-bottom: 1px solid #f5c6cb;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .error-text {
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .retry-button {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: #c82333;
+      }
+    }
+  }
+
+  // 地图加载状态
+  .map-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    span {
+      font-size: 14px;
+      color: #666;
+    }
+  }
+
+  // 地图标记样式
+  .map-marker {
+    position: relative;
+    cursor: pointer;
+
+    .marker-pin {
+      width: 24px;
+      height: 24px;
+      background: #007bff;
+      border: 3px solid white;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      position: relative;
+      z-index: 2;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+        background: #0056b3;
+      }
+    }
+
+    .marker-pulse {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      background: rgba(0, 123, 255, 0.3);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      z-index: 1;
+    }
+  }
+
+  // 地图控件样式
+  .map-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 100;
+
+    .mapboxgl-ctrl-group {
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .mapboxgl-ctrl-zoom-in,
+    .mapboxgl-ctrl-zoom-out {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: #f8f9fa;
+      }
+    }
+  }
+
+  // 地理定位控件
+  .geolocate-control {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    z-index: 100;
+
+    .mapboxgl-ctrl-geolocate {
+      width: 32px;
+      height: 32px;
+      background: white;
+      border: none;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: #f8f9fa;
+      }
+
+      &::before {
+        content: '📍';
+        font-size: 16px;
+      }
+    }
+  }
+
+  // 地图说明
+  .map-instructions {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+
+    span {
+      font-size: 12px;
+      color: #666;
+      display: block;
+      text-align: center;
+    }
+  }
+
+  // 响应式设计
+  @media (max-width: 768px) {
+    .map-controls {
+      top: 8px;
+      right: 8px;
+    }
+
+    .geolocate-control {
+      top: 52px;
+      right: 8px;
+    }
+
+    .map-instructions {
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      padding: 6px 10px;
+
+      span {
+        font-size: 11px;
+      }
+    }
+
+    .map-marker .marker-pin {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// 动画定义
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+// Goong Map React的样式已在app.js中导入

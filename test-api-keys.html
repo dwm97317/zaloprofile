@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试Goong API密钥</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .test-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin: 5px; }
+        .result { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 10px; white-space: pre-wrap; font-family: monospace; font-size: 12px; }
+        .success { border-left: 4px solid #28a745; background: #d4edda; }
+        .error { border-left: 4px solid #dc3545; background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>测试Goong API密钥</h1>
+    
+    <div class="test-section">
+        <h3>API密钥测试</h3>
+        <button onclick="testApiKey('5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj')">测试密钥1: 5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj</button>
+        <button onclick="testApiKey('7nGVvNpejuF0maLfRDz5T1tWxubVwTzLpSlTBNHI')">测试密钥2: 7nGVvNpejuF0maLfRDz5T1tWxubVwTzLpSlTBNHI</button>
+        
+        <div id="test-result" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        const GOONG_BASE_URL = 'https://rsapi.goong.io';
+
+        async function testApiKey(apiKey) {
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = `正在测试API密钥: ${apiKey}...\n`;
+
+            try {
+                // 测试AutoComplete API
+                console.log('测试AutoComplete API...');
+                const autocompleteResponse = await fetch(`${GOONG_BASE_URL}/Place/AutoComplete?` + new URLSearchParams({
+                    api_key: apiKey,
+                    input: 'Quận 1, Hồ Chí Minh',
+                    location: '10.762622,106.660172',
+                    radius: 50000,
+                    language: 'vi'
+                }));
+
+                const autocompleteData = await autocompleteResponse.json();
+                
+                if (autocompleteResponse.ok && autocompleteData.predictions) {
+                    resultDiv.innerHTML += `✅ AutoComplete API 成功\n`;
+                    resultDiv.innerHTML += `返回 ${autocompleteData.predictions.length} 个建议\n`;
+                    
+                    // 测试Place Detail API
+                    if (autocompleteData.predictions.length > 0) {
+                        const firstPrediction = autocompleteData.predictions[0];
+                        console.log('测试Place Detail API...');
+                        
+                        const detailResponse = await fetch(`${GOONG_BASE_URL}/Place/Detail?` + new URLSearchParams({
+                            api_key: apiKey,
+                            place_id: firstPrediction.place_id
+                        }));
+                        
+                        const detailData = await detailResponse.json();
+                        
+                        if (detailResponse.ok && detailData.result) {
+                            resultDiv.innerHTML += `✅ Place Detail API 成功\n`;
+                            resultDiv.innerHTML += `地址: ${detailData.result.formatted_address}\n`;
+                        } else {
+                            resultDiv.innerHTML += `❌ Place Detail API 失败: ${JSON.stringify(detailData)}\n`;
+                        }
+                    }
+                    
+                    // 测试Reverse Geocoding API
+                    console.log('测试Reverse Geocoding API...');
+                    const reverseResponse = await fetch(`${GOONG_BASE_URL}/Geocode?` + new URLSearchParams({
+                        api_key: apiKey,
+                        latlng: '10.762622,106.660172'
+                    }));
+                    
+                    const reverseData = await reverseResponse.json();
+                    
+                    if (reverseResponse.ok && reverseData.results) {
+                        resultDiv.innerHTML += `✅ Reverse Geocoding API 成功\n`;
+                        resultDiv.innerHTML += `反向地理编码结果: ${reverseData.results[0]?.formatted_address || '无结果'}\n`;
+                    } else {
+                        resultDiv.innerHTML += `❌ Reverse Geocoding API 失败: ${JSON.stringify(reverseData)}\n`;
+                    }
+                    
+                    resultDiv.innerHTML += `\n🎉 API密钥 ${apiKey} 测试成功！\n`;
+                    resultDiv.className = 'result success';
+                    
+                } else {
+                    resultDiv.innerHTML += `❌ AutoComplete API 失败\n`;
+                    resultDiv.innerHTML += `错误信息: ${JSON.stringify(autocompleteData)}\n`;
+                    resultDiv.className = 'result error';
+                }
+                
+            } catch (error) {
+                console.error('API测试错误:', error);
+                resultDiv.innerHTML += `❌ 网络错误: ${error.message}\n`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>
