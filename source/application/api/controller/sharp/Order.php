@@ -84,7 +84,7 @@ class Order extends Controller
         $list = $model->getList($query);
         foreach ($list as $key => $v){
             $address = (new SharingOrderAddress())->where(['order_id'=>$v['order_item_id'],'is_head'=>0])->find();
-            $list[$key]['address'] = $address['country'].$address['province'].$address['city'].$address['region'];
+            $list[$key]['address'] = $address['country'].$address['province'].$address['city'].$address['region'].$address['address'];
         }
         return $this->renderSuccess(compact('list'));
      }
