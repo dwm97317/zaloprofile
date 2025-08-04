@@ -58,6 +58,18 @@ const AddressPage = () => {
     suggestions: []
   });
 
+  // 新增：专用地址显示栏状态
+  const [confirmedAddress, setConfirmedAddress] = useState({
+    fullAddress: '',        // 完整地址字符串
+    province: '',          // 省份
+    district: '',          // 区县
+    ward: '',              // 坊社
+    street: '',            // 街道
+    houseNumber: '',       // 门牌号
+    coordinates: null,     // 坐标信息
+    isConfirmed: false     // 是否已确认
+  });
+
 
 
 
@@ -93,9 +105,23 @@ const AddressPage = () => {
     // 使用完整的详细地址，符合越南人的使用习惯
     const fullDetailAddress = addressData.detail || formattedAddress || '';
 
+    // 更新新的地址显示栏
+    const newConfirmedAddress = {
+      fullAddress: fullDetailAddress,
+      province: addressData.province || '',
+      district: addressData.district || '',
+      ward: addressData.ward || '',
+      street: addressData.street || '',
+      houseNumber: addressData.houseNumber || '',
+      coordinates: addressData.coordinates || null,
+      isConfirmed: true
+    };
+
+    setConfirmedAddress(newConfirmedAddress);
+
     const updatedForm = {
       ...form,
-      // 越南文化特色的地址处理
+      // 越南文化特色的地址处理 - 从确认地址栏获取数据
       detail: fullDetailAddress,        // 主要的详细地址字段
       userstree: fullDetailAddress,     // 街道字段也使用完整地址
 
@@ -118,7 +144,7 @@ const AddressPage = () => {
     };
 
     console.log("越南格式化地址:", formattedAddress);
-    console.log("完整详细地址:", fullDetailAddress);
+    console.log("新的确认地址栏数据:", newConfirmedAddress);
     console.log("更新后的表单数据:", updatedForm);
 
     if (addressData.coordinates) {
@@ -232,9 +258,27 @@ const AddressPage = () => {
         country_id: addressInfo.country_id || 1
       };
 
+      // 同时更新新的地址显示栏
+      const backfillConfirmedAddress = {
+        fullAddress: finalAddress,
+        province: addressInfo.province || '',
+        district: addressInfo.city || '',
+        ward: addressInfo.region || '',
+        street: addressInfo.street || '',
+        houseNumber: addressInfo.door || '',
+        coordinates: addressInfo.latitude && addressInfo.longitude ? {
+          lat: parseFloat(addressInfo.latitude),
+          lng: parseFloat(addressInfo.longitude)
+        } : null,
+        isConfirmed: true
+      };
+
+      setConfirmedAddress(backfillConfirmedAddress);
+
       console.log("越南格式化地址数据:", vietnameseAddressData);
       console.log("格式化后的地址:", formattedAddress);
       console.log("最终回填地址:", finalAddress);
+      console.log("回填的确认地址栏数据:", backfillConfirmedAddress);
       console.log("回填后的表单数据:", editForm);
 
       setForm(editForm);
@@ -293,9 +337,11 @@ const AddressPage = () => {
       // 后端通过 explode(',', $data['region']) 解析地区信息
       // region[0] = country, region[1] = province, region[2] = city, region[3] = region
 
-      // 越南文化特色的地址处理 - 后台已关闭行政区域选择
-      // 优先使用详细地址字段，包含完整的越南地址信息
-      const fullDetailAddress = form.detail || form.userstree || form.region || '';
+      // 越南文化特色的地址处理 - 优先使用确认地址栏的数据
+      // 如果有确认地址，使用确认地址栏的数据；否则使用表单数据
+      const fullDetailAddress = confirmedAddress.isConfirmed
+        ? confirmedAddress.fullAddress
+        : (form.detail || form.userstree || form.region || '');
 
       // 构建简化的地区字符串 - 只包含越南国家信息
       const regionString = 'Việt Nam,,,'; // 国家,省,市,区 - 省市区留空
@@ -613,6 +659,66 @@ const AddressPage = () => {
             }}
           />
         </div>
+
+        {/* 新增：确认地址显示栏 */}
+        {confirmedAddress.isConfirmed && (
+          <div className="confirmed-address-section">
+            <div className="confirmed-address-header">
+              <div className="address-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#4CAF50" strokeWidth="2" fill="none"/>
+                  <circle cx="12" cy="10" r="3" stroke="#4CAF50" strokeWidth="2" fill="none"/>
+                </svg>
+              </div>
+              <span className="confirmed-label">Địa chỉ đã xác nhận</span>
+              <button
+                className="edit-address-btn"
+                onClick={() => setConfirmedAddress(prev => ({ ...prev, isConfirmed: false }))}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                </svg>
+              </button>
+            </div>
+
+            <div className="confirmed-address-content">
+              <div className="full-address">
+                <span className="address-text">{confirmedAddress.fullAddress}</span>
+              </div>
+
+              <div className="address-components">
+                {confirmedAddress.province && (
+                  <div className="address-component">
+                    <span className="component-label">Tỉnh/TP:</span>
+                    <span className="component-value">{confirmedAddress.province}</span>
+                  </div>
+                )}
+                {confirmedAddress.district && (
+                  <div className="address-component">
+                    <span className="component-label">Quận/Huyện:</span>
+                    <span className="component-value">{confirmedAddress.district}</span>
+                  </div>
+                )}
+                {confirmedAddress.ward && (
+                  <div className="address-component">
+                    <span className="component-label">Phường/Xã:</span>
+                    <span className="component-value">{confirmedAddress.ward}</span>
+                  </div>
+                )}
+              </div>
+
+              {confirmedAddress.coordinates && (
+                <div className="address-coordinates">
+                  <span className="coordinates-label">Tọa độ:</span>
+                  <span className="coordinates-value">
+                    {confirmedAddress.coordinates.lat.toFixed(6)}, {confirmedAddress.coordinates.lng.toFixed(6)}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Thời gian hẹn giao */}
         <div className="delivery-time-section">
