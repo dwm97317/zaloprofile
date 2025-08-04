@@ -3,7 +3,14 @@ module.exports = {
     [
       '@babel/preset-env',
       {
-        // 使用 package.json 中的 browserslist 配置
+        // 明确设置目标为 es2018，支持 async generators
+        targets: {
+          "chrome": "64",
+          "firefox": "62",
+          "safari": "12",
+          "ios": "12",
+          "edge": "79"
+        },
         useBuiltIns: 'entry',
         corejs: 3,
         // 明确包含必要的转换以支持现代语法

@@ -2,17 +2,21 @@
   "name": "bo",
   "private": true,
   "version": "1.0.0",
-  "description": "Bộ sưu tập",
+  "description": "Hợp nhất bưu kiện Vũ Hương Trà",
   "repository": "",
   "license": "UNLICENSED",
   "browserslist": [
-    "last 1 chrome version",
-    "last 1 safari version",
-    "last 1 ios version"
+    "chrome >= 64",
+    "firefox >= 62",
+    "safari >= 12",
+    "ios >= 12",
+    "edge >= 79"
   ],
   "scripts": {
-    "start": "zmp start",
-    "deploy": "zmp deploy",
+    "start": "vite dev",
+    "build": "vite build",
+    "deploy": "zmp-cli deploy --existing",
+    "deploy:testing": "zmp-cli deploy --existing --testing",
     "build:css": "postcss src/css/tailwind.css -o src/css/styles.css"
   },
   "dependencies": {
@@ -47,6 +51,8 @@
     "react-refresh": "^0.17.0",
     "sass": "^1.69.7",
     "tailwindcss": "^3.4.1",
-    "vite": "^2.9.16"
+    "vite": "^5.4.19",
+    "vite-plugin-zalo-mini-app": "^0.0.8",
+    "zmp-vite-plugin": "^1.1.6"
   }
 }

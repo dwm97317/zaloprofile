@@ -1,22 +1,16 @@
 {
   "app": {
-    "title": "Bộ sưu tập",
-    "headerTitle": "Bộ sưu tập",
+    "title": "Hợp nhất bưu kiện Vũ Hương Trà",
+    "headerTitle": "Hợp nhất bưu kiện Vũ Hương Trà",
     "headerColor": "#1843EF",
     "textColor": "white",
     "leftButton": "back",
     "statusBar": "normal",
     "actionBarHidden": false,
     "hideAndroidBottomNavigationBar": false,
-    "hideIOSSafeAreaBottom": false,
-    "selfControlLoading": false
+    "hideIOSSafeAreaBottom": false
   },
-  "listCSS": [
-    "zmp-ui/zaui.css",
-    "css/tailwind.css",
-    "css/app.scss"
-  ],
+  "listCSS": [],
   "listSyncJS": [],
-  "listAsyncJS": [],
-  "template": {}
+  "listAsyncJS": []
 }

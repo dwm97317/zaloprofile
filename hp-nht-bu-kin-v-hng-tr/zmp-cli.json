@@ -1,11 +1,11 @@
 {
-  "cwd": "D:\\13062\\zalo_release\\bo-suu-tap",
-  "name": "Hợp nhất bưu kiện Vũ Hương Trà",
-  "framework": "react",
+  "cwd": "/Users/lap15182-local/Documents/zmp-blank-templates",
+  "name": "zmp-blank-templates",
+  "framework": "react-typescript",
   "cssPreProcessor": "scss",
   "includeTailwind": true,
   "package": "zmp-ui",
-  "stateManagement": "recoil",
+  "stateManagement": "jotai",
   "newProject": true,
   "template": "single-view",
   "theming": {

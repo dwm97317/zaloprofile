@@ -1,4 +1,4 @@
-# Bộ sưu tập
+# Hợp nhất bưu kiện Vũ Hương Trà
 
 ## ZMP CLI Options
 
@@ -7,7 +7,7 @@ ZMP app created with following options:
 ```
 {
   "cwd": "D:\\13062\\zalo_release\\bo-suu-tap",
-  "name": "Bộ sưu tập",
+  "name": "Hợp nhất bưu kiện Vũ Hương Trà",
   "framework": "react",
   "cssPreProcessor": "scss",
   "includeTailwind": true,

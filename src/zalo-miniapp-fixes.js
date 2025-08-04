@@ -35,7 +35,7 @@
             '/order': 'Đơn hàng'
           };
           
-          const pageTitle = pathTitles[url] || 'Bộ sưu tập';
+          const pageTitle = pathTitles[url] || 'Hợp nhất bưu kiện Vũ Hương Trà';
           document.title = pageTitle;
           
           return originalPushState.call(this, state, title, url);
