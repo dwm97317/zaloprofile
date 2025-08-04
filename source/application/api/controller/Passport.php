@@ -129,8 +129,9 @@ class Passport extends Controller
             // 生成唯一的state参数
             $state = md5(uniqid() . time());
 
-            // 设置回调URL
-            $redirectUri = $this->request->domain() . '/index.php?s=api/passport/zaloCallback';
+            // 设置回调URL - 使用固定的回调URL用于测试
+            // 注意：在生产环境中，这个URL需要在Zalo开发者控制台中配置
+            $redirectUri = 'https://zalonew.itaoth.com/index.php?s=api/passport/zaloCallback';
 
             // 创建Zalo实例并生成OAuth URL
             $zalo = new \app\common\library\ZaloSdk\Zalo();
