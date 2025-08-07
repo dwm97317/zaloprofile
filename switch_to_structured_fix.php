@@ -17,12 +17,12 @@ if (!file_exists($filePath)) {
 $content = file_get_contents($filePath);
 
 // 查找并替换关注消息的按钮配置
-$oldPattern = '/("type"=>\s*"oa\.open\.miniapp",\s*"title"=>\s*"Mở applet",\s*"payload"=>\s*\[\'url\'=>"https:\/\/zalo\.me\/s\/3310500707791294854\/mine\?from=oa&oa_user_id="\.\$userId\])/';
+$oldPattern = '/("type"=>\s*"oa\.open\.miniapp",\s*"title"=>\s*"Mở applet",\s*"payload"=>\s*\[\'url\'=>"https:\/\/zalo\.me\/s\/757872350750612320\/mine\?from=oa&oa_user_id="\.\$userId\])/';
 
 $newReplacement = '"type"=> "oa.open.miniapp",
                             "title"=> "Mở applet",
                             "payload"=> [
-                                \'app_id\' => \'3310500707791294854\',
+                                \'app_id\' => \'757872350750612320\',
                                 \'path\' => \'mine\',
                                 \'params\' => [
                                     \'from\' => \'oa\',
@@ -46,7 +46,7 @@ if (preg_match($oldPattern, $content)) {
         echo "================\n";
         echo "按钮类型: oa.open.miniapp\n";
         echo "Payload结构:\n";
-        echo "  - app_id: 3310500707791294854\n";
+        echo "  - app_id: 757872350750612320\n";
         echo "  - path: mine\n";
         echo "  - params: {from: 'oa', oa_user_id: \$userId}\n\n";
         

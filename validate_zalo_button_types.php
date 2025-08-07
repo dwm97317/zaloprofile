@@ -18,7 +18,7 @@ echo "-----------------------------------\n";
 $originalConfig = [
     "type" => "oa.open.url",
     "title" => "Mở applet",
-    "payload" => ['url' => "https://zalo.me/s/3310500707791294854/mine?from=oa&oa_user_id=".$testUserId]
+    "payload" => ['url' => "https://zalo.me/s/757872350750612320/mine?from=oa&oa_user_id=".$testUserId]
 ];
 
 echo "按钮类型: " . $originalConfig['type'] . "\n";
@@ -31,7 +31,7 @@ echo "-----------------------------------\n";
 $correctFix = [
     "type" => "oa.open.url",
     "title" => "Mở applet",
-    "payload" => ['url' => "https://zalo.me/s/3310500707791294854/mine?utm_source=zalo-oa&from=oa&oa_user_id=".$testUserId]
+    "payload" => ['url' => "https://zalo.me/s/757872350750612320/mine?utm_source=zalo-oa&from=oa&oa_user_id=".$testUserId]
 ];
 
 echo "按钮类型: " . $correctFix['type'] . "\n";
@@ -45,7 +45,7 @@ echo "-----------------------------------\n";
 $wrongAttempt = [
     "type" => "oa.open.miniapp",
     "title" => "Mở applet",
-    "payload" => ['url' => "https://zalo.me/s/3310500707791294854/mine?from=oa&oa_user_id=".$testUserId]
+    "payload" => ['url' => "https://zalo.me/s/757872350750612320/mine?from=oa&oa_user_id=".$testUserId]
 ];
 
 echo "按钮类型: " . $wrongAttempt['type'] . "\n";
@@ -54,7 +54,7 @@ echo "错误: Button action type is invalid\n";
 echo "Payload: " . json_encode($wrongAttempt['payload'], JSON_PRETTY_PRINT) . "\n\n";
 
 // 生成完整的消息结构用于测试
-echo "📋 完整消息结构示例（方案2）:\n";
+echo "📋 完整消息结构示例（正确修复）:\n";
 echo "================================\n";
 
 $completeMessage = [
@@ -75,7 +75,7 @@ $completeMessage = [
                     "content" => "Chào mừng bạn đến với chương trình nhỏ của chúng tôi",
                 ]
             ],
-            'buttons' => [$minimalFix]
+            'buttons' => [$correctFix]
         ]
     ]
 ];
@@ -85,19 +85,22 @@ echo json_encode($completeMessage, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) .
 // 测试建议
 echo "🧪 测试建议:\n";
 echo "=============\n";
-echo "1. 首先测试方案2（最小化修复）\n";
+echo "1. 测试修复后的深层链接\n";
 echo "2. 发送测试消息给测试用户\n";
 echo "3. 点击按钮验证是否在Zalo应用内打开小程序\n";
-echo "4. 如果方案2不工作，再尝试方案3\n\n";
+echo "4. 检查API响应是否还有错误\n\n";
 
 echo "📝 验证要点:\n";
 echo "=============\n";
-echo "✓ 点击按钮后不会打开外部浏览器\n";
-echo "✓ 直接在Zalo应用内打开小程序\n";
+echo "✓ API调用不再返回'Button action type is invalid'错误\n";
+echo "✓ 点击按钮后直接在Zalo应用内打开小程序\n";
 echo "✓ 正确跳转到mine页面\n";
-echo "✓ 参数正确传递（from=oa, oa_user_id）\n\n";
+echo "✓ 参数正确传递（utm_source=zalo-oa, from=oa, oa_user_id）\n\n";
 
-echo "🔧 如果需要切换到方案3，请运行:\n";
-echo "php switch_to_structured_fix.php\n\n";
+echo "🔍 关键修复点:\n";
+echo "===============\n";
+echo "✓ 保持oa.open.url按钮类型（这是正确的）\n";
+echo "✓ 添加utm_source=zalo-oa参数到深层链接\n";
+echo "✓ 深层链接格式: https://zalo.me/s/{miniAppId}/{path}?utm_source=zalo-oa&...\n\n";
 
 echo "=== 验证完成 ===\n";

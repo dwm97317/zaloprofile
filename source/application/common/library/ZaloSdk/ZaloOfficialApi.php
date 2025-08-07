@@ -49,7 +49,7 @@ class ZaloOfficialApi {
                         [
                             "type"=> "oa.open.url",
                             "title"=> "Xem chi tiết",
-                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/query?utm_source=zalo-oa&from=oa"]
+                            "payload"=> ['url'=>"https://zalo.me/s/757872350750612320/query?utm_source=zalo-oa&from=oa"]
                         ]
                      ]
                 ]
@@ -90,7 +90,7 @@ class ZaloOfficialApi {
                         [
                             "type"=> "oa.open.url",
                             "title"=> "Xem kho hàng",
-                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/storage?utm_source=zalo-oa&from=oa"]
+                            "payload"=> ['url'=>"https://zalo.me/s/757872350750612320/storage?utm_source=zalo-oa&from=oa"]
                         ]
                      ]
                 ]
@@ -139,7 +139,7 @@ class ZaloOfficialApi {
                         [
                             "type"=> "oa.open.url",
                             "title"=> "Xem đơn hàng",
-                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/order?utm_source=zalo-oa&from=oa"]
+                            "payload"=> ['url'=>"https://zalo.me/s/757872350750612320/order?utm_source=zalo-oa&from=oa"]
                         ]
                      ]
                 ]
@@ -184,7 +184,7 @@ class ZaloOfficialApi {
                         [
                             "type"=> "oa.open.url",
                             "title"=> "Theo dõi đơn hàng",
-                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/query?utm_source=zalo-oa&from=oa"]
+                            "payload"=> ['url'=>"https://zalo.me/s/757872350750612320/query?utm_source=zalo-oa&from=oa"]
                         ]
                      ]
                 ]
@@ -250,7 +250,7 @@ class ZaloOfficialApi {
                         [
                             "type"=> "oa.open.url",  // 正确的按钮类型
                             "title"=> "Mở applet",
-                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/mine?utm_source=zalo-oa&from=oa&oa_user_id=".$userId]
+                            "payload"=> ['url'=>"https://zalo.me/s/757872350750612320/mine?utm_source=zalo-oa&from=oa&oa_user_id=".$userId]
                         ]
                      ]
                 ],

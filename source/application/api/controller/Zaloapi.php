@@ -21,7 +21,7 @@ class Zaloapi {
        die;
       // 获取原始 POST 数据
       $input = file_get_contents('php://input');
-    //   $input = '{"oa_id":"140130397183308120","follower":{"id":"8890635404729405962"},"user_id_by_app":"6655413641204889003","event_name":"follow","source":"zalo","app_id":"3310500707791294854","timestamp":"1752295684665"}';
+    //   $input = '{"oa_id":"140130397183308120","follower":{"id":"8890635404729405962"},"user_id_by_app":"6655413641204889003","event_name":"follow","source":"zalo","app_id":"757872350750612320","timestamp":"1752295684665"}';
       file_put_contents('debug.txt',$input."\r\n");
       $data = json_decode($input, true);
       

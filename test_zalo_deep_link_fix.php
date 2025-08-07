@@ -24,7 +24,7 @@ $method = $reflection->getMethod('sendfollowerMessage');
 
 // 由于是静态方法，我们需要模拟消息结构
 echo "✓ 关注消息按钮类型已修改为: oa.open.miniapp\n";
-echo "✓ 小程序ID: 3310500707791294854\n";
+echo "✓ 小程序ID: 757872350750612320\n";
 echo "✓ 跳转路径: mine\n";
 echo "✓ 参数包含: from=oa, oa_user_id\n\n";
 
@@ -62,7 +62,7 @@ $sampleMessage = [
                     "type" => "oa.open.miniapp",  // 修复后的类型
                     "title" => "Mở applet",
                     "payload" => [
-                        'app_id' => '3310500707791294854',
+                        'app_id' => '757872350750612320',
                         'path' => 'mine',
                         'params' => [
                             'from' => 'oa',

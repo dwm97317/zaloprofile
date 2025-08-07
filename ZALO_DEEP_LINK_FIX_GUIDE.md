@@ -39,7 +39,7 @@
     [
         "type"=> "oa.open.url",  // 保持正确的按钮类型
         "title"=> "Mở applet",
-        "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/mine?utm_source=zalo-oa&from=oa&oa_user_id=".$userId]
+        "payload"=> ['url'=>"https://zalo.me/s/757872350750612320/mine?utm_source=zalo-oa&from=oa&oa_user_id=".$userId]
     ]
 ]
 ```
@@ -60,7 +60,7 @@
         "type"=> "oa.open.miniapp",
         "title"=> "Xem chi tiết",
         "payload"=> [
-            'app_id' => '3310500707791294854',
+            'app_id' => '757872350750612320',
             'path' => 'query',
             'params' => ['from' => 'oa']
         ]
@@ -75,7 +75,7 @@
         "type"=> "oa.open.miniapp",
         "title"=> "Xem kho hàng",
         "payload"=> [
-            'app_id' => '3310500707791294854',
+            'app_id' => '757872350750612320',
             'path' => 'storage',
             'params' => ['from' => 'oa']
         ]
@@ -159,7 +159,7 @@ php test_zalo_deep_link_fix.php
 ### 小程序参数结构
 ```php
 "payload"=> [
-    'app_id' => '3310500707791294854',  // 小程序ID
+    'app_id' => '757872350750612320',  // 小程序ID
     'path' => 'mine',                   // 小程序内页面路径
     'params' => [                       // 传递给小程序的参数
         'from' => 'oa',
@@ -170,7 +170,7 @@ php test_zalo_deep_link_fix.php
 
 ## 注意事项
 
-1. **小程序ID**: 确保使用正确的小程序ID `3310500707791294854`
+1. **小程序ID**: 确保使用正确的小程序ID `757872350750612320`
 2. **页面路径**: 确保小程序中存在对应的页面路径
 3. **参数处理**: 小程序需要正确处理传递的参数
 4. **测试环境**: 在正式环境中测试前，建议先在开发环境验证

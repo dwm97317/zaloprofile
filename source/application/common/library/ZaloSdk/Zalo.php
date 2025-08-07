@@ -6,7 +6,7 @@ class Zalo {
     
     // 配置文件
     private $config = [
-       'appid' => '3310500707791294854',
+       'appid' => '757872350750612320',
        'secret' => '1Y6G62fK4L6YgnGjm6eW',
     ];
      
