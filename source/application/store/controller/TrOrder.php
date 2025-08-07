@@ -305,7 +305,7 @@ class TrOrder extends Controller
            $data['order_type'] = 10;
            $data['order']['remark'] = $status_remark[$status];
            Logistics::addInpackLogs($order['order_sn'],$status_remark[$status]);
-           Message::send('order.payment',$data);
+           // Message::send('order.payment',$data); // 临时关闭微信消息通知
        }    
        return $this->renderSuccess('更新成功');
     }

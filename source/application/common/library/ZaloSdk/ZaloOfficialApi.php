@@ -45,7 +45,19 @@ class ZaloOfficialApi {
                             ]
                         ]
                      ],
-                     'buttons' => [] 
+                     'buttons' => [
+                        [
+                            "type"=> "oa.open.miniapp",
+                            "title"=> "Xem chi tiết",
+                            "payload"=> [
+                                'app_id' => '3310500707791294854',
+                                'path' => 'query',
+                                'params' => [
+                                    'from' => 'oa'
+                                ]
+                            ]
+                        ]
+                     ]
                 ]
             ]   
         ], // 入库通知
@@ -80,7 +92,19 @@ class ZaloOfficialApi {
                             ]
                         ]
                      ],
-                     'buttons' => [] 
+                     'buttons' => [
+                        [
+                            "type"=> "oa.open.miniapp",
+                            "title"=> "Xem kho hàng",
+                            "payload"=> [
+                                'app_id' => '3310500707791294854',
+                                'path' => 'storage',
+                                'params' => [
+                                    'from' => 'oa'
+                                ]
+                            ]
+                        ]
+                     ]
                 ]
             ]   
         ],
@@ -123,7 +147,19 @@ class ZaloOfficialApi {
                             ]
                         ]
                      ],
-                     'buttons' => [] 
+                     'buttons' => [
+                        [
+                            "type"=> "oa.open.miniapp",
+                            "title"=> "Xem đơn hàng",
+                            "payload"=> [
+                                'app_id' => '3310500707791294854',
+                                'path' => 'order',
+                                'params' => [
+                                    'from' => 'oa'
+                                ]
+                            ]
+                        ]
+                     ]
                 ]
             ]   
         ],
@@ -162,7 +198,19 @@ class ZaloOfficialApi {
                             ]
                         ]
                      ],
-                     'buttons' => [] 
+                     'buttons' => [
+                        [
+                            "type"=> "oa.open.miniapp",
+                            "title"=> "Theo dõi đơn hàng",
+                            "payload"=> [
+                                'app_id' => '3310500707791294854',
+                                'path' => 'query',
+                                'params' => [
+                                    'from' => 'oa'
+                                ]
+                            ]
+                        ]
+                     ]
                 ]
             ] 
         ]
@@ -224,10 +272,16 @@ class ZaloOfficialApi {
                      ],
                     'buttons' => [
                         [
-                            "type"=> "oa.open.url",  // 跳转类型
-                            "image_icon" => '',
+                            "type"=> "oa.open.miniapp",  // 小程序跳转类型
                             "title"=> "Mở applet",
-                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/mine?from=oa&oa_user_id=".$userId]
+                            "payload"=> [
+                                'app_id' => '3310500707791294854',
+                                'path' => 'mine',
+                                'params' => [
+                                    'from' => 'oa',
+                                    'oa_user_id' => $userId
+                                ]
+                            ]
                         ]
                      ]
                 ],
