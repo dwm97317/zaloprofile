@@ -47,15 +47,9 @@ class ZaloOfficialApi {
                      ],
                      'buttons' => [
                         [
-                            "type"=> "oa.open.miniapp",
+                            "type"=> "oa.open.url",
                             "title"=> "Xem chi tiết",
-                            "payload"=> [
-                                'app_id' => '3310500707791294854',
-                                'path' => 'query',
-                                'params' => [
-                                    'from' => 'oa'
-                                ]
-                            ]
+                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/query?utm_source=zalo-oa&from=oa"]
                         ]
                      ]
                 ]
@@ -94,15 +88,9 @@ class ZaloOfficialApi {
                      ],
                      'buttons' => [
                         [
-                            "type"=> "oa.open.miniapp",
+                            "type"=> "oa.open.url",
                             "title"=> "Xem kho hàng",
-                            "payload"=> [
-                                'app_id' => '3310500707791294854',
-                                'path' => 'storage',
-                                'params' => [
-                                    'from' => 'oa'
-                                ]
-                            ]
+                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/storage?utm_source=zalo-oa&from=oa"]
                         ]
                      ]
                 ]
@@ -149,15 +137,9 @@ class ZaloOfficialApi {
                      ],
                      'buttons' => [
                         [
-                            "type"=> "oa.open.miniapp",
+                            "type"=> "oa.open.url",
                             "title"=> "Xem đơn hàng",
-                            "payload"=> [
-                                'app_id' => '3310500707791294854',
-                                'path' => 'order',
-                                'params' => [
-                                    'from' => 'oa'
-                                ]
-                            ]
+                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/order?utm_source=zalo-oa&from=oa"]
                         ]
                      ]
                 ]
@@ -200,15 +182,9 @@ class ZaloOfficialApi {
                      ],
                      'buttons' => [
                         [
-                            "type"=> "oa.open.miniapp",
+                            "type"=> "oa.open.url",
                             "title"=> "Theo dõi đơn hàng",
-                            "payload"=> [
-                                'app_id' => '3310500707791294854',
-                                'path' => 'query',
-                                'params' => [
-                                    'from' => 'oa'
-                                ]
-                            ]
+                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/query?utm_source=zalo-oa&from=oa"]
                         ]
                      ]
                 ]
@@ -272,16 +248,9 @@ class ZaloOfficialApi {
                      ],
                     'buttons' => [
                         [
-                            "type"=> "oa.open.miniapp",  // 小程序跳转类型
+                            "type"=> "oa.open.url",  // 正确的按钮类型
                             "title"=> "Mở applet",
-                            "payload"=> [
-                                'app_id' => '3310500707791294854',
-                                'path' => 'mine',
-                                'params' => [
-                                    'from' => 'oa',
-                                    'oa_user_id' => $userId
-                                ]
-                            ]
+                            "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/mine?utm_source=zalo-oa&from=oa&oa_user_id=".$userId]
                         ]
                      ]
                 ],

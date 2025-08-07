@@ -6,13 +6,13 @@
 
 ## 问题根因
 
-经过深入分析，发现问题出现在 `ZaloOfficialApi.php` 文件中的按钮配置：
+经过深入分析和查阅官方文档，发现问题出现在深层链接URL格式不正确：
 
 ### 修复前的错误配置
 ```php
 'buttons' => [
     [
-        "type"=> "oa.open.url",  // 错误：这会在外部浏览器打开
+        "type"=> "oa.open.url",  // 按钮类型是正确的
         "image_icon" => '',
         "title"=> "Mở applet",
         "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/mine?from=oa&oa_user_id=".$userId]
@@ -21,12 +21,15 @@
 ```
 
 **问题分析：**
-- 使用了 `"oa.open.url"` 类型，这会在外部浏览器中打开链接
-- 导致用户点击消息时跳转到Zalo APK而不是小程序内部
+- 按钮类型 `"oa.open.url"` 是正确的
+- 问题在于深层链接URL缺少必需的 `utm_source` 参数
+- 根据官方文档，深层链接必须包含 `utm_source=zalo-qr` 或类似参数
 
 ## 修复方案
 
-### 1. 修复关注消息按钮类型
+### 正确的深层链接格式
+
+根据Zalo官方文档，修复方案是添加必需的 `utm_source` 参数：
 
 **文件位置：** `source/application/common/library/ZaloSdk/ZaloOfficialApi.php`
 
@@ -34,19 +37,17 @@
 ```php
 'buttons' => [
     [
-        "type"=> "oa.open.miniapp",  // 修复：使用小程序专用跳转类型
+        "type"=> "oa.open.url",  // 保持正确的按钮类型
         "title"=> "Mở applet",
-        "payload"=> [
-            'app_id' => '3310500707791294854',
-            'path' => 'mine',
-            'params' => [
-                'from' => 'oa',
-                'oa_user_id' => $userId
-            ]
-        ]
+        "payload"=> ['url'=>"https://zalo.me/s/3310500707791294854/mine?utm_source=zalo-oa&from=oa&oa_user_id=".$userId]
     ]
 ]
 ```
+
+**关键修复点：**
+- 保持 `"oa.open.url"` 按钮类型（这是正确的）
+- 添加 `utm_source=zalo-oa` 参数到深层链接URL
+- 保持所有原有参数（`from=oa&oa_user_id=`）
 
 ### 2. 为其他消息类型添加小程序跳转按钮
 
