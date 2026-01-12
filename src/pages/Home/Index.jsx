@@ -249,36 +249,6 @@ const HomePage = () => {
             onClick={() => menuTarget(navData[8].url, navData[8].params)}
           />
         </div>
-
-        {/* Quick Guide Entrance Button */}
-        <div className="relative -top-5 flex items-center justify-center">
-          <button
-            onClick={() => navigate('/guide/quick-start')}
-            className="group relative"
-          >
-            {/* Glow effect background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 
-                            rounded-full blur-xl opacity-50 group-hover:opacity-75 
-                            transition-opacity animate-pulse" />
-            
-            {/* Main button */}
-            <div className="relative flex items-center gap-3 px-6 py-3 
-                            bg-gradient-to-r from-yellow-400 via-orange-400 to-red-500
-                            rounded-full shadow-2xl
-                            group-hover:scale-110 group-active:scale-95
-                            transition-all duration-200">
-              <span className="text-2xl">⚡</span>
-              <span className="text-white font-bold text-base">
-                {t("home.quick_guide", "คู่มือด่วน")}
-              </span>
-              <span className="text-2xl">📋</span>
-            </div>
-            
-            {/* Notification dot */}
-            <div className="absolute -top-1 -right-1 w-3 h-3 
-                            bg-red-500 rounded-full animate-ping" />
-          </button>
-        </div>
       </div>
 
       {/* Quick Guide Steps - 快速指南步骤 */}
