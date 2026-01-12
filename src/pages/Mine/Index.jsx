@@ -203,6 +203,7 @@ const MinePage = () => {
         <h3 className="font-bold text-lg text-gray-800 mb-4">{t("mine.other_services")}</h3>
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           {[
+            { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img127.png", txt: t("home.nav.recharge", "เติมเงิน"), route: "/mine/recharge" },
             { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img114.png", txt: t("mine.receive_package"), route: "/package/take" },
             { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img115.png", txt: t("mine.address_book"), route: "/address/index" },
             { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img116.png", txt: t("mine.warehouse"), route: "/storage/index" },

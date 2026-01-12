@@ -85,11 +85,10 @@ const HomePage = () => {
     },
     {
       id: 2,
-      name: t("home.nav.recharge", "เติมเงิน"),
-      img: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img127.png",
-      url: "/mine/recharge",
-      gradient: "from-orange-400 to-orange-500",
-      badge: "ใหม่"
+      name: t("home.nav.freight", "คำนวณค่าขนส่ง"),
+      img: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img9.png",
+      url: "/freight",
+      gradient: "from-teal-400 to-teal-500"
     },
     {
       id: 3,
@@ -282,48 +281,121 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Best Routes - LINE 主题优化 */}
+      {/* Quick Guide Steps - 快速指南步骤 */}
       <div className="mt-8 px-4">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-6 bg-primary-600 rounded-full"></div>
-          <h2 className="text-lg font-bold text-gray-800">{t("home.labels.best_route", "เส้นทางที่ดีที่สุด")}</h2>
+          <h2 className="text-lg font-bold text-gray-800">{t("home.quick_guide", "คู่มือด่วน")}</h2>
         </div>
 
-        <div className="space-y-4">
-          {bestLine.map((lines, groupIdx) => (
-            <div key={groupIdx} className="flex overflow-x-auto gap-4 py-2 hide-scrollbar">
-              {lines.map((line, idx) => (
-                <div
-                  key={idx}
-                  className="shrink-0 w-72 bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden 
-                           hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
-                  onClick={() => {
-                    setLineId(line.id);
-                    navigate("/common/line/detail");
-                  }}
-                >
-                  <img src={line.image || "https://zhuanyun.sllowly.cn/attachment/no_pic.png"} 
-                       className="w-full h-32 object-cover" alt={line.name} />
-                  <div className="p-4">
-                    <h4 className="font-bold text-gray-900 truncate text-base">{line.name}</h4>
-                    <div className="mt-3 space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">{t("home.labels.delivery", "จัดส่ง")}:</span>
-                        <span className="font-medium text-gray-800">{line.limitationofdelivery}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">{t("home.labels.tariff", "ภาษี")}:</span>
-                        <span className="font-bold text-primary-600">{line.tariff}</span>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center justify-end text-primary-600 font-bold text-sm">
-                      {t("common.view_detail", "ดูรายละเอียด")} →
-                    </div>
+        <div className="space-y-3">
+          {/* Step 1 */}
+          <div 
+            onClick={() => navigate('/guide/quick-start')}
+            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100
+                     hover:shadow-md hover:scale-[1.01] active:scale-95 transition-all duration-200 cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600
+                            flex items-center justify-center text-2xl shadow-lg flex-shrink-0">
+                📦
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600
+                                flex items-center justify-center text-white font-bold text-xs">
+                    1
                   </div>
+                  <h3 className="font-bold text-gray-900 text-sm">{t("guide.step1.title")}</h3>
                 </div>
-              ))}
+                <p className="text-gray-600 text-xs">{t("guide.step1.description")}</p>
+              </div>
+              <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
             </div>
-          ))}
+          </div>
+
+          {/* Step 2 */}
+          <div 
+            onClick={() => navigate('/guide/quick-start')}
+            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100
+                     hover:shadow-md hover:scale-[1.01] active:scale-95 transition-all duration-200 cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600
+                            flex items-center justify-center text-2xl shadow-lg flex-shrink-0">
+                📋
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-green-600
+                                flex items-center justify-center text-white font-bold text-xs">
+                    2
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-sm">{t("guide.step2.title")}</h3>
+                </div>
+                <p className="text-gray-600 text-xs">{t("guide.step2.description")}</p>
+              </div>
+              <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div 
+            onClick={() => navigate('/guide/quick-start')}
+            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100
+                     hover:shadow-md hover:scale-[1.01] active:scale-95 transition-all duration-200 cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600
+                            flex items-center justify-center text-2xl shadow-lg flex-shrink-0">
+                📦
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-600
+                                flex items-center justify-center text-white font-bold text-xs">
+                    3
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-sm">{t("guide.step3.title")}</h3>
+                </div>
+                <p className="text-gray-600 text-xs">{t("guide.step3.description")}</p>
+              </div>
+              <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Step 4 */}
+          <div 
+            onClick={() => navigate('/guide/quick-start')}
+            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100
+                     hover:shadow-md hover:scale-[1.01] active:scale-95 transition-all duration-200 cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600
+                            flex items-center justify-center text-2xl shadow-lg flex-shrink-0">
+                💳
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-purple-600
+                                flex items-center justify-center text-white font-bold text-xs">
+                    4
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-sm">{t("guide.step4.title")}</h3>
+                </div>
+                <p className="text-gray-600 text-xs">{t("guide.step4.description")}</p>
+              </div>
+              <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
