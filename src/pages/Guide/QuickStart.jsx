@@ -10,6 +10,7 @@ import StepCard from "./StepCard";
 import WarehouseInfo from "./WarehouseInfo";
 import NoticeBox from "./NoticeBox";
 import QuickLinks from "./QuickLinks";
+import Tab from "../../components/Tab/Tab";
 
 const QuickStartPage = () => {
   const { t } = useTranslation();
@@ -241,12 +242,15 @@ const QuickStartPage = () => {
       <QuickLinks />
 
       {/* Help Section */}
-      <div className="px-4 py-6">
+      <div className="px-4 py-6 pb-24">
         <div className="bg-white rounded-2xl p-6 text-center shadow-sm">
           <p className="text-gray-600 mb-2">{t("guide.need_help")}</p>
           <p className="text-primary-600 font-bold">{t("guide.contact_support")}</p>
         </div>
       </div>
+
+      {/* Bottom Navigation */}
+      <Tab />
     </div>
   );
 };

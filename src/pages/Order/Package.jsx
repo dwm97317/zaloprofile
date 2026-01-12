@@ -8,6 +8,7 @@ import util from "../../utils/util";
 import Loading from "../../components/Loading/Index";
 import Button from "../../components/Button/Index";
 import { toast } from "../../utils/toast";
+import Tab from "../../components/Tab/Tab";
 import "./Index.scss";
 
 const OrderPackagePage = () => {
@@ -614,6 +615,9 @@ const OrderPackagePage = () => {
           </div>
         </div>
       )}
+
+      {/* Bottom Navigation */}
+      <Tab />
     </div>
   );
 };
