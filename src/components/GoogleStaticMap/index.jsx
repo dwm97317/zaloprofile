@@ -1,13 +1,12 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { reverseGeocode } from '../../utils/addressParser';
+import { reverseGeocodeThai as reverseGeocode } from '../../utils/addressParser';
 import './index.scss';
 
 // 配置常量
 const CONFIG = {
-  DEFAULT_CENTER: { lat: 10.762622, lng: 106.660172 }, // 胡志明市中心
-  DEFAULT_ZOOM: 15,
-  GOONG_API_KEY: '5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj'
+  DEFAULT_CENTER: { lat: 13.7563, lng: 100.5018 }, // Bangkok Center
+  DEFAULT_ZOOM: 16
 };
 
 const GoogleEmbedMap = ({
@@ -54,7 +53,7 @@ const GoogleEmbedMap = ({
 
     try {
       const addressData = await reverseGeocode(lat, lng);
-      
+
       if (onLocationSelect) {
         onLocationSelect({
           ...addressData,
@@ -158,7 +157,7 @@ const GoogleEmbedMap = ({
       {error && (
         <div className="map-error">
           <span className="error-text">{error}</span>
-          <button 
+          <button
             className="retry-button"
             onClick={() => setError(null)}
           >
@@ -166,7 +165,7 @@ const GoogleEmbedMap = ({
           </button>
         </div>
       )}
-      
+
       {isLoading && (
         <div className="map-loading">
           <div className="loading-spinner"></div>
@@ -190,14 +189,14 @@ const GoogleEmbedMap = ({
 
         {/* 地图控件 */}
         <div className="map-controls">
-          <button 
+          <button
             className="control-button zoom-in"
             onClick={handleZoomIn}
             disabled={zoom >= 20}
           >
             +
           </button>
-          <button 
+          <button
             className="control-button zoom-out"
             onClick={handleZoomOut}
             disabled={zoom <= 1}

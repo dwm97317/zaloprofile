@@ -1,282 +1,287 @@
 import React, { useEffect, useState } from "react";
-import { Page, useNavigate, Button, Modal } from "zmp-ui";
+import { useNavigate } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { orderIdState, orderStatusState, userState } from "../../state";
+import { useTranslation } from "react-i18next";
+import { orderIdState, orderStatusState } from "../../state";
 import request from "../../utils/request";
-import Empty from "../../components/Empty";
 import copy from "copy-to-clipboard";
-import "./Index.scss";
+import Button from "../../components/Button/Index";
+import Modal from "../../components/Modal/Index";
 import Loading from "../../components/Loading/Index";
-import Header from "../../components/Header/Header";
-import util from "../../utils/util";
-import { showToast } from "zmp-sdk";
 
-const TrangDonHang = () => {
-  const user = useRecoilValue(userState);
+const OrderListPage = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const setOrderId = useSetRecoilState(orderIdState);
   const orderStatus = useRecoilValue(orderStatusState);
-  const navigate = useNavigate();
-  const [tab, setTab] = useState(1);
+
+  const [activeTab, setActiveTab] = useState(1);
   const [list, setList] = useState([]);
-  const [confirmVisable, setConfirmVisable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
-  const [id, setId] = useState(0);
+  const [cancelId, setCancelId] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+
   const typeMap = ["", "verify", "nopay", "no_send", "send", "complete"];
-  
-  // Lấy danh sách đơn hàng
-  const getOrderList = (params) => {
-    const url = "package/packagelist";
-    request
-      .get(url + "&wxapp_id=10001", { type: typeMap[params["tab"]] })
-      .then((res) => {
-        const list = res.data.data;
-        setList(list);
-      });
+
+  useEffect(() => {
+    // Init tab from global state or default
+    const initialTab = orderStatus || 1;
+    setActiveTab(initialTab);
+    fetchOrderList(initialTab);
+  }, []);
+
+  const fetchOrderList = async (tabIndex) => {
+    setLoading(true);
+    try {
+      const apiTab = typeMap[tabIndex] || "";
+      const res = await request.get("package/packagelist&wxapp_id=10001", { type: apiTab });
+      if (res.code === 1 && Array.isArray(res.data.data)) {
+        setList(res.data.data);
+      } else {
+        setList([]);
+      }
+    } catch (err) {
+      console.error(err);
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Chuyển tab
-  const handleTab = (tabIndex) => {
-    setTab(tabIndex);
-    getOrderList({ tab: tabIndex });
+  const handleTabChange = (index) => {
+    setActiveTab(index);
+    fetchOrderList(index);
   };
 
-  const handleCopy = (e) => {
-    copy(e);
-    showToast({
-      message: "Sao chép thành công",
-    });
+  const handleCopy = (text) => {
+    if (copy(text)) {
+      alert(t("common.copy_success"));
+    }
   };
 
-  const handleDetail = (e, id) => {
+  const handleDetail = (id) => {
     setOrderId(id);
     navigate("/order/detail");
   };
 
-  const handleCancel = (id) => {
-    setConfirmVisable(true);
-    setId(id);
+  const handleCancelClick = (id) => {
+    setCancelId(id);
+    setShowCancelModal(true);
   };
 
-  const handlePay = (id) =>{
+  const confirmCancel = async () => {
+    setShowCancelModal(false);
     setLoading(true);
-    setLoadingText("Vui lòng chờ");
-    console.log(id,'id');
-    request.post("package/doPay&wxapp_id=10001", { id: id , 'paytype':10 }).then((res)=>{
-       setLoading(false);
-       setLoadingText("");
-       if (res.code == 1) {
-          showToast({
-            message: "Thanh toán thành công",
-          });
-          return;
-        } else {
-          console.log(res.msg,'msg-error');
-          showToast({
-            message: res.msg,
-          });
-        }
-    })
-  }
-
-  const doCancel = () => {
-    setConfirmVisable(false);
-    request
-      .post("package/canclePack&wxapp_id=10001", { id: id })
-      .then((res) => {
-        if (res.code == 1) {
-          showToast({
-            message: "Hủy thành công",
-          });
-          return;
-        } else {
-          showToast({
-            message: res.msg,
-          });
-        }
-      });
+    try {
+      const res = await request.post("package/canclePack&wxapp_id=10001", { id: cancelId });
+      if (res.code === 1) {
+        alert(t("order.cancel_success"));
+        fetchOrderList(activeTab); // Refresh list
+      } else {
+        alert(res.msg || t("common.error"));
+      }
+    } catch (err) {
+      alert(t("common.error_network"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    console.log("Mô phỏng componentDidMount lần render đầu tiên");
-    console.log(orderStatus, "o");
-    setTab(orderStatus);
-    util
-      .checkLogin(function () {
-        getOrderList({ tab: orderStatus });
-      })
-      .then((res) => {
-        if (!res) {
-          setTimeout(() => {
-            navigate("/mine");
-          }, 1000);
-        }
-      });
-    return () => {
-      console.log("Mô phỏng componentWillUnmount sau khi hủy");
-    };
-  }, []);
-  
+  const handlePay = async (id) => {
+    setLoading(true);
+    setLoadingText(t("common.processing"));
+    try {
+      const res = await request.post("package/doPay&wxapp_id=10001", { id: id, paytype: 10 });
+      if (res.code === 1) {
+        alert(t("order.pay_success"));
+        fetchOrderList(activeTab);
+      } else {
+        alert(res.msg || t("common.error"));
+      }
+    } catch (err) {
+      alert(t("common.error_network"));
+    } finally {
+      setLoading(false);
+      setLoadingText("");
+    }
+  };
+
+  // Helper to get status text (can be improved with better mapping)
+  const getStatusText = (item) => {
+    const { status, is_pay } = item;
+    if (status == 1) return t("order.status.pending_check");
+    if (status == 2 && is_pay == 2) return t("order.status.pending_pay");
+    if (status == 3 && is_pay == 1) return t("order.status.paid");
+    if (status == 4 && is_pay == 1) return t("order.status.packing");
+    if (status == 5 && is_pay == 1) return t("order.status.packing");
+    if (status == 6 && is_pay == 1) return t("order.status.shipped");
+    if (status == 7 && is_pay == 1) return t("order.status.received");
+    if (status == 8 && is_pay == 1) return t("order.status.completed");
+    if (status == -1) return t("order.status.cancelled");
+    return "";
+  };
+
+  const tabs = [
+    { id: "", label: t("order.tabs.all") },
+    { id: 1, label: t("order.tabs.check") },
+    { id: 2, label: t("order.tabs.pay") },
+    { id: 3, label: t("order.tabs.send") },
+    { id: 4, label: t("order.tabs.sent") },
+    { id: 5, label: t("order.tabs.done") },
+  ];
+
   return (
-    <Page className="page order">
-      <Header></Header>
-      <Modal
-        visible={confirmVisable}
-        title="Thông báo"
-        description="Hủy đơn hàng này vẫn có thể phát sinh phí bổ sung?"
-        actions={[
-          {
-            text: "Hủy",
-            onClick: () => {
-              setConfirmVisable(false);
-            },
-            highLight: true,
-          },
-          {
-            text: "Xác nhận",
-            onClick: () => {
-              doCancel();
-            },
-          },
-        ]}
-      />
-      <div className="tab">
-        <div
-          className={`tab-item ${tab == "" ? "active" : ""}`}
-          onClick={(e) => {
-            handleTab("");
-          }}
-        >
-          Tất cả
-        </div>
-        <div
-          className={`tab-item ${tab == 1 ? "active" : ""}`}
-          onClick={(e) => {
-            handleTab(1);
-          }}
-        >
-          Chờ kiểm tra
-        </div>
-        <div
-          className={`tab-item ${tab == 2 ? "active" : ""}`}
-          onClick={(e) => {
-            handleTab(2);
-          }}
-        >
-          Chờ thanh toán
-        </div>
-        <div
-          className={`tab-item ${tab == 3 ? "active" : ""}`}
-          onClick={(e) => {
-            handleTab(3);
-          }}
-        >
-          Chờ gửi hàng
-        </div>
-        <div
-          className={`tab-item ${tab == 4 ? "active" : ""}`}
-          onClick={(e) => {
-            handleTab(4);
-          }}
-        >
-          Đã gửi hàng
-        </div>
-        <div
-          className={`tab-item ${tab == 5 ? "active" : ""}`}
-          onClick={(e) => {
-            handleTab(5);
-          }}
-        >
-          Hoàn thành
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <div className="bg-white px-4 py-3 shadow-sm sticky top-0 z-20 flex items-center">
+        <button onClick={() => navigate("/mine")} className="p-2 -ml-2 text-gray-600">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 className="text-lg font-bold ml-2 text-gray-800">{t("order.title")}</h1>
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white shadow-sm overflow-x-auto whitespace-nowrap scrollbar-hide sticky top-[52px] z-10">
+        <div className="flex px-2">
+          {tabs.map((tab) => (
+            <div
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tab.id
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+            >
+              {tab.label}
+            </div>
+          ))}
         </div>
       </div>
-      
-      {list.length == 0 ? <Empty /> : ""}
-      {list.map((item, index) => {
-        return (
-          <div className="package-container" key={index}>
-            <div className="package-container-inner">
-              <div
-                className="package-item"
-                onClick={(e) => handleDetail(e, item["id"])}
-              >
-                <div className="country-box">
-                  <div className="package-item-icon">
-                    <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img24.png"></img>
-                  </div>
-                  {item["storage"]["shop_name"]}
-                </div>
-                <div
-                  className="order-status"
-                  onClick={(e) => targetDetail(index)}
-                >
-                  {item["status"] == 1 ? "Chờ kiểm tra" : ""}
-                  {item["status"] == 2 && item["is_pay"] == 2 ? "Chờ thanh toán" : ""}
-                  {item["status"] == 3 && item["is_pay"] == 1 ? "Đã thanh toán" : ""}
-                  {item["status"] == 4 && item["is_pay"] == 1 ? "Đang đóng gói" : ""}
-                  {item["status"] == 5 && item["is_pay"] == 1 ? "Đang đóng gói" : ""}
-                  {item["status"] == 6 && item["is_pay"] == 1 ? "Đã gửi hàng" : ""}
-                  {item["status"] == 7 && item["is_pay"] == 1 ? "Chờ nhận hàng" : ""}
-                  {item["status"] == 8 && item["is_pay"] == 1 ? "Hoàn thành" : ""}
-                  {item["status"] == -1 ? "Đã hủy" : ""}
-                </div>
+
+      {/* List */}
+      <div className="flex-1 p-4 space-y-4">
+        {list.length === 0 && !loading && (
+          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+            <svg className="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            <p>{t("common.no_data")}</p>
+          </div>
+        )}
+
+        {list.map((item, index) => (
+          <div key={index} className="bg-white rounded-2xl p-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {/* Header: Warehouse & Status */}
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="bg-blue-100 p-1.5 rounded-lg">
+                  <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img24.png" className="w-4 h-4" />
+                </span>
+                <span className="font-bold text-gray-800 text-sm">
+                  {item.storage?.shop_name || "Warehouse"}
+                </span>
               </div>
-              <div className="package-item">
-                <div className="country-box">
-                  <div className="package-item-icon">
-                    <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img27.png"></img>
-                  </div>
-                  Mã đơn hàng:{item["order_sn"]} <span className="copy" onClick={(e) => handleCopy(item["order_sn"])}> [Sao chép]</span>
-                </div>
+              <span className="text-orange-500 font-bold text-sm">
+                {getStatusText(item)}
+              </span>
+            </div>
+
+            {/* Order No */}
+            <div className="py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img27.png" className="w-4 h-4 opacity-60" />
+                <span>{t("order.labels.code")}: <span className="text-gray-900 font-mono">{item.order_sn}</span></span>
               </div>
-              <div className="package-container-con">
-                <p>
-                  <span>Quốc gia gửi đến：</span>
-                  {item["country"] ? item["country"]["title"] : "Chưa điền"}
-                </p>
-                <p>
-                  <span>Thông tin vật phẩm：</span>
-                  {item["class_name"]}
-                </p>
-                <p>
-                  <span>Thời gian báo cáo：</span>
-                  {item["created_time"]}
-                </p>
+              <button onClick={() => handleCopy(item.order_sn)} className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition">
+                {t("common.copy")}
+              </button>
+            </div>
+
+            {/* Details */}
+            <div className="bg-gray-50 rounded-xl p-3 space-y-2 text-xs text-gray-600 mb-4">
+              <div className="flex justify-between">
+                <span className="text-gray-400">{t("order.labels.country")}:</span>
+                <span className="font-medium text-gray-800">{item.country?.title || t("order.labels.not_provided")}</span>
               </div>
-              <div className="package-button">
-                {item.status != -1 && item.status != 3 ? (
-                  <Button
-                    className="package-btn-op"
-                    onClick={(e) => handleCancel(item["id"])}
-                  >
-                    Hủy đơn hàng
-                  </Button>
-                ) : (
-                  ""
-                )}
-                {item.status != -1 && item.status != 3 ? (
-                  <Button
-                    className="package-btn-op"
-                    onClick={(e) => handleDetail(index)}
-                  >
-                    Xem chi tiết
-                  </Button>
-                ) : (
-                  ""
-                )}
-                {item.status==2?<Button
-                  className="package-btn-op"
-                  onClick={(e) => handlePay(item["id"])}
-                >
-                  Thanh toán
-                </Button>:''}
+              <div className="flex justify-between">
+                <span className="text-gray-400">{t("order.labels.items")}:</span>
+                <span className="font-medium text-gray-800 max-w-[60%] truncate">{item.class_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">{t("order.labels.time")}:</span>
+                <span className="font-medium text-gray-800">{item.created_time}</span>
               </div>
             </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-3 pt-2">
+              {item.status != -1 && item.status != 3 && (
+                <Button
+                  variant="danger"
+                  outline
+                  className="!py-1.5 !px-3 !text-xs !h-auto"
+                  onClick={() => handleCancelClick(item.id)}
+                >
+                  {t("order.buttons.cancel")}
+                </Button>
+              )}
+
+              {item.status == 2 && (
+                <Button
+                  variant="primary"
+                  className="!py-1.5 !px-3 !text-xs !h-auto"
+                  onClick={() => handlePay(item.id)}
+                >
+                  {t("order.buttons.pay")}
+                </Button>
+              )}
+
+              {item.status != -1 && item.status != 3 && (
+                <Button
+                  variant="outline"
+                  className="!py-1.5 !px-3 !text-xs !h-auto"
+                  onClick={() => handleDetail(item.id)}
+                >
+                  {t("order.buttons.detail")}
+                </Button>
+              )}
+            </div>
           </div>
-        );
-      })}
+        ))}
+      </div>
+
+      {/* Cancel Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">{t("common.confirm")}</h3>
+            <p className="text-gray-600 mb-6 font-medium">
+              {t("order.cancel_confirm")}
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="w-full py-3 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition"
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                onClick={confirmCancel}
+                className="w-full py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 transition shadow-lg shadow-red-200"
+              >
+                {t("common.confirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Loading is={loading} text={loadingText} />
-    </Page>
+    </div>
   );
 };
-export default TrangDonHang;
+
+export default OrderListPage;

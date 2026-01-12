@@ -1,0 +1,396 @@
+{
+    "common": {
+        "loading": "加载中...",
+        "error": "发生错误",
+        "submit": "提交",
+        "cancel": "取消",
+        "confirm": "确认",
+        "saving": "保存中...",
+        "processing": "处理中...",
+        "copy_success": "复制成功",
+        "error_network": "网络错误",
+        "view_detail": "查看详情",
+        "copy": "复制",
+        "no_data": "暂无数据",
+        "delete": "删除",
+        "edit": "编辑"
+    },
+    "tab": {
+        "home": "首页",
+        "query": "查单",
+        "freight": "运费",
+        "mine": "我的"
+    },
+    "help": {
+        "list_title": "帮助中心",
+        "detail_title": "文章详情",
+        "guide_title": "操作指南"
+    },
+    "home": {
+        "title": "武香茶包裹合单",
+        "nav": {
+            "report": "包裹预报",
+            "my_package": "我的包裹",
+            "pack_request": "请求打包",
+            "pending_pay": "待付款",
+            "take": "领取包裹",
+            "storage": "仓库列表",
+            "freight": "运费计算",
+            "helper": "操作指南"
+        },
+        "labels": {
+            "best_route": "推荐线路",
+            "service": "客户服务",
+            "delivery": "时效",
+            "tariff": "关税"
+        }
+    },
+    "address": {
+        "title": "地址簿",
+        "create_title": "添加地址",
+        "edit_title": "编辑地址",
+        "submit": "保存地址",
+        "add_new": "添加新地址",
+        "set_default": "设为默认",
+        "is_default": "默认地址",
+        "confirm_delete": "确定要删除此地址吗？",
+        "confirm_default": "确定要将此设为默认地址吗？",
+        "delete_success": "删除成功",
+        "default_success": "设置成功",
+        "section": {
+            "contact": "联系信息",
+            "location": "地址详情",
+            "customs": "清关信息"
+        },
+        "label": {
+            "name": "收件人姓名",
+            "phone": "电话号码",
+            "province": "省份",
+            "city": "区域 (Amphoe)",
+            "sub_district": "子区域 (Tambon)",
+            "postal_code": "邮政编码",
+            "detail": "门牌号、街道、大楼",
+            "identitycard": "身份证号",
+            "clearancecode": "清关码"
+        },
+        "placeholder": {
+            "name": "张三",
+            "detail_search": "搜索地址 (Google Maps)"
+        },
+        "success": {
+            "save": "地址保存成功"
+        },
+        "error": {
+            "required": "请填写必填项",
+            "save": "地址保存失败"
+        }
+    },
+    "mine": {
+        "login_prompt": "请登录",
+        "user_code": "用户代码",
+        "balance": "余额",
+        "sms": "短信",
+        "coupon": "优惠券",
+        "points": "积分",
+        "my_orders": "我的订单",
+        "view_all": "查看全部",
+        "status": {
+            "no_check": "待审核",
+            "no_pay": "待付款",
+            "no_send": "待发货",
+            "no_receive": "待收货",
+            "complete": "已完成"
+        },
+        "other_services": "其他服务",
+        "receive_package": "领取包裹",
+        "address_book": "地址簿",
+        "warehouse": "仓库列表",
+        "faq": "常见问题",
+        "logout": "退出登录",
+        "login": "立即登录",
+        "login_success": "登录成功",
+        "logout_success": "退出成功",
+        "follow_oa": "关注公众号",
+        "wallet": {
+            "title": "我的钱包",
+            "top_up": "充值",
+            "account_detail": "账户明细",
+            "bank_account": "转账账户",
+            "upload_proof": "上传凭证",
+            "payment_history": "支付记录",
+            "recharge_title": "账户充值",
+            "amount_label": "金额",
+            "custom_amount": "自定义金额",
+            "payment_method": "支付方式"
+        }
+    },
+    "freight": {
+        "title": "运费计算",
+        "tips": "注意：此费用仅为估算，实际费用以出库时为准",
+        "section": {
+            "region": "发货区域",
+            "unit": "计费单位",
+            "goods_type": "商品类型",
+            "dimensions": "尺寸 (cm)",
+            "weight": "重量"
+        },
+        "placeholder": {
+            "region": "选择目的国",
+            "unit": "选择计算方式",
+            "goods_type": "选择商品类型",
+            "weight": "重量 (kg)",
+            "length": "长",
+            "width": "宽",
+            "height": "高"
+        },
+        "options": {
+            "weight": "按重量",
+            "volume": "按体积"
+        },
+        "calculate": "立即计算",
+        "result": {
+            "title": "计算结果",
+            "note": "注意：打包后重量可能会增加，实际运费以出库时为准！",
+            "all_routes": "所有线路",
+            "delivery_time": "时效",
+            "tariff": "关税",
+            "click_detail": "点击查看详情"
+        }
+    },
+    "storage": {
+        "title": "仓库列表",
+        "view_detail": "查看详情",
+        "unknown_warehouse": "未知仓库",
+        "no_address": "暂无地址",
+        "no_phone": "暂无电话",
+        "detail": {
+            "title": "仓库详情",
+            "recipient": "收件人",
+            "phone": "电话",
+            "address": "收货地址",
+            "zip": "邮编",
+            "copy": "复制",
+            "copy_all": "一键复制"
+        },
+        "guide": {
+            "title": "操作指南",
+            "step1": "步骤 1：复制仓库地址",
+            "desc1": "复制仓库地址，在购物平台下单时作为收货地址。",
+            "step2": "步骤 2：包裹预报",
+            "desc2": "下单后，获取快递单号并在系统中进行预报。",
+            "step3": "步骤 3：申请打包",
+            "desc3": "包裹到达仓库后，您可以申请打包发货。",
+            "step4": "步骤 4：支付运费",
+            "desc4": "打包完成后，支付运费，仓库将尽快发货。"
+        }
+    },
+    "order": {
+        "title": "订单列表",
+        "detail_title": "订单详情",
+        "cancel_confirm": "确定要取消此订单吗？可能会产生额外费用。",
+        "cancel_success": "订单取消成功",
+        "pay_success": "支付成功",
+        "tabs": {
+            "all": "全部",
+            "check": "待审核",
+            "pay": "待付款",
+            "send": "待发货",
+            "sent": "已发货",
+            "done": "已完成"
+        },
+        "labels": {
+            "code": "订单编号",
+            "country": "目的国家",
+            "items": "物品信息",
+            "time": "创建时间",
+            "not_provided": "未提供",
+            "package_info": "包裹信息",
+            "tracking_no": "快递单号",
+            "carrier": "承运商",
+            "dims": "长/宽/高/重",
+            "warehouse_time": "入库时间",
+            "remark": "备注",
+            "route_info": "路线信息",
+            "delivery_time": "时效",
+            "tariff": "关税",
+            "packing_info": "打包信息",
+            "weight": "重量",
+            "vol_weight": "体积重",
+            "charge_weight": "计费重",
+            "cost_info": "费用信息",
+            "base_fee": "基础运费",
+            "pack_fee": "打包费",
+            "other_fee": "其他费用"
+        },
+        "buttons": {
+            "cancel": "取消订单",
+            "pay": "立即支付",
+            "detail": "查看详情"
+        },
+        "status": {
+            "pending_check": "待审核",
+            "pending_pay": "待付款",
+            "paid": "已付款",
+            "picking": "拣货中",
+            "packing": "打包中",
+            "shipped": "已发货",
+            "received": "已签收",
+            "completed": "已完成",
+            "issue": "异常件",
+            "cancelled": "已取消"
+        }
+    },
+    "package": {
+        "title": "包裹列表",
+        "search_placeholder": "输入单号搜索",
+        "tabs": {
+            "not_received": "待入库",
+            "received": "已入库",
+            "shipped": "已发货",
+            "issue": "问题件"
+        },
+        "detail_title": "包裹详情",
+        "modify_title": "修改包裹信息",
+        "cancel_report": "取消预报",
+        "edit_report": "修改预报",
+        "view_logistics": "查看物流",
+        "confirm_cancel": "确定要取消此预报吗？",
+        "form": {
+            "country": "发货国家",
+            "warehouse": "集运仓库",
+            "tracking_no": "快递单号",
+            "category": "商品类型",
+            "value": "商品价值",
+            "remark": "备注",
+            "select_country": "选择国家",
+            "select_warehouse": "选择仓库",
+            "select_category": "选择类型",
+            "enter_tracking": "请输入单号",
+            "enter_value": "请输入价值",
+            "save": "保存"
+        },
+        "labels": {
+            "warehouse": "仓库",
+            "package_count": "数量",
+            "country": "国家",
+            "items": "商品",
+            "report_time": "预报时间",
+            "not_provided": "未填写"
+        },
+        "success": {
+            "update": "更新成功",
+            "cancel": "取消成功"
+        },
+        "error": {
+            "required": "请填写完整信息"
+        }
+    },
+    "report": {
+        "title": "包裹预报",
+        "tab_single": "单件预报",
+        "tab_batch": "批量预报",
+        "form": {
+            "country": "发货国家",
+            "warehouse": "集运仓库",
+            "tracking_no": "快递单号",
+            "goods_list": "商品列表",
+            "goods_name": "商品名称",
+            "goods_price": "单价",
+            "goods_qty": "数量",
+            "category": "商品类型",
+            "total_value": "总价值 (￥)",
+            "remark": "备注",
+            "privacy_agree": "已阅读并同意",
+            "privacy_link": "用户隐私协议",
+            "batch_tracking": "多个单号 (逗号分隔)",
+            "batch_tip": "提示：单号之间请用逗号分隔，或者输入一个单号后点击 + 号添加"
+        },
+        "placeholder": {
+            "select_country": "请选择发货国家",
+            "select_warehouse": "请选择仓库",
+            "enter_tracking": "请输入快递单号",
+            "enter_goods_name": "品名",
+            "enter_goods_price": "单价",
+            "enter_goods_qty": "数量",
+            "select_category": "请选择商品类型",
+            "enter_value": "请输入预估价值",
+            "enter_remark": "请输入备注信息",
+            "enter_batch_tracking": "请输入多个单号，用逗号分隔"
+        },
+        "action": {
+            "add": "添加",
+            "submit": "提交预报"
+        },
+        "error": {
+            "privacy": "请先同意隐私协议",
+            "country": "请选择发货国家",
+            "warehouse": "请选择集运仓库",
+            "tracking": "请输入快递单号"
+        },
+        "success": {
+            "submit": "预报成功"
+        }
+    },
+    "pack": {
+        "title": "申请打包",
+        "tips": "注意：此费用仅为估算，实际费用以出库时为准",
+        "select_all": "全选，已选 {{count}} 件",
+        "submit": "提交打包",
+        "no_select": "请至少选择一件包裹"
+    },
+    "take": {
+        "title": "领取包裹",
+        "search_placeholder": "输入单号查询",
+        "take_btn": "领取",
+        "labels": {
+            "package_no": "包裹号",
+            "enter_time": "入库时间"
+        },
+        "form_title": "确认接收",
+        "form": {
+            "tracking_no": "快递单号",
+            "category": "物品类型",
+            "select_category": "选择物品类型",
+            "enter_tracking": "请输入快递单号",
+            "required_tracking": "请输入快递单号",
+            "required_category": "请选择物品类型",
+            "success": "接收成功",
+            "confirm": "确认接收"
+        }
+    },
+    "confirm_pack": {
+        "title": "确认打包",
+        "tab_delivery": "送货上门",
+        "tab_pickup": "自提",
+        "address_title": "收货地址",
+        "change_address": "更换",
+        "no_address": "请选择收货地址",
+        "package_info": "包裹信息",
+        "total_pack": "共打包 {{count}} 件",
+        "channel": "出库渠道",
+        "select_channel": "请选择渠道",
+        "services": "增值服务",
+        "service_tip": "运输不保损，易碎品建议选择加固服务。打包后重量可能会增加，以实际出库为准。",
+        "cod": "代收货款",
+        "enter_cod": "请输入代收金额",
+        "remark": "备注信息",
+        "enter_remark": "请输入备注",
+        "privacy": "已阅读并同意《用户隐私协议》",
+        "submit": "提交打包",
+        "success": "提交成功",
+        "error_privacy": "请先同意隐私协议",
+        "error_channel": "请选择出库渠道"
+    },
+    "verify": {
+        "title": "核销/验证",
+        "no_data": "暂无记录"
+    },
+    "query": {
+        "title": "查单",
+        "tracking_no": "快递单号",
+        "placeholder": "请输入快递单号",
+        "search": "立即查询",
+        "result": "查询结果",
+        "no_data": "暂无数据"
+    }
+}

@@ -1,14 +1,9 @@
 {
 	"folders": [
 		{
-			"path": "."
-		},
-		{
-			"path": "../zaloprofile/zalo_service"
-		},
-		{
-			"path": "../zaloprofile"
+			"path": "../Lineminiapp"
 		}
 	],
-	"settings": {}
+	"settings": {
+	}
 }

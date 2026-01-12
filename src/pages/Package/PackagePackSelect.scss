@@ -1,0 +1,117 @@
+.package-pack-select-page {
+  @apply min-h-screen bg-gray-50 pb-20;
+
+  /* Header - LINE 主题绿色渐变 */
+  .pack-select-header {
+    @apply relative h-56 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 overflow-hidden px-6 pt-16 pb-8;
+
+    h1 {
+      @apply text-3xl font-black text-white;
+    }
+
+    p {
+      @apply text-base text-white/90 mt-2;
+    }
+  }
+
+  /* 内容区域 */
+  .pack-select-content {
+    @apply px-4 -mt-8 relative z-10;
+
+    /* 统计和操作栏 */
+    .stats-bar {
+      @apply bg-white p-5 rounded-3xl shadow-xl border border-gray-100 mb-4;
+    }
+
+    /* 空状态 */
+    .empty-state {
+      @apply flex flex-col items-center justify-center py-20 text-center;
+    }
+
+    /* 全选按钮 */
+    .select-all-btn {
+      @apply flex items-center gap-2 px-4 py-3 bg-white rounded-2xl shadow-sm border border-gray-200
+              mb-4 hover:shadow-md hover:border-primary-300 transition-all;
+    }
+
+    /* 包裹列表 */
+    .package-list {
+      @apply space-y-3;
+
+      /* 单个包裹卡片 */
+      .package-card {
+        @apply bg-white rounded-2xl p-4 shadow-sm border-2 border-gray-100
+                flex items-start gap-4 cursor-pointer transition-all duration-200
+                hover:shadow-lg hover:scale-[1.01] active:scale-95;
+
+        /* 选中状态 */
+        &.selected {
+          @apply border-primary-500 shadow-lg bg-primary-50;
+        }
+
+        /* 选中指示器 */
+        .select-indicator {
+          @apply flex-shrink-0 pt-1;
+
+          svg {
+            @apply text-primary-600 bg-primary-500 rounded-full;
+          }
+        }
+
+        /* 包裹信息 */
+        .package-info {
+          @apply flex-1 min-w-0;
+
+          h4 {
+            @apply font-bold text-gray-900 truncate;
+          }
+
+          .text-gray-500 {
+            @apply truncate;
+          }
+        }
+      }
+    }
+
+    /* 提交按钮栏 */
+    .submit-bar {
+      @apply fixed bottom-20 left-0 right-0 bg-white p-4 rounded-t-3xl shadow-2xl border-t border-gray-100;
+      animation: slideUp 0.3s ease-out;
+    }
+  }
+}
+
+/* 动画 */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* 响应式 */
+@media (max-width: 640px) {
+  .package-pack-select-page {
+    .pack-select-header {
+      h1 {
+        @apply text-2xl;
+      }
+
+      p {
+        @apply text-sm;
+      }
+    }
+
+    .pack-select-content {
+      .stats-bar {
+        @apply p-4;
+      }
+
+      .package-card {
+        @apply p-3 gap-3;
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "uvx",
+      "args": ["mcp-server-mysql"],
+      "env": {
+        "MYSQL_HOST": "103.119.1.84",
+        "MYSQL_USER": "xinsuju",
+        "MYSQL_PASSWORD": "cJGzwZTDCLHzWXN4",
+        "MYSQL_DATABASE": "xinsuju"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}

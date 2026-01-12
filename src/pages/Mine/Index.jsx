@@ -1,760 +1,229 @@
 import React, { useEffect, useState } from "react";
-import { Page, useNavigate, Text, Button, Modal, useLocation } from "zmp-ui";
+import { useNavigate } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useTranslation } from "react-i18next";
 import { orderStatusState, userState, guideTypeState } from "../../state";
 import Tab from "../../components/Tab/Tab";
 import Loading from "../../components/Loading/Index";
-import ZaloQRLogin from "../../components/ZaloQRLogin";
 import request from "../../utils/request";
 import util from "../../utils/util";
-import "./Mine.scss";
-import {
-  followOA,
-  getAccessToken,
-  getStorage,
-  login,
-  setStorage,
-  showToast,
-} from "zmp-sdk";
+import Button from "../../components/Button/Index";
+import Modal from "../../components/Modal/Index";
+import liff from "../../utils/liff";
 
 const MinePage = () => {
-  const user = useRecoilValue(userState);
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const setGuideId = useSetRecoilState(guideTypeState);
   const setUserState = useSetRecoilState(userState);
   const setOrderStatus = useSetRecoilState(orderStatusState);
-  const [confirmVisable, setConfirmVisable] = useState(false);
-  const [assets, setAsssets] = useState({
+
+  // State
+  const [userInfo, setUserInfo] = useState({ isLogin: false });
+  const [assets, setAssets] = useState({
     balance: 0.0,
     coupon: 0,
     sms: 0,
     points: 0,
   });
-  const [userInfo, setUserInfo] = useState({ isLogin: false });
-  const [userData, setUserData] = useState({});
   const [loading, setLoading] = useState(false);
-  const [loadingText, setLoadingText] = useState("");
-  const [showQRLogin, setShowQRLogin] = useState(false);
-  let oaUserId = "";
-  let oAflag = false;
-  // Xử lý đăng nhập dịch vụ
-  const doLogin = (access) => {
-    console.log("开始登录，accesstoken:", access);
 
-    // 验证accesstoken是否有效
-    if (!access || access === '' || access === null || access === undefined) {
-      console.error("传入的accesstoken无效:", access);
-      showToast({
-        message: "获取用户授权失败，请重试",
-        type: "fail"
-      });
-      setLoading(false);
-      setLoadingText("");
-      return;
+  useEffect(() => {
+    initMine();
+  }, []);
+
+  const initMine = async () => {
+    // Build user info from localStorage
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
+    let profile = {};
+    try {
+      // Check if LIFF is initialized before calling isLoggedIn
+      if (liff.isInClient && liff.isLoggedIn && liff.isLoggedIn()) {
+        profile = await liff.getProfile();
+      }
+    } catch (e) {
+      // Suppress LIFF errors in development mode
+      console.warn("LIFF not available:", e.message);
     }
 
-    request
-      .post("passport/loginbyzalo&wxapp_id=10001", {
-        form: { accesstoken: access },
-      })
-      .then((res) => {
-        console.log("登录响应:", res);
-        setLoading(false);
-        setLoadingText("");
+    const currentUser = {
+      isLogin: !!token,
+      user_id: userId,
+      token: token,
+      nickname: profile.displayName || "Guest",
+      avatarUrl: profile.pictureUrl || "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img19.png"
+    };
 
-        if (res.code == 0) {
-          console.error("登录失败:", res.msg);
-          showToast({
-            message: res.msg || "登录失败，请重试",
-            type: "fail"
-          });
-          return;
+    setUserInfo(currentUser);
+
+    if (currentUser.isLogin) {
+      fetchUserAssets();
+    }
+  };
+
+  const fetchUserAssets = async () => {
+    try {
+      const res = await request.post("user/detail&wxapp_id=10001");
+      if (res.code === 1 && res.data && res.data.userInfo) {
+        const u = res.data.userInfo;
+        setAssets({
+          balance: u.balance || 0,
+          sms: u.sms || 0,
+          coupon: u.coupon || 0,
+          points: u.points || 0
+        });
+      } else if (res.code === -1) {
+        handleLogout();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      if (liff.isInClient && liff.login) {
+        if (!liff.isLoggedIn || !liff.isLoggedIn()) {
+          liff.login();
+        } else {
+          // Force re-auth logic if needed or just reload
+          window.location.reload();
         }
-
-        // 登录成功
-        console.log("登录成功，用户数据:", res.data);
-
-        // 验证返回的用户数据完整性 - 适配 API 返回的字段名
-        const userId = res.data.userId || res.data.user_id;
-        if (!userId || !res.data.token) {
-          console.error("用户数据不完整:", res.data);
-          showToast({
-            message: "登录数据异常，请重试",
-            type: "fail"
-          });
-          return;
-        }
-
-        showToast({
-          message: "Đăng nhập thành công",
-          type: "success"
-        });
-
-        // 构建完整的用户信息对象 - 使用统一的字段名
-        const completeUserInfo = {
-          user_id: userId, // 使用上面解析的 userId
-          nickname: res.data.nickname || res.data.nickName || 'Zalo用户',
-          token: res.data.token,
-          avatarUrl: res.data.avatarUrl || '',
-          mobile: res.data.mobile || '',
-          balance: res.data.balance || 0,
-          isLogin: true,
-        };
-
-        console.log("完整用户信息:", completeUserInfo);
-
-        // 更新本地状态
-        setUserInfo(completeUserInfo);
-        setUserState({
-          token: res.data.token,
-          userInfo: completeUserInfo
-        });
-
-        // 存储到本地存储
-        setStorage({
-          data: {
-            isLogin: true,
-            user_id: res.data.user_id,
-            nickname: completeUserInfo.nickname,
-            avatarUrl: completeUserInfo.avatarUrl,
-            token: res.data.token,
-            userInfo: completeUserInfo
-          },
-        });
-
-        setConfirmVisable(true);
-      })
-      .catch((err) => {
-        console.error("登录请求失败:", err);
-        showToast({
-          message: "网络错误，登录失败",
-          type: "fail"
-        });
-        setLoading(false);
-        setLoadingText("");
-      });
-  };
-  // Xử lý đăng nhập
-  const handleLogin = () => {
-    login({
-      success: (code) => {
-        console.log(code, "code");
-        getAccessToken({
-          success: (accesstoken) => {
-            setLoading(true);
-            setLoadingText("Đang đăng nhập");
-            console.log("获取到的accesstoken:", accesstoken);
-
-            // 验证accesstoken是否有效
-            if (!accesstoken || accesstoken === '' || accesstoken === null) {
-              console.error("获取到的accesstoken为空:", accesstoken);
-              showToast({
-                message: "获取用户授权失败，请重试",
-                type: "fail"
-              });
-              setLoading(false);
-              setLoadingText("");
-              return;
-            }
-
-            doLogin(accesstoken);
-          },
-          fail: (error) => {
-            console.error("获取accesstoken失败:", error);
-            showToast({
-              message: "获取用户授权失败，请重试",
-              type: "fail"
-            });
-            setLoading(false);
-            setLoadingText("");
-          }
-        });
-      },
-      fail: (err) => {
-        console.log("登录失败:", err);
-        showToast({
-          message: "登录失败，请重试",
-          type: "fail"
-        });
-      },
-    });
-  };
-
-  // 处理退出登录
-  const handleLogout = async () => {
-    try {
-      console.log("开始退出登录...");
-
-      // 清除本地存储的用户信息 - 使用正确的 setStorage 格式
-      await setStorage({
-        data: {
-          isLogin: false,
-          nickname: '',
-          avatarUrl: '',
-          token: '',
-          user_id: '',
-          userInfo: {
-            isLogin: false,
-            nickname: '',
-            avatarUrl: '',
-            token: '',
-            user_id: ''
-          }
-        }
-      });
-
-      // 重置用户状态
-      setUserInfo({
-        isLogin: false,
-        nickname: '',
-        avatarUrl: '',
-        token: '',
-        user_id: ''
-      });
-
-      // 重置全局状态
-      setUserState({
-        token: '',
-        user_id: '',
-        nickname: '',
-        avatarUrl: ''
-      });
-
-      // 重置资产信息
-      setAsssets({
-        balance: 0,
-        sms: 0,
-        coupon: 0,
-        points: 0
-      });
-
-      // 重置用户数据
-      setUserData({});
-
-      // 显示退出成功提示
-      showToast({
-        type: "success",
-        text: "Đã đăng xuất thành công!"
-      });
-
-      console.log("退出登录完成");
-    } catch (error) {
-      console.error("退出登录失败:", error);
-      showToast({
-        type: "fail",
-        text: "Đăng xuất thất bại, vui lòng thử lại!"
-      });
-    }
-  };
-
-  // 处理二维码登录成功
-  const handleQRLoginSuccess = async (loginData) => {
-    console.log("二维码登录成功:", loginData);
-
-    try {
-      const { user_id, nickname, avatarUrl, token } = loginData;
-
-      // 构建用户信息
-      const userInfo = {
-        isLogin: true,
-        user_id: user_id,
-        nickname: nickname || '',
-        avatarUrl: avatarUrl || '',
-        token: token
-      };
-
-      // 存储用户信息
-      await setStorage({
-        isLogin: true,
-        nickname: nickname || '',
-        avatarUrl: avatarUrl || '',
-        token: token,
-        user_id: user_id,
-        userInfo: userInfo
-      });
-
-      // 更新状态
-      setUserInfo(userInfo);
-      setUserState({
-        token: token,
-        user_id: user_id,
-        nickname: nickname || '',
-        avatarUrl: avatarUrl || ''
-      });
-
-      // 关闭二维码登录弹窗
-      setShowQRLogin(false);
-
-      // 获取用户详细数据
-      getUserData();
-
-      showToast({
-        message: "登录成功！",
-        type: "success"
-      });
-
-    } catch (error) {
-      console.error("处理二维码登录成功回调失败:", error);
-      showToast({
-        message: "登录处理失败，请重试",
-        type: "fail"
-      });
-    }
-  };
-
-  // 处理二维码登录失败
-  const handleQRLoginError = (error) => {
-    console.error("二维码登录失败:", error);
-    showToast({
-      message: error.message || "登录失败，请重试",
-      type: "fail"
-    });
-  };
-
-  // 打开二维码登录
-  const openQRLogin = () => {
-    setShowQRLogin(true);
-  };
-
-  // 关闭二维码登录
-  const closeQRLogin = () => {
-    setShowQRLogin(false);
-  };
-
-  const getUserInfos = async () => {
-    console.log("加载用户信息");
-    try {
-      const { isLogin, nickname, avatarUrl, token, user_id, userInfo } = await getStorage({
-        keys: ["isLogin", "nickname", "avatarUrl", "token", "user_id", "userInfo"],
-      });
-
-      console.log("从存储加载的数据:", { isLogin, nickname, avatarUrl, token, user_id, userInfo });
-
-      // 构建用户信息对象，优先使用完整的userInfo
-      let user = {};
-      if (userInfo && typeof userInfo === 'object') {
-        user = {
-          ...userInfo,
-          isLogin: isLogin || userInfo.isLogin || false
-        };
       } else {
-        user = {
-          isLogin: isLogin || false,
-          nickname: nickname || '',
-          avatarUrl: avatarUrl || '',
-          token: token || '',
-          user_id: user_id || '',
-        };
+        console.warn("LIFF not available in development mode");
       }
-
-      console.log("构建的用户信息:", user);
-
-      // 如果用户已登录且有token，验证token有效性并获取最新数据
-      if (user.isLogin && user.token) {
-        getUserData();
-      }
-
-      setUserInfo(user);
-
-      // 同步到Recoil状态
-      if (user.token) {
-        setUserState({
-          token: user.token,
-          userInfo: user
-        });
-      }
-
-    } catch (error) {
-      console.error("加载用户信息失败:", error);
-      setUserInfo({
-        isLogin: false,
-        nickname: '',
-        avatarUrl: '',
-        token: '',
-        user_id: '',
-      });
+    } catch (e) {
+      console.warn("LIFF login error:", e.message);
     }
   };
 
-  // 关注公众号
-  const confirmFollowoA = async () => {
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
     try {
-      await followOA({
-        id: "140130397183308120",
-      });
-      console.log("Theo dõi thành công");
-    } catch (error) {
-      if (code === -201) {
-        console.log("Người dùng đã từ chối theo dõi");
-      } else {
-        console.log("Lỗi khác");
+      if (liff.isInClient && liff.isLoggedIn && liff.isLoggedIn()) {
+        liff.logout();
       }
+    } catch (e) {
+      console.warn("LIFF logout error:", e.message);
     }
+    setUserInfo({ isLogin: false });
+    setAssets({ balance: 0, sms: 0, coupon: 0, points: 0 });
+    window.location.reload();
   };
 
-  const bindOaUserId = (userId) => {
-    if (oaUserId && userId) {
-      request
-        .post("user/bindOa&wxapp_id=10001", {
-          oa_user_id: oaUserId,
-          user_id: userId,
-        })
-        .then((res) => {
-          if (res.code == 1) {
-            oaUserId = "";
-          }
-        });
-    }
-  };
-
-  const getUserData = () => {
-    request.post("user/detail&wxapp_id=10001").then((res) => {
-      console.log("获取用户详细信息响应:", res);
-
-      if (res.code == -1) {
-        console.log("用户未登录，清除登录状态");
-        setStorage({
-          data: {
-            isLogin: false,
-          },
-        });
-      } else if (res.data && res.data.userInfo) {
-        console.log("用户信息获取成功:", res.data.userInfo);
-        let assets = [];
-        assets["balance"] = res.data.userInfo["balance"] || 0;
-        assets["sms"] = res.data.userInfo["sms"] || 0;
-        assets["coupon"] = res.data.userInfo["coupon"] || 0;
-        assets["points"] = res.data.userInfo["points"] || 0;
-        let userData = res.data.userInfo;
-        bindOaUserId(res.data.userInfo["user_id"]);
-        setUserData(userData);
-        setAsssets(assets);
-      } else {
-        console.warn("用户信息数据格式不正确:", res);
-        console.warn("响应数据结构:", {
-          hasData: !!res.data,
-          hasUserInfo: !!(res.data && res.data.userInfo),
-          dataKeys: res.data ? Object.keys(res.data) : 'no data'
-        });
-        // 设置默认值
-        setAsssets({
-          balance: 0,
-          sms: 0,
-          coupon: 0,
-          points: 0
-        });
-      }
-    }).catch((error) => {
-      console.error("获取用户信息失败:", error);
-      // 设置默认值
-      setAsssets({
-        balance: 0,
-        sms: 0,
-        coupon: 0,
-        points: 0
-      });
-    });
-  };
-
-  // Khởi tạo trang cá nhân
-  const initMine = () => {
-    getUserInfos();
-  };
-  const goHelper = (e, type) => {
-    setGuideId(type);
-    navigate(e);
-  };
-  const targetTo = (e, route) => {
-    navigate(route);
-  };
-
-  // Chuyển hướng đơn hàng
-  const orderTargetTo = (e) => {
-    const statusMap = {
+  const navigateToOrder = (status) => {
+    const map = {
       "no-check": 1,
       "no-pay": 2,
       "no-send": 3,
-      "no-recive": 4,
-      complete: 5,
+      "no-recive": 4, // Typo in original code logic?
+      "complete": 5
     };
-    setOrderStatus(statusMap[e]);
+    if (status) setOrderStatus(map[status]);
     navigate("/order/index");
   };
 
-  // 使用 useLocation 钩子获取 URL 参数
-  const location = useLocation();
-  const queryParams = location.search || "";
-  if (queryParams) {
-    const urlParams = new URLSearchParams(queryParams);
-    oaUserId = urlParams.get("oa_user_id");
-  }
-  useEffect(() => {
-    initMine();
-    return () => {};
-  }, []);
   return (
-    <Page className="page mine">
-      <div className="header-mine">
-        <div className="header-bg">
-          <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img93.png"></img>
-        </div>
-        <div className="header-user">
-          <div className="header-user-left">
-            <div className="header-user-avatar">
-              {userInfo.isLogin ? (
-                <img src={userInfo.avatarUrl} />
-              ) : (
-                <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img19.png" />
-              )}
-            </div>
-            {userInfo["isLogin"] ? (
-              <div className="header-user-text-no-login">
-                <Text size="xLarge">
-                  Mã：{userData["user_code"] || userData["user_id"]}
-                </Text>
-                <Text size="xLarge">
-                  {userInfo["isLogin"]
-                    ? userInfo["nickname"]
-                    : "Vui lòng đăng nhập"}
-                </Text>
-              </div>
-            ) : (
-              <div className="header-user-text-no-login">
-                <Text size="xLarge">
-                  {userInfo["isLogin"]
-                    ? userInfo["nickname"]
-                    : "Vui lòng đăng nhập"}
-                </Text>
-              </div>
-            )}
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Header */}
+      <div className="relative bg-gradient-to-r from-blue-600 to-blue-400 pb-16 pt-10 px-6 rounded-b-[40px] shadow-lg">
+        <div className="flex items-center gap-4">
+          <div className="w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden bg-white">
+            <img src={userInfo.avatarUrl} className="w-full h-full object-cover" />
           </div>
-          <div className="header-user-right">
+          <div className="flex-1 text-white">
             {userInfo.isLogin ? (
-              <div className="logout-buttons">
-                <Button
-                  className="logout-btn"
-                  onClick={handleLogout}
-                  style={{
-                    backgroundColor: '#ff4757',
-                    color: 'white',
-                    fontSize: '12px',
-                    padding: '6px 12px',
-                    border: 'none'
-                  }}
-                >
-                  🚪 Đăng xuất
-                </Button>
-              </div>
+              <>
+                <h2 className="text-xl font-bold">{userInfo.nickname}</h2>
+                <p className="text-blue-100 text-sm mt-1">{t("mine.user_code")}: {userInfo.user_id}</p>
+              </>
             ) : (
-              <div className="login-buttons">
-                <Button className="loginBtn" onClick={() => handleLogin()}>
-                  Đăng nhập ngay
-                </Button>
-                <Button
-                  className="qr-login-btn"
-                  onClick={openQRLogin}
-                  style={{
-                    marginTop: '8px',
-                    backgroundColor: '#0084ff',
-                    fontSize: '12px',
-                    padding: '6px 12px'
-                  }}
-                >
-                  📱 扫码登录
-                </Button>
-              </div>
+              <h2 className="text-xl font-bold" onClick={handleLogin}>{t("mine.login_prompt")} &rarr;</h2>
             )}
           </div>
         </div>
-        {userInfo.isLogin ? (
-          <div className="user-static">
-            <div
-              className="static-item"
-              onClick={(e) => targetTo(e, "/mine/balance")}
-            >
-              <div className="static-num">{assets["balance"]}</div>
-              <div className="static-text">Số dư</div>
-            </div>
-            <div
-              className="static-item"
-              onClick={(e) => targetTo(e, "/common/sms")}
-            >
-              <div className="static-num">{assets["sms"]}</div>
-              <div className="static-text">Tin nhắn</div>
-            </div>
-            <div
-              className="static-item"
-              onClick={(e) => targetTo(e, "/common/coupon")}
-            >
-              <div className="static-num">{assets["coupon"]}</div>
-              <div className="static-text">Mã giảm giá</div>
-            </div>
-            <div className="static-item" onClick={(e) => targetTo(e, "")}>
-              <div className="static-num">{assets["points"]}</div>
-              <div className="static-text">Tích điểm</div>
-            </div>
-          </div>
-        ) : (
-          ""
-        )}
-      </div>
-      <div className="order-panle">
-        <div className="panle-header">
-          Đơn hàng của tôi
-          <div
-            className="more"
-            onClick={(e) => {
-              orderTargetTo("");
-            }}
-          >
-            Xem tất cả đơn hàng
-          </div>
-        </div>
-        <div className="order-panle-container">
-          <div
-            className="order-panle-item"
-            onClick={(e) => {
-              orderTargetTo("no-check");
-            }}
-          >
-            <div className="order-panle-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img97.png" />
-            </div>
-            <div className="order-panle-text">Chờ kiểm tra</div>
-          </div>
-          <div
-            className="order-panle-item"
-            onClick={(e) => {
-              orderTargetTo("no-pay");
-            }}
-          >
-            <div className="order-panle-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img98.png" />
-            </div>
-            <div className="order-panle-text">Chờ thanh toán</div>
-          </div>
-          <div
-            className="order-panle-item"
-            onClick={(e) => {
-              orderTargetTo("no-send");
-            }}
-          >
-            <div className="order-panle-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img99.png" />
-            </div>
-            <div className="order-panle-text">Chờ gửi hàng</div>
-          </div>
-          <div
-            className="order-panle-item"
-            onClick={(e) => {
-              orderTargetTo("no-recived");
-            }}
-          >
-            <div className="order-panle-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img100.png" />
-            </div>
-            <div className="order-panle-text">Đã gửi hàng</div>
-          </div>
-          <div
-            className="order-panle-item"
-            onClick={(e) => {
-              orderTargetTo("complete");
-            }}
-          >
-            <div className="order-panle-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img101.png" />
-            </div>
-            <div className="order-panle-text">Hoàn thành</div>
-          </div>
-        </div>
-      </div>
-      <div
-        className="order-panle"
-        style={{ marginTop: 20 + "px", marginBottom: 80 + "px" }}
-      >
-        <div className="panle-header">Dịch vụ khác</div>
-        <div className="order-panle-container">
-          <div
-            className="order-panle-item"
-            onClick={(e) => targetTo(e, "/package/take")}
-          >
-            <div className="order-panle-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img114.png" />
-            </div>
-            <div className="order-panle-text">Nhận kiện hàng</div>
-          </div>
-          <div
-            className="order-panle-item"
-            onClick={(e) => targetTo(e, "/address/index")}
-          >
-            <div className="order-panle-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img115.png" />
-            </div>
-            <div className="order-panle-text">Địa chỉ nhận hàng</div>
-          </div>
-          <div
-            className="order-panle-item"
-            onClick={(e) => targetTo(e, "/storage/index")}
-          >
-            <div className="order-panle-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img116.png" />
-            </div>
-            <div className="order-panle-text">Địa chỉ kho hàng</div>
-          </div>
-          <div
-            className="order-panle-item"
-            onClick={(e) => goHelper("/article/help/list", "newUser")}
-          >
-            <div className="order-panle-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img117.png" />
-            </div>
-            <div className="order-panle-text">Câu hỏi mới</div>
-          </div>
-        </div>
-      </div>
-      <Loading is={loading} text={loadingText} />
-      <Modal
-        visible={confirmVisable}
-        title="Thông báo"
-        description="Để có trải nghiệm tốt hơn, vui lòng theo dõi tài khoản OA (Công ty TNHH thương mại Vũ Hương Trà) trước?"
-        actions={[
-          {
-            text: "Hủy",
-            onClick: () => {
-              setConfirmVisable(false);
-            },
-            highLight: true,
-          },
-          {
-            text: "Xác nhận",
-            onClick: async () => {
-              confirmFollowoA();
-              setConfirmVisable(false);
-            },
-          },
-        ]}
-      />
 
-      {/* 二维码登录弹窗 */}
-      <Modal
-        visible={showQRLogin}
-        title=""
-        onClose={closeQRLogin}
-        actions={[]}
-        style={{
-          '--zm-modal-content-padding': '0',
-          '--zm-modal-header-padding': '0'
-        }}
-      >
-        <ZaloQRLogin
-          onLoginSuccess={handleQRLoginSuccess}
-          onLoginError={handleQRLoginError}
-          onClose={closeQRLogin}
-        />
-      </Modal>
+        {/* Login/Logout Button */}
+        <div className="absolute top-6 right-6">
+          {userInfo.isLogin ? (
+            <button onClick={handleLogout} className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full text-xs transition">
+              {t("mine.logout")}
+            </button>
+          ) : (
+            <button onClick={handleLogin} className="bg-white text-blue-600 px-4 py-2 rounded-full text-sm font-bold shadow-sm">
+              {t("mine.login")}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Assets Card */}
+      {userInfo.isLogin && (
+        <div className="mx-4 -mt-10 bg-white rounded-2xl shadow-lg p-6 grid grid-cols-4 gap-2 relative z-10">
+          {[
+            { label: t("mine.balance"), val: assets.balance, route: "/mine/balance" },
+            { label: t("mine.sms"), val: assets.sms, route: "/common/sms" },
+            { label: t("mine.coupon"), val: assets.coupon, route: "/common/coupon" },
+            { label: t("mine.points"), val: assets.points, route: "" },
+          ].map((item, i) => (
+            <div key={i} className="flex flex-col items-center cursor-pointer" onClick={() => item.route && navigate(item.route)}>
+              <span className="text-lg font-bold text-gray-800">{item.val}</span>
+              <span className="text-xs text-gray-500 mt-1 text-center">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* My Orders */}
+      <div className="mx-4 mt-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-lg text-gray-800">{t("mine.my_orders")}</h3>
+          <span onClick={() => navigateToOrder("")} className="text-xs text-gray-400 cursor-pointer">{t("mine.view_all")} &rarr;</span>
+        </div>
+        <div className="bg-white rounded-2xl p-4 shadow-sm grid grid-cols-5 gap-2">
+          {[
+            { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img97.png", txt: t("mine.status.no_check"), key: "no-check" },
+            { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img98.png", txt: t("mine.status.no_pay"), key: "no-pay" },
+            { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img99.png", txt: t("mine.status.no_send"), key: "no-send" },
+            { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img100.png", txt: t("mine.status.no_receive"), key: "no-recived" }, // Fixed map key mismatch
+            { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img101.png", txt: t("mine.status.complete"), key: "complete" },
+          ].map((item, i) => (
+            <div key={i} className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition" onClick={() => navigateToOrder(item.key)}>
+              <img src={item.icon} className="w-8 h-8" />
+              <span className="text-[10px] text-gray-600 text-center leading-tight">{item.txt}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Other Services */}
+      <div className="mx-4 mt-6">
+        <h3 className="font-bold text-lg text-gray-800 mb-4">{t("mine.other_services")}</h3>
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          {[
+            { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img114.png", txt: t("mine.receive_package"), route: "/package/take" },
+            { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img115.png", txt: t("mine.address_book"), route: "/address/index" },
+            { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img116.png", txt: t("mine.warehouse"), route: "/storage/index" },
+            { icon: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img117.png", txt: t("mine.faq"), route: "/article/help/list", params: "newUser" },
+          ].map((item, i) => (
+            <div
+              key={i}
+              onClick={() => navigate(item.route)}
+              className="flex items-center gap-4 p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition cursor-pointer"
+            >
+              <img src={item.icon} className="w-6 h-6" />
+              <span className="flex-1 text-sm font-medium text-gray-700">{item.txt}</span>
+              <span className="text-gray-300">&rsaquo;</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <Tab current="mine" />
-    </Page>
+      <Loading is={loading} />
+    </div>
   );
 };
 

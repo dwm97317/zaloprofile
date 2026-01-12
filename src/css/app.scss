@@ -1,13 +1,363 @@
-.page {
+/* LINE Mini App 全局样式 */
+
+/* 基础样式重置 */
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
 }
 
+body {
+  font-family: 'Noto Sans Thai', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #1F2937;
+  background-color: #F9FAFB;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* 隐藏滚动条但保持滚动功能 */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 页面容器 */
+.page {
+  min-height: 100vh;
+  background-color: #F9FAFB;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* 页面过渡动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInBottom {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 区块容器 */
 .section-container {
   padding: 16px;
   background: #ffffff;
-  border-radius: 8px;
+  border-radius: 16px;
   margin-bottom: 24px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  animation: slideInBottom 0.3s ease-out;
 }
 
+/* 列表项 */
 .zaui-list-item {
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zaui-list-item:active {
+  transform: scale(0.98);
+  opacity: 0.8;
+}
+
+/* 按钮通用样式 */
+button {
+  font-family: inherit;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 输入框通用样式 */
+input, textarea, select {
+  font-family: inherit;
+  font-size: 16px; /* 防止 iOS 自动缩放 */
+  transition: all 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #00B900;
+  box-shadow: 0 0 0 4px rgba(0, 185, 0, 0.1);
+}
+
+/* 卡片样式 */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.card-hover {
+  transition: all 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.card-hover:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 渐变背景工具类 */
+.gradient-primary {
+  background: linear-gradient(135deg, #00B900 0%, #009900 100%);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, #FF6B35 0%, #FF5722 100%);
+}
+
+.gradient-pink {
+  background: linear-gradient(135deg, #FF006E 0%, #E91E63 100%);
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, #8338EC 0%, #6A1B9A 100%);
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, #00B4D8 0%, #0288D1 100%);
+}
+
+.gradient-yellow {
+  background: linear-gradient(135deg, #FFD60A 0%, #FFC107 100%);
+}
+
+/* 加载动画 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* 脉冲动画 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 弹跳动画 */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 0.5s ease-in-out infinite;
+}
+
+/* 淡入动画 */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-slide-in-bottom {
+  animation: slideInBottom 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* 列表项动画 */
+.list-item-enter {
+  animation: slideInBottom 0.3s ease-out;
+}
+
+.list-item-enter:nth-child(1) { animation-delay: 0s; }
+.list-item-enter:nth-child(2) { animation-delay: 0.05s; }
+.list-item-enter:nth-child(3) { animation-delay: 0.1s; }
+.list-item-enter:nth-child(4) { animation-delay: 0.15s; }
+.list-item-enter:nth-child(5) { animation-delay: 0.2s; }
+
+/* 安全区域适配 */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* 文本截断 */
+.truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 徽章样式 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.badge-new {
+  background: linear-gradient(135deg, #FF006E 0%, #E91E63 100%);
+  color: white;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.badge-success {
+  background: #00B900;
+  color: white;
+}
+
+.badge-warning {
+  background: #FFD60A;
+  color: #1F2937;
+}
+
+.badge-error {
+  background: #FF006E;
+  color: white;
+}
+
+/* 分隔线 */
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #E5E7EB, transparent);
+  margin: 16px 0;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  color: #9CA3AF;
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* 骨架屏 */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(to right, #F3F4F6 8%, #E5E7EB 18%, #F3F4F6 33%);
+  background-size: 800px 104px;
+  animation: shimmer 1.5s linear infinite;
+  border-radius: 8px;
+}
+
+/* 响应式工具类 */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+  
+  .section-container {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }

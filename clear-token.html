@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清除Token - 重置登录状态</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .info-box {
+            background: #f0f7ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        button {
+            background: #06c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.secondary {
+            background: #6c757d;
+        }
+        button.secondary:hover {
+            background: #5a6268;
+        }
+        .token-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .value {
+            color: #06c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 清除Token工具</h1>
+        <p class="subtitle">重置登录状态，使用新的测试用户</p>
+
+        <div class="info-box">
+            <strong>📌 当前配置：</strong><br>
+            测试用户ID: <strong>15027</strong><br>
+            用户昵称: <strong>海阔天空</strong>
+        </div>
+
+        <div class="warning-box" id="currentTokenBox">
+            <strong>⚠️ 当前localStorage中的数据：</strong>
+            <div class="token-info">
+                <div><span class="label">Token:</span> <span class="value" id="currentToken">-</span></div>
+                <div><span class="label">User ID:</span> <span class="value" id="currentUserId">-</span></div>
+            </div>
+        </div>
+
+        <button onclick="clearAndReload()">🗑️ 清除Token并重新加载</button>
+        <button class="secondary" onclick="goToHome()">🏠 返回首页</button>
+
+        <div class="success-box" id="successBox">
+            <strong>✅ 清除成功！</strong><br>
+            正在重新加载页面，系统将自动使用用户15027（海阔天空）登录...
+        </div>
+
+        <div class="info-box" style="margin-top: 30px;">
+            <strong>💡 使用说明：</strong><br>
+            1. 点击"清除Token并重新加载"按钮<br>
+            2. 系统会自动清除旧的登录信息<br>
+            3. 页面重新加载后，会自动使用用户15027登录<br>
+            4. 查看控制台确认新的token
+        </div>
+    </div>
+
+    <script>
+        // 显示当前token信息
+        function displayCurrentToken() {
+            const token = localStorage.getItem('token') || '未设置';
+            const userId = localStorage.getItem('userId') || '未设置';
+            document.getElementById('currentToken').textContent = token;
+            document.getElementById('currentUserId').textContent = userId;
+        }
+
+        // 清除token并重新加载
+        function clearAndReload() {
+            console.log('🗑️ 清除localStorage...');
+            localStorage.clear();
+            
+            document.getElementById('successBox').style.display = 'block';
+            document.getElementById('currentTokenBox').style.display = 'none';
+            
+            console.log('✅ localStorage已清除');
+            console.log('🔄 3秒后重新加载页面...');
+            
+            setTimeout(() => {
+                window.location.href = 'http://localhost:3000/';
+            }, 3000);
+        }
+
+        // 返回首页
+        function goToHome() {
+            window.location.href = 'http://localhost:3000/';
+        }
+
+        // 页面加载时显示当前token
+        displayCurrentToken();
+    </script>
+</body>
+</html>

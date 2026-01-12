@@ -1,0 +1,773 @@
+{
+  "info": {
+    "name": "仓管端API测试集合",
+    "description": "完整的仓管端API测试配置，包含入库、分拣、打包、签收等所有仓管操作接口",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://zalonew.itaoth.com/index.php?s=",
+      "type": "string"
+    },
+    {
+      "key": "wxapp_id",
+      "value": "10001",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "员工登录后获取的token"
+    },
+    {
+      "key": "shop_id",
+      "value": "1",
+      "type": "string",
+      "description": "仓库ID"
+    },
+    {
+      "key": "package_id",
+      "value": "",
+      "type": "string",
+      "description": "包裹ID"
+    },
+    {
+      "key": "express_num",
+      "value": "",
+      "type": "string",
+      "description": "快递单号"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. 员工认证",
+      "item": [
+        {
+          "name": "员工登录",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"0123456789\",\n  \"password\": \"123456\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/clerklogin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "clerklogin"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.code === 1) {",
+                  "        pm.environment.set('token', jsonData.data.token);",
+                  "        pm.environment.set('user_id', jsonData.data.user_id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. 入库员操作 (角色ID: 1)",
+      "item": [
+        {
+          "name": "包裹入库校验",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": [\"YT1234567890\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/checkPack",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "checkPack"]
+            }
+          }
+        },
+        {
+          "name": "包裹入库确认",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": [\"{{package_id}}\"],\n  \"user_id\": [\"123\"],\n  \"class_ids\": [\"1,2,3\"],\n  \"user_Code\": [\"USER001\"],\n  \"is_pre\": [\"0\"],\n  \"express_num\": [\"{{express_num}}\"],\n  \"weight\": [\"1.5\"],\n  \"height\": [\"10\"],\n  \"length\": [\"20\"],\n  \"width\": [\"15\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/inStoragePlus",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "inStoragePlus"]
+            }
+          }
+        },
+        {
+          "name": "包裹列表查询",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": [\"1\"],\n  \"keyword\": [\"\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/packlist",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "packlist"]
+            }
+          }
+        },
+        {
+          "name": "包裹详情查看",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": [\"{{package_id}}\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/packdetails",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "packdetails"]
+            }
+          }
+        },
+        {
+          "name": "包裹统计",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/packTotal",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "packTotal"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. 分拣员操作 (角色ID: 2)",
+      "item": [
+        {
+          "name": "扫描货架码",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": [\"SHELF001\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/getShelf",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "getShelf"]
+            }
+          }
+        },
+        {
+          "name": "包裹上架",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": [\"{{package_id}}\"],\n  \"shelf_id\": [\"1\"],\n  \"length\": [\"20\"],\n  \"width\": [\"15\"],\n  \"height\": [\"10\"],\n  \"weight\": [\"1.5\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/checkUpShelf",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "checkUpShelf"]
+            }
+          }
+        },
+        {
+          "name": "包裹下架",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": [\"{{package_id}}\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/checkDownShelf",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "checkDownShelf"]
+            }
+          }
+        },
+        {
+          "name": "包裹移位",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": [\"{{package_id}}\"],\n  \"shelf_unit_id\": [\"2\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/packageMove",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "packageMove"]
+            }
+          }
+        },
+        {
+          "name": "拣货统计",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/loadingpackTotal",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "loadingpackTotal"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. 打包员操作 (角色ID: 3)",
+      "item": [
+        {
+          "name": "打包列表查询",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": [\"1\"],\n  \"keyword\": [\"\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/inpack",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "inpack"]
+            }
+          }
+        },
+        {
+          "name": "集运单封箱",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": [\"1\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/createdOrder",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "createdOrder"]
+            }
+          }
+        },
+        {
+          "name": "扫码打包",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": [\"{{express_num}}\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/createdOrderByScan",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "createdOrderByScan"]
+            }
+          }
+        },
+        {
+          "name": "打包统计",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/inpackTotal",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "inpackTotal"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 签收员操作 (角色ID: 4)",
+      "item": [
+        {
+          "name": "查询包裹",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"search\": \"123456\",\n  \"type\": \"1\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/searchPack",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "searchPack"]
+            }
+          }
+        },
+        {
+          "name": "签收确认",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"1\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/changeStatusByAdmin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "changeStatusByAdmin"]
+            }
+          }
+        },
+        {
+          "name": "待取货列表",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": [\"7\"],\n  \"keyword\": [\"\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/waitPickPack",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "waitPickPack"]
+            }
+          }
+        },
+        {
+          "name": "确认取货",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{package_id}}\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/appointmentToShop",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "appointmentToShop"]
+            }
+          }
+        },
+        {
+          "name": "签收统计",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/waitPickPackTotal",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "waitPickPackTotal"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. 海外入库员操作 (角色ID: 6)",
+      "item": [
+        {
+          "name": "海外包裹校验",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": [\"{{express_num}}\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/checkzPack",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "checkzPack"]
+            }
+          }
+        },
+        {
+          "name": "海外包裹入库",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": [\"{{package_id}}\"],\n  \"user_id\": [\"123\"],\n  \"user_Code\": [\"USER001\"],\n  \"express_num\": [\"{{express_num}}\"],\n  \"weight\": [\"1.5\"],\n  \"height\": [\"10\"],\n  \"length\": [\"20\"],\n  \"width\": [\"15\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/inzyStoragePlus",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "inzyStoragePlus"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. 数据统计与监控",
+      "item": [
+        {
+          "name": "仓库数据大屏",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shop_id\": \"{{shop_id}}\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/screenData",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "screenData"]
+            }
+          }
+        },
+        {
+          "name": "获取最新包裹",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/getLastPack",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "getLastPack"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. 货架管理",
+      "item": [
+        {
+          "name": "批量包裹上架",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shelf_unit_id\": \"1\",\n  \"code\": [\"YT1234567890\", \"YT1234567891\"],\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/useropration/updatetoshelf",
+              "host": ["{{base_url}}"],
+              "path": ["api", "useropration", "updatetoshelf"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. 后台管理接口",
+      "item": [
+        {
+          "name": "后台登录",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "User[username]",
+                  "value": "admin",
+                  "type": "text"
+                },
+                {
+                  "key": "User[password]",
+                  "value": "123456",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/store/passport/login",
+              "host": ["{{base_url}}"],
+              "path": ["store", "passport", "login"]
+            }
+          }
+        },
+        {
+          "name": "包裹管理列表",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/store/package/index",
+              "host": ["{{base_url}}"],
+              "path": ["store", "package", "index"]
+            }
+          }
+        },
+        {
+          "name": "仓库管理列表",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/store/shop/index",
+              "host": ["{{base_url}}"],
+              "path": ["store", "shop", "index"]
+            }
+          }
+        },
+        {
+          "name": "货架管理列表",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/store/shelf_manager/index",
+              "host": ["{{base_url}}"],
+              "path": ["store", "shelf_manager", "index"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

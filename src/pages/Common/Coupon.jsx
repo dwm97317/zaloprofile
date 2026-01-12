@@ -1,99 +1,169 @@
 import React, { useEffect, useState } from "react";
-import { Button, Page, useNavigate } from "zmp-ui";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { userState } from "../../state";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import request from "../../utils/request";
-import "./Index.scss";
 import util from "../../utils/util";
-import Empty from "../../components/Empty";
-import Header from "../../components/Header/Header";
+import Loading from "../../components/Loading/Index";
+import "./Coupon.scss";
 
 const CommonCouponPage = () => {
-  const user = useRecoilValue(userState);
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [list, setList] = useState([]);
-  const [tab, setTab] = useState(1);
+  const [tab, setTab] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  // 获取线路详情
-  const getCouponList = (index) => {
-    const url = "/user.coupon/lists";
-    request.get(url + "&wxapp_id=10001", { data_type: index }).then((res) => {
-      const data = res.data.list;
-      setList(data);
-    });
+  const getCouponList = async (dataType) => {
+    setLoading(true);
+    try {
+      const res = await request.get("/user.coupon/lists&wxapp_id=10001", { data_type: dataType });
+      if (res.data && res.data.list) {
+        setList(res.data.list);
+      }
+    } catch (error) {
+      console.error("Failed to fetch coupons", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    console.log("模拟componentDidMount第一次渲染");
-    util.setBarPageView("Danh sách phiếu giảm giá"); // 优惠券列表
+    util.setBarPageView("Coupon List");
     getCouponList(0);
-    return () => {
-      console.log("模拟componentWillUnmount执行销毁后");
-    };
   }, []);
+
+  /**
+   * 获取优惠券状态颜色
+   */
+  const getStatusColor = (tabIndex) => {
+    switch (tabIndex) {
+      case 0: return 'from-primary-500 to-primary-600'; // 可用 - 绿色
+      case 1: return 'from-gray-400 to-gray-500';       // 已用 - 灰色
+      case 2: return 'from-gray-300 to-gray-400';       // 过期 - 浅灰色
+      default: return 'from-primary-500 to-primary-600';
+    }
+  };
+
+  /**
+   * 获取按钮文本
+   */
+  const getButtonText = (tabIndex) => {
+    switch (tabIndex) {
+      case 0: return t("common_page.use_now", "ใช้งาน");
+      case 1: return t("common_page.coupon_tab.used", "ใช้แล้ว");
+      case 2: return t("common_page.coupon_tab.expired", "หมดอายุ");
+      default: return t("common_page.use_now", "ใช้งาน");
+    }
+  };
   
   return (
-    <Page className="page common">
-      <Header></Header>
-      <div className="coupon-tab">
-        <div
-          className={`c-tab ${tab == 1 ? "active" : ""}`}
-          onClick={(e) => {
-            setTab(1);
+    <div className="coupon-page">
+      {/* Header */}
+      <div className="coupon-header">
+        <button onClick={() => navigate(-1)} className="back-btn">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 className="header-title">{t("common_page.coupon_title", "คูปอง")}</h1>
+        <div className="w-6"></div>
+      </div>
+
+      {/* Tabs - LINE Theme */}
+      <div className="coupon-tabs">
+        <button
+          className={`tab-btn ${tab === 0 ? "active" : ""}`}
+          onClick={() => {
+            setTab(0);
             getCouponList(0);
           }}
         >
-          Chưa sử dụng {/* 待使用 */}
-        </div>
-        <div
-          className={`c-tab ${tab == 2 ? "active" : ""}`}
-          onClick={(e) => {
-            setTab(2);
+          {t("common_page.coupon_tab.unused", "ยังไม่ได้ใช้")}
+        </button>
+        <button
+          className={`tab-btn ${tab === 1 ? "active" : ""}`}
+          onClick={() => {
+            setTab(1);
             getCouponList(1);
           }}
         >
-          Đã sử dụng {/* 已使用 */}
-        </div>
-        <div
-          className={`c-tab ${tab == 3 ? "active" : ""}`}
-          onClick={(e) => {
-            setTab(3);
+          {t("common_page.coupon_tab.used", "ใช้แล้ว")}
+        </button>
+        <button
+          className={`tab-btn ${tab === 2 ? "active" : ""}`}
+          onClick={() => {
+            setTab(2);
             getCouponList(2);
           }}
         >
-          Hết hạn {/* 已失效 */}
-        </div>
+          {t("common_page.coupon_tab.expired", "หมดอายุ")}
+        </button>
       </div>
-      <div className="coupon-content">
-        {list.length == 0 ? <Empty /> : ""}
-        <div className="coupon-content-list">
-          {list.map((item, index) => {
-            return (
-              <div className="coupon-item" key={index}>
-                <div className="coupon-main">
-                  <div className="coupon-main-inner">
-                    <div className="coupon-name">{item["discount"]}</div>
-                    <div className="coupon-desc">
-                      <p>₫</p> {/* 元 (但改为越南盾符号) */}
-                      <p>{item["name"]}</p>
+
+      {/* Coupon List */}
+      <div className="coupon-list">
+        {loading ? (
+          <Loading />
+        ) : list.length > 0 ? (
+          list.map((item, index) => (
+            <div
+              key={index}
+              className={`coupon-card bg-gradient-to-r ${getStatusColor(tab)} ${
+                tab === 0 ? 'active' : 'inactive'
+              }`}
+              style={{
+                animationDelay: `${index * 0.1}s`
+              }}
+            >
+              <div className="coupon-content">
+                {/* 左侧：优惠信息 */}
+                <div className="coupon-info">
+                  <div className="discount-amount">
+                    {item.discount}
+                  </div>
+                  <div className="coupon-name">
+                    {item.name}
+                  </div>
+                  {item.min_amount && (
+                    <div className="min-amount">
+                      ขั้นต่ำ ฿{item.min_amount}
                     </div>
-                    <div className="coupon-infos">
-                      <p>Áp dụng toàn bộ sản phẩm</p> {/* 全场通用 */}
-                      <p>{item["create_time"]}</p>
-                    </div>
+                  )}
+                  <div className="expire-time">
+                    หมดอายุ: {item.expire_time || item.create_time}
                   </div>
                 </div>
-                <div className="coupon-button">
-                  <div className="coupon-radius-left"></div>
-                  <div className="coupon-radius-right"></div>
-                  Sử dụng ngay {/* 立即使用 */}
+
+                {/* 右侧：使用按钮 */}
+                <div className="coupon-action">
+                  {/* 半圆切口 */}
+                  <div className="circle-cutout circle-top"></div>
+                  <div className="circle-cutout circle-bottom"></div>
+                  
+                  <button
+                    disabled={tab !== 0}
+                    className={`use-btn ${tab === 0 ? 'active' : 'disabled'}`}
+                  >
+                    {getButtonText(tab)}
+                  </button>
                 </div>
               </div>
-            );
-          })}
-        </div>
+
+              {/* 虚线分隔 */}
+              <div className="dashed-line"></div>
+            </div>
+          ))
+        ) : (
+          <div className="empty-state">
+            <svg className="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+            </svg>
+            <p className="empty-text">{t("common.no_data", "ไม่มีคูปอง")}</p>
+          </div>
+        )}
       </div>
-    </Page>
+    </div>
   );
 };
+
 export default CommonCouponPage;

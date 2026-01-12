@@ -1,0 +1,396 @@
+{
+    "common": {
+        "loading": "Đang tải...",
+        "error": "Có lỗi xảy ra",
+        "submit": "Gửi",
+        "cancel": "Hủy",
+        "confirm": "Xác nhận",
+        "saving": "Đang lưu...",
+        "processing": "Đang xử lý...",
+        "copy_success": "Sao chép thành công",
+        "error_network": "Lỗi mạng",
+        "view_detail": "Xem chi tiết",
+        "copy": "Sao chép",
+        "no_data": "Không có dữ liệu",
+        "delete": "Xóa",
+        "edit": "Sửa"
+    },
+    "tab": {
+        "home": "Trang chủ",
+        "query": "Tra cứu",
+        "freight": "Cước phí",
+        "mine": "Cá nhân"
+    },
+    "help": {
+        "list_title": "Danh sách bài viết",
+        "detail_title": "Chi tiết bài viết",
+        "guide_title": "Hướng dẫn sử dụng"
+    },
+    "home": {
+        "title": "Hợp nhất bưu kiện Vũ Hương Trà",
+        "nav": {
+            "report": "Dự báo gói hàng",
+            "my_package": "Gói hàng của tôi",
+            "pack_request": "Yêu cầu đóng gói",
+            "pending_pay": "Chờ thanh toán",
+            "take": "Nhận gói hàng",
+            "storage": "Danh sách kho",
+            "freight": "Tính cước vận chuyển",
+            "helper": "Hướng dẫn thao tác"
+        },
+        "labels": {
+            "best_route": "Tuyến đường tốt nhất",
+            "service": "Dịch vụ khách hàng",
+            "delivery": "Giao hàng",
+            "tariff": "Thuế"
+        }
+    },
+    "address": {
+        "title": "Sổ địa chỉ",
+        "create_title": "Thêm địa chỉ",
+        "edit_title": "Sửa địa chỉ",
+        "submit": "Lưu địa chỉ",
+        "add_new": "Thêm địa chỉ mới",
+        "set_default": "Đặt làm mặc định",
+        "is_default": "Mặc định",
+        "confirm_delete": "Bạn có chắc chắn muốn xóa địa chỉ này?",
+        "confirm_default": "Đặt địa chỉ này làm mặc định?",
+        "delete_success": "Xóa thành công",
+        "default_success": "Cập nhật thành công",
+        "section": {
+            "contact": "Thông tin liên hệ",
+            "location": "Chi tiết địa điểm",
+            "customs": "Thông tin hải quan"
+        },
+        "label": {
+            "name": "Người nhận",
+            "phone": "Số điện thoại",
+            "province": "Tỉnh/Thành phố",
+            "city": "Quận/Huyện",
+            "sub_district": "Phường/Xã",
+            "postal_code": "Mã bưu điện",
+            "detail": "Số nhà, đường, tòa nhà",
+            "identitycard": "Số CCCD",
+            "clearancecode": "Mã thông quan"
+        },
+        "placeholder": {
+            "name": "Nguyễn Văn A",
+            "detail_search": "Tìm kiếm địa chỉ (Google Maps)"
+        },
+        "success": {
+            "save": "Lưu địa chỉ thành công"
+        },
+        "error": {
+            "required": "Vui lòng điền đủ thông tin",
+            "save": "Lưu địa chỉ thất bại"
+        }
+    },
+    "mine": {
+        "login_prompt": "Vui lòng đăng nhập",
+        "user_code": "Mã khách hàng",
+        "balance": "Số dư",
+        "sms": "Tin nhắn",
+        "coupon": "Phiếu giảm giá",
+        "points": "Điểm tích lũy",
+        "my_orders": "Đơn hàng của tôi",
+        "view_all": "Xem tất cả",
+        "status": {
+            "no_check": "Chờ kiểm tra",
+            "no_pay": "Chờ thanh toán",
+            "no_send": "Chờ gửi hàng",
+            "no_receive": "Chờ nhận hàng",
+            "complete": "Hoàn thành"
+        },
+        "other_services": "Dịch vụ khác",
+        "receive_package": "Nhận kiện hàng",
+        "address_book": "Sổ địa chỉ",
+        "warehouse": "Danh sách kho",
+        "faq": "Câu hỏi thường gặp",
+        "logout": "Đăng xuất",
+        "login": "Đăng nhập ngay",
+        "login_success": "Đăng nhập thành công",
+        "logout_success": "Đăng xuất thành công",
+        "follow_oa": "Theo dõi OA",
+        "wallet": {
+            "title": "Ví của tôi",
+            "top_up": "Nạp tiền",
+            "account_detail": "Chi tiết tài khoản",
+            "bank_account": "Tài khoản ngân hàng",
+            "upload_proof": "Tải lên chứng từ",
+            "payment_history": "Lịch sử thanh toán",
+            "recharge_title": "Nạp tiền vào tài khoản",
+            "amount_label": "Số tiền",
+            "custom_amount": "Số tiền tùy chọn",
+            "payment_method": "Phương thức thanh toán"
+        }
+    },
+    "freight": {
+        "title": "Tính cước vận chuyển",
+        "tips": "Lưu ý: Mức phí này chỉ là ước tính, chi phí thực tế sẽ được tính khi xuất kho",
+        "section": {
+            "region": "Khu vực nhận hàng",
+            "unit": "Đơn vị tính",
+            "goods_type": "Loại hàng hóa",
+            "dimensions": "Kích thước (cm)",
+            "weight": "Khối lượng"
+        },
+        "placeholder": {
+            "region": "Chọn quốc gia nhận hàng",
+            "unit": "Chọn quy tắc tính cước",
+            "goods_type": "Chọn loại hàng hóa",
+            "weight": "Nhập khối lượng kiện hàng",
+            "length": "Dài",
+            "width": "Rộng",
+            "height": "Cao"
+        },
+        "options": {
+            "weight": "Theo khối lượng",
+            "volume": "Theo thể tích"
+        },
+        "calculate": "Tra cứu ngay",
+        "result": {
+            "title": "Kết quả ước tính",
+            "note": "Lưu ý: Khối lượng có thể tăng khi đóng gói, khối lượng thực tế sẽ được tính khi xuất kho!",
+            "all_routes": "Tất cả tuyến đường",
+            "delivery_time": "Thời gian giao hàng",
+            "tariff": "Thuế quan",
+            "click_detail": "Nhấn để xem chi tiết"
+        }
+    },
+    "storage": {
+        "title": "Danh sách kho hàng",
+        "view_detail": "Xem chi tiết",
+        "unknown_warehouse": "Kho không xác định",
+        "no_address": "Chưa có địa chỉ",
+        "no_phone": "Chưa có điện thoại",
+        "detail": {
+            "title": "Chi tiết kho hàng",
+            "recipient": "Người nhận",
+            "phone": "Số điện thoại",
+            "address": "Địa chỉ nhận hàng",
+            "zip": "Mã bưu điện",
+            "copy": "Sao chép",
+            "copy_all": "Sao chép tất cả"
+        },
+        "guide": {
+            "title": "Hướng dẫn thao tác",
+            "step1": "Bước 1: Sao chép địa chỉ kho",
+            "desc1": "Sao chép địa chỉ kho hàng sau đó đến nền tảng mua sắm để đặt hàng.",
+            "step2": "Bước 2: Dự báo kiện hàng",
+            "desc2": "Sau khi đặt hàng, lấy số vận đơn và nhập vào hệ thống dự báo.",
+            "step3": "Bước 3: Yêu cầu đóng gói",
+            "desc3": "Khi kiện hàng về đến kho, bạn có thể yêu cầu đóng gói và xuất kho.",
+            "step4": "Bước 4: Thanh toán",
+            "desc4": "Sau khi đóng gói xong, thanh toán cước vận chuyển và hàng sẽ được gửi đi."
+        }
+    },
+    "order": {
+        "title": "Danh sách đơn hàng",
+        "detail_title": "Chi tiết đơn hàng",
+        "cancel_confirm": "Hủy đơn hàng này vẫn có thể phát sinh phí bổ sung?",
+        "cancel_success": "Hủy thành công",
+        "pay_success": "Thanh toán thành công",
+        "tabs": {
+            "all": "Tất cả",
+            "check": "Chờ kiểm tra",
+            "pay": "Chờ thanh toán",
+            "send": "Chờ gửi hàng",
+            "sent": "Đã gửi hàng",
+            "done": "Hoàn thành"
+        },
+        "labels": {
+            "code": "Mã đơn hàng",
+            "country": "Quốc gia",
+            "items": "Thông tin vật phẩm",
+            "time": "Thời gian báo cáo",
+            "not_provided": "Chưa điền",
+            "package_info": "Thông tin kiện hàng",
+            "tracking_no": "Số vận đơn",
+            "carrier": "Vận chuyển",
+            "dims": "Dài/Rộng/Cao/Trọng lượng",
+            "warehouse_time": "Thời gian nhập kho",
+            "remark": "Ghi chú",
+            "route_info": "Thông tin tuyến đường",
+            "delivery_time": "Thời gian giao hàng",
+            "tariff": "Thuế quan",
+            "packing_info": "Thông tin đóng gói",
+            "weight": "Trọng lượng",
+            "vol_weight": "Trọng lượng thể tích",
+            "charge_weight": "Trọng lượng tính cước",
+            "cost_info": "Thông tin chi phí",
+            "base_fee": "Cước vận chuyển cơ bản",
+            "pack_fee": "Dịch vụ đóng gói",
+            "other_fee": "Chi phí khác"
+        },
+        "buttons": {
+            "cancel": "Hủy đơn hàng",
+            "pay": "Thanh toán",
+            "detail": "Xem chi tiết"
+        },
+        "status": {
+            "pending_check": "Chờ kiểm tra",
+            "pending_pay": "Chờ thanh toán",
+            "paid": "Đã thanh toán",
+            "picking": "Đang chọn hàng",
+            "packing": "Đang đóng gói",
+            "shipped": "Đã gửi hàng",
+            "received": "Đã nhận hàng",
+            "completed": "Hoàn thành",
+            "issue": "Kiện có vấn đề",
+            "cancelled": "Đã hủy"
+        }
+    },
+    "package": {
+        "title": "Danh sách gói hàng",
+        "search_placeholder": "Nhập mã vận đơn",
+        "tabs": {
+            "not_received": "Chờ nhập kho",
+            "received": "Đã nhập kho",
+            "shipped": "Đã gửi hàng",
+            "issue": "Có vấn đề"
+        },
+        "detail_title": "Chi tiết gói hàng",
+        "modify_title": "Sửa thông tin gói hàng",
+        "cancel_report": "Hủy dự báo",
+        "edit_report": "Sửa dự báo",
+        "view_logistics": "Xem vận chuyển",
+        "confirm_cancel": "Bạn có chắc chắn muốn hủy dự báo này?",
+        "form": {
+            "country": "Quốc gia nhận hàng",
+            "warehouse": "Kho tập kết",
+            "tracking_no": "Mã vận đơn",
+            "category": "Loại hàng hóa",
+            "value": "Giá trị hàng hóa",
+            "remark": "Ghi chú hàng hóa",
+            "select_country": "Chọn quốc gia",
+            "select_warehouse": "Chọn kho hàng",
+            "select_category": "Chọn loại hàng",
+            "enter_tracking": "Nhập mã vận đơn",
+            "enter_value": "Nhập giá trị hàng hóa",
+            "save": "Lưu"
+        },
+        "labels": {
+            "warehouse": "Kho hàng",
+            "package_count": "Số kiện",
+            "country": "Quốc gia",
+            "items": "Hàng hóa",
+            "report_time": "Thời gian báo cáo",
+            "not_provided": "Chưa cung cấp"
+        },
+        "success": {
+            "update": "Cập nhật thành công",
+            "cancel": "Hủy thành công"
+        },
+        "error": {
+            "required": "Vui lòng nhập đầy đủ thông tin"
+        }
+    },
+    "report": {
+        "title": "Dự báo gói hàng",
+        "tab_single": "Dự báo đơn lẻ",
+        "tab_batch": "Dự báo hàng loạt",
+        "form": {
+            "country": "Quốc gia gửi",
+            "warehouse": "Kho tập kết",
+            "tracking_no": "Mã vận đơn",
+            "goods_list": "Danh sách hàng hóa",
+            "goods_name": "Tên hàng",
+            "goods_price": "Đơn giá",
+            "goods_qty": "Số lượng",
+            "category": "Loại hàng hóa",
+            "total_value": "Tổng giá trị (￥)",
+            "remark": "Ghi chú",
+            "privacy_agree": "Đã đọc và đồng ý",
+            "privacy_link": "Chính sách bảo mật",
+            "batch_tracking": "Nhiều mã vận đơn (phân cách dấu phẩy)",
+            "batch_tip": "Lưu ý: Các mã vận đơn phân cách bằng dấu phẩy, hoặc nhập một mã rồi nhấn dấu + để thêm"
+        },
+        "placeholder": {
+            "select_country": "Chọn quốc gia gửi hàng",
+            "select_warehouse": "Chọn kho hàng",
+            "enter_tracking": "Nhập mã vận đơn",
+            "enter_goods_name": "Tên hàng",
+            "enter_goods_price": "Giá",
+            "enter_goods_qty": "SL",
+            "select_category": "Chọn loại hàng hóa",
+            "enter_value": "Nhập giá trị",
+            "enter_remark": "Nhập ghi chú",
+            "enter_batch_tracking": "Nhập nhiều mã vận đơn..."
+        },
+        "action": {
+            "add": "Thêm",
+            "submit": "Gửi dự báo"
+        },
+        "error": {
+            "privacy": "Vui lòng đồng ý chính sách bảo mật",
+            "country": "Vui lòng chọn quốc gia",
+            "warehouse": "Vui lòng chọn kho hàng",
+            "tracking": "Vui lòng nhập mã vận đơn"
+        },
+        "success": {
+            "submit": "Dự báo thành công"
+        }
+    },
+    "pack": {
+        "title": "Yêu cầu đóng gói",
+        "tips": "Lưu ý: Mức phí này chỉ là ước tính, chi phí thực tế sẽ được tính khi xuất kho",
+        "select_all": "Chọn tất cả, đã chọn {{count}} kiện",
+        "submit": "Gửi yêu cầu",
+        "no_select": "Vui lòng chọn ít nhất 1 kiện hàng"
+    },
+    "take": {
+        "title": "Nhận gói hàng",
+        "search_placeholder": "Tìm kiếm mã vận đơn",
+        "take_btn": "Nhận",
+        "labels": {
+            "package_no": "Mã bưu kiện",
+            "enter_time": "Thời gian nhập kho"
+        },
+        "form_title": "Xác nhận nhận hàng",
+        "form": {
+            "tracking_no": "Mã vận đơn",
+            "category": "Loại hàng hóa",
+            "select_category": "Chọn loại hàng",
+            "enter_tracking": "Nhập mã vận đơn",
+            "required_tracking": "Vui lòng nhập mã vận đơn",
+            "required_category": "Vui lòng chọn loại hàng",
+            "success": "Nhận thành công",
+            "confirm": "Xác nhận nhận hàng"
+        }
+    },
+    "confirm_pack": {
+        "title": "Xác nhận đóng gói",
+        "tab_delivery": "Giao hàng tận nơi",
+        "tab_pickup": "Đến kho lấy",
+        "address_title": "Địa chỉ nhận hàng",
+        "change_address": "Thay đổi",
+        "no_address": "Vui lòng chọn địa chỉ",
+        "package_info": "Thông tin kiện hàng",
+        "total_pack": "Tổng {{count}} kiện",
+        "channel": "Kênh xuất hàng",
+        "select_channel": "Chọn kênh xuất hàng",
+        "services": "Dịch vụ gia tăng",
+        "service_tip": "Vận chuyển không đảm bảo không vỡ, đề nghị chọn phương thức đóng gói phù hợp. Trọng lượng sau khi đóng gói có thể tăng, trọng lượng thực tế sẽ được tính khi xuất hàng!",
+        "cod": "Tiền thu hộ (COD)",
+        "enter_cod": "Nhập số tiền thu hộ",
+        "remark": "Ghi chú",
+        "enter_remark": "Nhập ghi chú...",
+        "privacy": "Đã xem và đồng ý Chính sách bảo mật",
+        "submit": "Gửi yêu cầu",
+        "success": "Đóng gói thành công",
+        "error_privacy": "Vui lòng đồng ý chính sách",
+        "error_channel": "Vui lòng chọn kênh xuất hàng"
+    },
+    "verify": {
+        "title": "Xác thực / Đối soát",
+        "no_data": "Không có dữ liệu"
+    },
+    "query": {
+        "title": "Tra cứu vận đơn",
+        "tracking_no": "Mã vận đơn",
+        "placeholder": "Vui lòng nhập mã vận đơn",
+        "search": "Tra cứu ngay",
+        "result": "Kết quả tra cứu",
+        "no_data": "Không có dữ liệu"
+    }
+}

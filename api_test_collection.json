@@ -1,0 +1,643 @@
+{
+  "info": {
+    "name": "Zalo物流系统API测试集合",
+    "description": "完整的API测试配置，包含用户管理、包裹管理、订单管理等所有主要接口",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://zalonew.itaoth.com/index.php?s=",
+      "type": "string"
+    },
+    {
+      "key": "wxapp_id",
+      "value": "10001",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. 用户管理模块",
+      "item": [
+        {
+          "name": "用户登录",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"0123456789\",\n  \"password\": \"123456\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "login"]
+            }
+          }
+        },
+        {
+          "name": "用户注册",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"0123456789\",\n  \"password\": \"123456\",\n  \"code\": \"1234\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/passport/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "passport", "register"]
+            }
+          }
+        },
+        {
+          "name": "获取用户详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/detail?wxapp_id={{wxapp_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "detail"],
+              "query": [
+                {
+                  "key": "wxapp_id",
+                  "value": "{{wxapp_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "员工登录",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"0123456789\",\n  \"password\": \"123456\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/clerklogin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "clerklogin"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. 包裹管理模块",
+      "item": [
+        {
+          "name": "包裹预报",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"express_num\": \"YT1234567890\",\n  \"shop_id\": \"1\",\n  \"weight\": \"1.5\",\n  \"remark\": \"测试包裹\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/package/add",
+              "host": ["{{base_url}}"],
+              "path": ["api", "package", "add"]
+            }
+          }
+        },
+        {
+          "name": "包裹列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/package/packagelist?wxapp_id={{wxapp_id}}&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "package", "packagelist"],
+              "query": [
+                {
+                  "key": "wxapp_id",
+                  "value": "{{wxapp_id}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "包裹详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/package/detail?id=1&wxapp_id={{wxapp_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "package", "detail"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "1"
+                },
+                {
+                  "key": "wxapp_id",
+                  "value": "{{wxapp_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "申请打包",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_ids\": [1, 2, 3],\n  \"address_id\": \"1\",\n  \"line_id\": \"1\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/package/inpack",
+              "host": ["{{base_url}}"],
+              "path": ["api", "package", "inpack"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. 地址管理模块",
+      "item": [
+        {
+          "name": "获取地址列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/address/lists?wxapp_id={{wxapp_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "address", "lists"],
+              "query": [
+                {
+                  "key": "wxapp_id",
+                  "value": "{{wxapp_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "添加地址",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nguyen Van A\",\n  \"phone\": \"0123456789\",\n  \"country\": \"Việt Nam\",\n  \"province\": \"Hồ Chí Minh\",\n  \"city\": \"Quận 1\",\n  \"region\": \"Phường Bến Nghé\",\n  \"detail\": \"123 Nguyễn Huệ\",\n  \"userstree\": \"123 Nguyễn Huệ, Phường Bến Nghé\",\n  \"door\": \"123\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/address/add",
+              "host": ["{{base_url}}"],
+              "path": ["api", "address", "add"]
+            }
+          }
+        },
+        {
+          "name": "编辑地址",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address_id\": \"1\",\n  \"name\": \"Nguyen Van B\",\n  \"phone\": \"0987654321\",\n  \"country\": \"Việt Nam\",\n  \"province\": \"Hồ Chí Minh\",\n  \"city\": \"Quận 3\",\n  \"region\": \"Phường 1\",\n  \"detail\": \"456 Lê Văn Sỹ\",\n  \"userstree\": \"456 Lê Văn Sỹ, Phường 1\",\n  \"door\": \"456\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/address/edit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "address", "edit"]
+            }
+          }
+        },
+        {
+          "name": "删除地址",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address_id\": \"1\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/address/remove",
+              "host": ["{{base_url}}"],
+              "path": ["api", "address", "remove"]
+            }
+          }
+        },
+        {
+          "name": "越南地址自动补全",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/goong-address/autocomplete?input=123 Nguyen Hue&wxapp_id={{wxapp_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "goong-address", "autocomplete"],
+              "query": [
+                {
+                  "key": "input",
+                  "value": "123 Nguyen Hue"
+                },
+                {
+                  "key": "wxapp_id",
+                  "value": "{{wxapp_id}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 文件上传模块",
+      "item": [
+        {
+          "name": "图片上传",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "wxapp_id",
+                  "value": "{{wxapp_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload/image",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "image"]
+            }
+          }
+        },
+        {
+          "name": "Base64图片上传",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/apipost/image",
+              "host": ["{{base_url}}"],
+              "path": ["api", "apipost", "image"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. 订单管理模块",
+      "item": [
+        {
+          "name": "创建订单",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"goods_id\": \"1\",\n  \"goods_num\": \"1\",\n  \"address_id\": \"1\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/order/add",
+              "host": ["{{base_url}}"],
+              "path": ["api", "order", "add"]
+            }
+          }
+        },
+        {
+          "name": "订单列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/order/lists?type=all&wxapp_id={{wxapp_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "order", "lists"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "all"
+                },
+                {
+                  "key": "wxapp_id",
+                  "value": "{{wxapp_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "订单详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/order/detail?order_id=1&wxapp_id={{wxapp_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "order", "detail"],
+              "query": [
+                {
+                  "key": "order_id",
+                  "value": "1"
+                },
+                {
+                  "key": "wxapp_id",
+                  "value": "{{wxapp_id}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. 后台管理模块",
+      "item": [
+        {
+          "name": "后台登录",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "admin",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "123456",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/store/passport/login",
+              "host": ["{{base_url}}"],
+              "path": ["store", "passport", "login"]
+            }
+          }
+        },
+        {
+          "name": "后台订单列表",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/store/tr_order/all_list",
+              "host": ["{{base_url}}"],
+              "path": ["store", "tr_order", "all_list"]
+            }
+          }
+        },
+        {
+          "name": "更新订单状态",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "pack[status]",
+                  "value": "6",
+                  "type": "text"
+                },
+                {
+                  "key": "selectIds",
+                  "value": "19",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/store/tr_order/upsatatus",
+              "host": ["{{base_url}}"],
+              "path": ["store", "tr_order", "upsatatus"]
+            }
+          }
+        },
+        {
+          "name": "包裹管理列表",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/store/package/index",
+              "host": ["{{base_url}}"],
+              "path": ["store", "package", "index"]
+            }
+          }
+        },
+        {
+          "name": "用户管理列表",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/store/user/index",
+              "host": ["{{base_url}}"],
+              "path": ["store", "user", "index"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. 系统设置模块",
+      "item": [
+        {
+          "name": "获取系统设置",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/setting/index?wxapp_id={{wxapp_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "setting", "index"],
+              "query": [
+                {
+                  "key": "wxapp_id",
+                  "value": "{{wxapp_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "获取运费计算",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"weight\": \"1.5\",\n  \"line_id\": \"1\",\n  \"wxapp_id\": \"{{wxapp_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/package/getfreight",
+              "host": ["{{base_url}}"],
+              "path": ["api", "package", "getfreight"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,76 +1,111 @@
 import axios from "axios";
-import { getStorage, showToast } from "zmp-sdk";
 import { BASE_URL, TIMEOUT } from "../config/config";
 
+// Default settings
 axios.defaults.headers["Content-Type"] = "application/json";
-// 响应时间
 axios.defaults.timeout = TIMEOUT;
 axios.defaults.baseURL = BASE_URL;
-//请求拦截器
+
+// Request interceptor
 axios.interceptors.request.use(
   async (config) => {
-    const { token } = await getStorage({
-      keys: ["token"],
-    });
+    // Get token from localStorage (standard web practice)
+    const token = localStorage.getItem("token");
+
     if (token) {
-      if (config.method == "get") {
-        if (config.params == undefined) {
+      if (config.method === "get") {
+        if (config.params === undefined) {
           config.params = {};
         }
         config.params["token"] = token;
       }
-      if (config.method == "post") {
-        if (config.data == undefined) {
+      if (config.method === "post") {
+        if (config.data === undefined) {
           config.data = {};
         }
         config.data["token"] = token;
       }
-      // 设置统一的请求header
-      // config.headers.authorization = token; //授权(每次请求把token带给后台)
+      // Or use Authorization header if backend prefers
+      // config.headers.Authorization = `Bearer ${token}`;
     }
-    config.headers.platform = "ZALO"; //后台需要的参数
+
+    config.headers.platform = "LINE"; // Changed from ZALO
     return config;
   },
   (error) => {
-    console.log(error, "error");
+    console.error("Request error:", error);
     return Promise.reject(error);
-  },
+  }
 );
 
-//响应拦截器
+// Response interceptor
 axios.interceptors.response.use(
   (response) => {
-    if (response.data.returnCode === "0014") {
-      // 登录失效
-      setTimeout(() => {
-        //让用户从新回到登录页面
-      }, 2000);
+    if (response.data && (response.data.returnCode === "0014" || response.data.code === 401)) {
+      // Session expired
+      localStorage.removeItem("token");
+      // Redirect to login or refresh page can be handled here or in components
     }
     return response;
   },
   (error) => {
-    return Promise.resolve(error.response);
-  },
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+    }
+
+    let errorData = { code: 500, msg: "Network Error", data: null };
+
+    if (error.response) {
+      const status = error.response.status;
+      const responseData = error.response.data;
+
+      if (typeof responseData === 'string') {
+        try {
+          const jsonMatch = responseData.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            errorData = { code: status, msg: parsed.msg || parsed.message || 'Server Error', data: parsed };
+          } else {
+            const titleMatch = responseData.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+            const messageMatch = responseData.match(/<p[^>]*>([^<]+)<\/p>/i);
+            const title = titleMatch ? titleMatch[1].trim() : '';
+            const message = messageMatch ? messageMatch[1].trim() : '';
+            errorData = { code: status, msg: title || message || `Server Error (${status})`, data: null };
+          }
+        } catch (e) {
+          errorData = { code: status, msg: `Server Error (${status})`, data: null };
+        }
+      } else if (responseData && typeof responseData === 'object') {
+        errorData = {
+          code: responseData.code || status,
+          msg: responseData.msg || responseData.message || responseData.error || 'Server Error',
+          data: responseData.data || null
+        };
+      } else {
+        errorData = { code: status, msg: `Error ${status}`, data: null };
+      }
+    } else if (error.request) {
+      errorData = { code: 0, msg: "No response from server. Please check your connection.", data: null };
+    } else {
+      errorData = { code: 0, msg: error.message || "Request failed", data: null };
+    }
+
+    console.error("API Error:", error);
+    console.error("Error details:", errorData);
+    return Promise.resolve({ data: errorData, status: errorData.code });
+  }
 );
 
-// 处理请求返回的数据
+// Helper to check status and handle errors
 function checkStatus(response) {
-  console.log(response,'res')
-  return new Promise((resolve, reject) => {
-    if (
-      response &&
-      (response.status === 200 ||
-        response.status === 304 ||
-        response.status === 400)
-    ) {
+  return new Promise((resolve) => {
+    if (response && response.data && typeof response.data === 'object' && 'code' in response.data) {
+      resolve(response.data);
+    } else if (response && (response.status === 200 || response.status === 304 || response.status === 400)) {
       resolve(response.data);
     } else {
-      console.log(response, "response");
-      resolve("");
-      showToast({
-        message: "网络错误",
-      });
-      console.log("網絡錯誤");
+      console.error("Network error:", response);
+      resolve({ code: 500, msg: "Network Error", data: null });
     }
   });
 }

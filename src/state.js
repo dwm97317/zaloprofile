@@ -107,3 +107,19 @@ export const guideIdState = atom({
   key: "guideId",
   default: "",
 });
+
+// Package selection state for packing application
+export const packageIdsState = atom({
+  key: "packageIds",
+  default: [],
+});
+
+export const selectionModeState = atom({
+  key: "selectionMode",
+  default: false,
+});
+
+export const packageStatusState = atom({
+  key: "packageStatus",
+  default: "",
+});

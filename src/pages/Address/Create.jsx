@@ -1,715 +1,286 @@
 import React, { useEffect, useState } from "react";
-import { Page, useNavigate, Button, Input, Sheet } from "zmp-ui";
+import { useNavigate } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { addressFormState, addressInfoState, countryState } from "../../state";
+import { useTranslation } from "react-i18next";
+import { addressFormState, addressInfoState } from "../../state";
 import request from "../../utils/request";
-import Header from "../../components/Header/Header";
-import DynamicAddressForm from "../../components/DynamicAddressForm";
-import AddressApi from "../../utils/addressApi";
-import {
-  formatVietnameseAddress
-} from "../../utils/vietnameseAddress";
-import "./Index.scss";
-import "./Create.scss";
-import { getAccessToken, getLocation, showToast } from "zmp-sdk";
-import util from "../../utils/util";
+import Button from "../../components/Button/Index";
 import Loading from "../../components/Loading/Index";
+import AddressAutocomplete from "../../components/AddressAutocomplete/index";
 
-
-const AddressPage = () => {
-  const country = useRecoilValue(countryState);
-  const saveAddressFormState = useSetRecoilState(addressFormState);
-  const addressForm = useRecoilValue(addressFormState);
-  const setCountryData = useSetRecoilState(countryState);
+const AddressCreatePage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const requireFormFields = ["name", "userphones"]; // Các trường bắt buộc
-  const [form, setForm] = useState({
-    region: "",
-    detail: "",
-    userstree: "",
-    name: "",
-    userphones: "",
-    telcode: "84",
-    country_id: 1
-  });
-  const [formData, setFormData] = useState([]);
+  const addressInfo = useRecoilValue(addressInfoState);
 
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
-  const addressInfo = useRecoilValue(addressInfoState);
 
-  // 地图中心点状态
-  const [mapCenter, setMapCenter] = useState({
-    lat: 10.762622, // 胡志明市中心
-    lng: 106.660172
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    telcode: "66", // Default to Thailand
+    province: "",
+    city: "", // Used as District (Amphoe)
+    region: "", // Used as Sub-district (Tambon)
+    sub_district: "", // Specific field for Thai address
+    postal_code: "",
+    detail: "",
+    identitycard: "",
+    clearancecode: "",
+    latitude: 0,
+    longitude: 0,
+    country_id: 2, // Thailand ID in target backend
   });
 
-  // 地址选择器状态
-  const [addressPicker, setaddressPicker] = useState(false);
-
-
-
-  // 新增：专用地址显示栏状态
-  const [confirmedAddress, setConfirmedAddress] = useState({
-    fullAddress: '',        // 完整地址字符串
-    province: '',          // 省份
-    district: '',          // 区县
-    ward: '',              // 坊社
-    street: '',            // 街道
-    houseNumber: '',       // 门牌号
-    coordinates: null,     // 坐标信息
-    isConfirmed: false     // 是否已确认
-  });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // 处理动态地址表单变化 - 越南文化特色优化
-  const handleDynamicAddressChange = (addressData) => {
-    console.log("=== 动态地址表单变化 ===");
-    console.log("接收到的地址数据:", addressData);
-
-    // 智能处理地址数据，避免重复
-    let fullDetailAddress = '';
-
-    if (addressData.detail && addressData.detail.trim().length > 0) {
-      // 如果已有完整地址，直接使用
-      fullDetailAddress = addressData.detail.trim();
-    } else {
-      // 否则使用越南地址格式化工具构建
-      const vietnameseAddressData = {
-        houseNumber: addressData.houseNumber || '',
-        street: addressData.street || '',
-        ward: addressData.ward || '',
-        district: addressData.district || '',
-        province: addressData.province || '',
-        country: 'Việt Nam'
-      };
-
-      fullDetailAddress = formatVietnameseAddress(vietnameseAddressData);
-    }
-
-    // 更新新的地址显示栏
-    const newConfirmedAddress = {
-      fullAddress: fullDetailAddress,
-      province: addressData.province || '',
-      district: addressData.district || '',
-      ward: addressData.ward || '',
-      street: addressData.street || '',
-      houseNumber: addressData.houseNumber || '',
-      coordinates: addressData.coordinates || null,
-      isConfirmed: true
-    };
-
-    setConfirmedAddress(newConfirmedAddress);
-
-    const updatedForm = {
-      ...form,
-      // 越南文化特色的地址处理 - 从确认地址栏获取数据
-      detail: fullDetailAddress,        // 主要的详细地址字段
-      userstree: fullDetailAddress,     // 街道字段也使用完整地址
-
-      // 保留原有的省市区字段（虽然后台已关闭，但保持兼容性）
-      userProvince: addressData.province || '',
-      userchengshi: addressData.district || '',
-      userregion: addressData.ward || '',
-      userdoor: addressData.houseNumber || '',
-
-      // 坐标信息
-      latitude: addressData.coordinates?.lat || '',
-      longitude: addressData.coordinates?.lng || '',
-
-      // 构建用于显示的地区字符串
-      region: [
-        addressData.province,
-        addressData.district,
-        addressData.ward
-      ].filter(Boolean).join(', ')
-    };
-
-    console.log("=== 地址数据处理结果 ===");
-    console.log("原始地址数据:", addressData.detail);
-    console.log("格式化地址:", fullDetailAddress);
-    console.log("新的确认地址栏数据:", newConfirmedAddress);
-    console.log("更新后的表单数据:", updatedForm);
-    console.log("========================");
-
-    if (addressData.coordinates) {
-      setMapCenter({
-        lat: addressData.coordinates.lat,
-        lng: addressData.coordinates.lng
-      });
-    }
-
-    setForm(updatedForm);
-    saveAddressFormState(updatedForm);
-
-    console.log("=== 动态地址表单变化完成 ===");
-  };
-
-
-
-  const initCreate = () => {
+  useEffect(() => {
     if (addressInfo && addressInfo.address_id) {
-      console.log("=== 越南地址数据回填 ===");
-      console.log("原始地址信息:", addressInfo);
-
-      // 使用越南地址格式化工具构建人性化的地址
-      const vietnameseAddressData = {
-        houseNumber: addressInfo.door || '',
-        street: addressInfo.street || '',
-        ward: addressInfo.region || '',
-        district: addressInfo.city || '',
-        province: addressInfo.province || '',
-        country: addressInfo.country || 'Việt Nam'
-      };
-
-      // 按越南人习惯格式化地址：门牌号 + 街道 + 坊 + 区 + 省
-      const formattedAddress = formatVietnameseAddress(vietnameseAddressData);
-
-      // 如果格式化后的地址为空，使用原始detail字段
-      const finalAddress = formattedAddress || addressInfo.detail || '';
-
-      const editForm = {
-        ...form,
-        // 基本信息
-        name: addressInfo.name || '',
-        userphones: addressInfo.phone || '',
-        identitycard: addressInfo.identitycard || '',
-        clearancecode: addressInfo.clearancecode || '',
-        telcode: addressInfo.tel_code || '84',
-
-        // 越南文化特色的地址回填
-        // 使用格式化后的完整地址，符合越南人的阅读习惯
-        detail: finalAddress,
-        userstree: finalAddress, // 街道字段也使用完整地址
-
-        // 清空省市区字段，因为后台已关闭行政区域选择
-        userProvince: '',
-        userchengshi: '',
-        userregion: '',
-
-        // 其他信息
-        userdoor: addressInfo.door || '',
-        usercode: addressInfo.code || '',
-        useremils: addressInfo.email || '',
-
-        // 坐标信息
-        latitude: addressInfo.latitude || '',
-        longitude: addressInfo.longitude || '',
-
-        // 国家信息
-        country_id: addressInfo.country_id || 1
-      };
-
-      // 同时更新新的地址显示栏
-      const backfillConfirmedAddress = {
-        fullAddress: finalAddress,
-        province: addressInfo.province || '',
-        district: addressInfo.city || '',
-        ward: addressInfo.region || '',
-        street: addressInfo.street || '',
-        houseNumber: addressInfo.door || '',
-        coordinates: addressInfo.latitude && addressInfo.longitude ? {
-          lat: parseFloat(addressInfo.latitude),
-          lng: parseFloat(addressInfo.longitude)
-        } : null,
-        isConfirmed: true
-      };
-
-      setConfirmedAddress(backfillConfirmedAddress);
-
-      console.log("越南格式化地址数据:", vietnameseAddressData);
-      console.log("格式化后的地址:", formattedAddress);
-      console.log("最终回填地址:", finalAddress);
-      console.log("回填的确认地址栏数据:", backfillConfirmedAddress);
-      console.log("回填后的表单数据:", editForm);
-
-      setForm(editForm);
-      saveAddressFormState(editForm);
-
-      // 如果有坐标信息，设置地图中心
-      if (addressInfo.latitude && addressInfo.longitude) {
-        setMapCenter({
-          lat: parseFloat(addressInfo.latitude),
-          lng: parseFloat(addressInfo.longitude)
-        });
+      // Parsing legacy region string if needed
+      // Assuming database stores: "Country,Province,District,SubDistrict"
+      let parts = [];
+      if (addressInfo.region && addressInfo.region.includes(",")) {
+        parts = addressInfo.region.split(",");
       }
 
-      console.log("=== 越南地址数据回填完成 ===");
-    }
-  };
+      setForm({
+        ...form,
+        ...addressInfo,
+        name: addressInfo.name || "",
+        phone: addressInfo.phone || "",
+        identitycard: addressInfo.identitycard || "",
+        clearancecode: addressInfo.clearancecode || "",
 
-  // Xử lý nhập liệu
-  const handleInput = (e) => {
-    const field = e.target.dataset.field;
-    const updatedForm = {
-      ...form,
-      [field]: e.target.value
-    };
-    setForm(updatedForm);
-    saveAddressFormState({ ...updatedForm, ...formData });
-  };
+        // Prefer explicit fields if available, else parse from region string
+        province: addressInfo.province || (parts[1] || ""),
+        city: addressInfo.city || (parts[2] || ""),
+        region: addressInfo.region_raw || (parts[3] || ""), // Using region field for SubDistrict in backend usually
+        sub_district: addressInfo.sub_district || (parts[3] || ""),
 
-
-
-  // Kiểm tra form
-  const checkForm = () => {
-    let bool = true;
-    console.log(form, "form");
-    requireFormFields.map((res) => {
-      if (form[res] == "" || form[res] == undefined) bool = false;
-    });
-    return bool;
-  };
-
-  // Gửi dữ liệu
-  const handleSubmit = async () => {
-    if (!checkForm()) {
-      console.log("error");
-      showToast({
-        message: "Vui lòng điền đầy đủ các trường bắt buộc",
+        postal_code: addressInfo.postal_code || "",
+        detail: addressInfo.detail || "",
+        latitude: addressInfo.latitude || 0,
+        longitude: addressInfo.longitude || 0,
       });
+    }
+  }, [addressInfo]);
+
+  const handleInput = (field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddressSelect = (data) => {
+    setForm(prev => ({
+      ...prev,
+      detail: data.detail, // House No / Street
+      province: data.province,
+      city: data.city, // Amphoe
+      sub_district: data.sub_district, // Tambon
+      // Update both region fields to be safe (backend dependent)
+      region: data.sub_district,
+      postal_code: data.postal_code,
+      latitude: data.coordinates?.lat || 0,
+      longitude: data.coordinates?.lng || 0
+    }));
+  };
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.phone || !form.province) {
+      alert(t("address.error.required", "Please fill in required fields"));
       return;
     }
-    
+
     setLoading(true);
-    setLoadingText("Đang lưu địa chỉ...");
-    
+    setLoadingText(t("common.saving", "Saving..."));
+
     try {
-      // 准备地址数据，确保格式符合后端 API 期望
-      // 后端通过 explode(',', $data['region']) 解析地区信息
-      // region[0] = country, region[1] = province, region[2] = city, region[3] = region
+      // Thailand Structure: Country, Province, District, Sub-district
+      // Storing this composite string in 'region' column as per legacy system likely expectations
+      // Or just sending individual fields if backend supports it. 
+      // Based on previous code, we construct 'region' string.
+      const regionStr = `Thailand,${form.province},${form.city},${form.sub_district || form.region}`;
 
-      // 越南文化特色的地址处理 - 优先使用确认地址栏的数据
-      // 如果有确认地址，使用确认地址栏的数据；否则使用表单数据
-      let fullDetailAddress = confirmedAddress.isConfirmed
-        ? confirmedAddress.fullAddress
-        : (form.detail || form.userstree || form.region || '');
-
-      // 清理地址数据，移除可能的重复
-      if (fullDetailAddress) {
-        // 使用越南地址格式化工具重新格式化，确保去重
-        const addressParts = fullDetailAddress.split(',').map(part => part.trim());
-        const uniqueParts = [];
-
-        for (const part of addressParts) {
-          const isDuplicate = uniqueParts.some(existing => {
-            // 完全相同
-            if (existing === part) return true;
-
-            // 去除前缀后相同
-            const cleanExisting = existing.replace(/^(Tỉnh|Thành phố|Quận|Huyện|Phường|Xã|Thị trấn|Đường|Phố)\s+/, '');
-            const cleanCurrent = part.replace(/^(Tỉnh|Thành phố|Quận|Huyện|Phường|Xã|Thị trấn|Đường|Phố)\s+/, '');
-
-            return cleanExisting === cleanCurrent;
-          });
-
-          if (!isDuplicate && part.length > 0) {
-            uniqueParts.push(part);
-          }
-        }
-
-        fullDetailAddress = uniqueParts.join(', ');
-      }
-
-      // 构建简化的地区字符串 - 只包含越南国家信息
-      const regionString = 'Việt Nam,,,'; // 国家,省,市,区 - 省市区留空
-
-      const addressData = {
-        // 基本信息
-        name: form.name || '',
-        phone: form.userphones || '',
-        identitycard: form.identitycard || '',
-        clearancecode: form.clearancecode || '',
-
-        // 电话区号 - 后端字段名是 telcode，不是 tel_code
-        telcode: '84', // 越南国际区号
-
-        // 国家信息 - 统一设置为越南
-        country_id: 1, // 越南 ID
-
-        // 地区信息 - 后端通过 region 字段解析
-        region: regionString,
-
-        // 详细地址信息 - 简化处理
-        userstree: fullDetailAddress,     // 街道字段也使用完整地址
-        door: form.userdoor || '',        // 门牌号
-        code: form.usercode || '',        // 邮编
-        email: form.useremils || '',      // 邮箱
-
-        // 详细地址 - 包含完整的地址信息
-        detail: fullDetailAddress || '详细地址信息',
-
-        // 坐标信息
-        latitude: form.latitude || '',
-        longitude: form.longitude || ''
+      const payload = {
+        ...form,
+        region: regionStr,
+        // Ensure distinct fields are also sent if backend supports them (generic update)
+        province: form.province,
+        city: form.city,
+        sub_district: form.sub_district || form.region,
+        userstree: form.detail,
       };
 
-      console.log("=== 地址数据构建详情 ===");
-      console.log("完整详细地址:", fullDetailAddress);
-      console.log("简化的 region 字符串:", regionString);
-      console.log("提交地址数据 (符合后端格式):", addressData);
-      console.log("========================");
-      
-      const response = await request.post("address/add&wxapp_id=10001", addressData);
-      
-      if (response.code === 1) {
-        showToast({
-          message: "Thêm địa chỉ thành công",
-        });
-        saveAddressFormState("");
-        // 返回上一页
-        setTimeout(() => {
-          navigate(-1);
-        }, 1500);
+      const res = await request.post("address/add&wxapp_id=10001", payload);
+      if (res.code === 1) {
+        alert(t("address.success.save", "Address saved successfully"));
+        navigate(-1);
       } else {
-        throw new Error(response.msg || "Thêm địa chỉ thất bại");
+        alert(res.msg || t("address.error.save", "Failed to save address"));
       }
-    } catch (error) {
-      console.error("保存地址失败:", error);
-      showToast({
-        message: error.message || "Lỗi khi lưu địa chỉ",
-      });
+    } catch (err) {
+      console.error("Save address error:", err);
+      alert(t("common.error_network", "Network error"));
     } finally {
       setLoading(false);
-      setLoadingText("");
     }
   };
-  // 使用Goong API获取地址信息
-  const getAddressFromPoi = async (data) => {
-    try {
-      setLoading(true);
-      setLoadingText("Đang lấy thông tin địa chỉ...");
-      
-      const response = await AddressApi.reverseGeocode(data.latitude, data.longitude);
-      
-      if (response.code === 1 && response.data.address) {
-        const address = response.data.address;
-        const vietnameseAddress = address.vietnamese_address || {};
-        
-        // 越南文化特色的反向地理编码处理
-        // 构建符合越南人习惯的地址格式
-        const vietnameseAddressData = {
-          houseNumber: vietnameseAddress.house_number || '',
-          street: vietnameseAddress.street || '',
-          ward: vietnameseAddress.ward || '',           // 坊/社 (Phường/Xã)
-          district: vietnameseAddress.district || '',   // 区/县 (Quận/Huyện)
-          province: vietnameseAddress.province || '',   // 省/市 (Tỉnh/Thành phố)
-          country: 'Việt Nam'
-        };
-
-        // 使用越南地址格式化工具，按越南人习惯排序
-        const formattedAddress = formatVietnameseAddress(vietnameseAddressData);
-
-        // 简化的地区字符串 - 只包含越南
-        const regionString = 'Việt Nam,,,'; // 国家,省,市,区 - 省市区留空
-
-        const updatedForm = {
-          ...form,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          // 强制设置国家信息为越南
-          country_id: 1,
-          telcode: '84',
-
-          // 越南文化特色的地址信息处理
-          detail: formattedAddress,         // 使用格式化后的越南地址
-          userstree: formattedAddress,      // 街道字段也使用格式化地址
-          userdoor: vietnameseAddress.house_number || '',
-
-          // 清空省市区字段，因为使用完整地址格式
-          userProvince: '',
-          userchengshi: '',
-          userregion: '',
-
-          // 后端期望的 region 格式
-          region: regionString
-        };
-
-        console.log("=== 越南文化特色反向地理编码 ===");
-        console.log("原始地理编码数据:", vietnameseAddress);
-        console.log("越南地址数据结构:", vietnameseAddressData);
-        console.log("格式化后的越南地址:", formattedAddress);
-        console.log("简化的 region 字符串:", regionString);
-        console.log("更新后的表单数据:", updatedForm);
-        console.log("=====================================");
-        
-        setForm(updatedForm);
-        saveAddressFormState(updatedForm);
-      }
-    } catch (error) {
-      console.error("获取地址信息失败:", error);
-      showToast({
-        message: "Không thể lấy thông tin địa chỉ"
-      });
-    } finally {
-      setLoading(false);
-      setLoadingText("");
-    }
-  };
-  const initLocation = async () => {
-    const { token } = await getLocation();
-    console.log(token, "token");
-    getAccessToken({
-      success: (accesstoken) => {
-        let data = {};
-        data["code"] = token;
-        data["accesstoken"] = accesstoken;
-        request
-          .post("address/parseLocationByToken&wxapp_id=10001", data)
-          .then((res) => {
-            console.log(res, "res111111");
-            if (res.code == 1) {
-              const data = res.data.location.data;
-              // 调用逆向地址转换
-              getAddressFromPoi(data);
-            }
-          });
-      },
-    });
-  };
-  useEffect(() => {
-    initCreate();
-    initLocation();
-    if (country) {
-      form["country_id"] = country["id"];
-      formData["country"] = country["title"];
-      setForm(form);
-      setFormData(formData);
-      setCountryData("");
-      saveAddressFormState({ ...form, ...formData });
-    }
-    util.setBarPageView("Tạo địa chỉ");
-
-    return () => {};
-  }, []);
 
   return (
-    <Page className="page address-create">
-      {/* Header với nút quay lại và toggle */}
-      <div className="address-header">
-        <div className="header-left">
-          <button className="back-btn" onClick={() => navigate(-1)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <h1 className="header-title">Tạo đơn</h1>
-        </div>
-        <div className="header-right">
-          <span className="toggle-label">Thu gọn</span>
-          <div className="toggle-switch">
-            <input type="checkbox" id="toggle" />
-            <label htmlFor="toggle"></label>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col pb-10">
+      {/* Header */}
+      <div className="bg-white px-4 py-4 flex items-center shadow-sm sticky top-0 z-20">
+        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-600">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 className="text-xl font-bold ml-2 text-gray-800">
+          {form.address_id ? t("address.edit_title", "Edit Address") : t("address.create_title", "Add Address")}
+        </h1>
       </div>
 
-      {/* Progress bar */}
-      <div className="progress-bar">
-        <div className="progress-fill"></div>
+      <div className="p-4 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+        {/* Contact Info */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">{t("address.section.contact", "Contact Info")}</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1 ml-1">{t("address.label.name", "Recipient Name")}</label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => handleInput("name", e.target.value)}
+                className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder={t("address.placeholder.name", "John Doe")}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1 ml-1">{t("address.label.phone", "Phone Number")}</label>
+              <div className="flex gap-2">
+                <div className="bg-gray-100 px-4 py-3 rounded-2xl text-gray-600 font-bold">+66</div>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => handleInput("phone", e.target.value)}
+                  className="flex-1 bg-gray-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all"
+                  placeholder="081 234 5678"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Location Info */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">{t("address.section.location", "Location Details")}</h2>
+          <div className="space-y-4">
+
+            {/* Autocomplete Search */}
+            <div className="mb-4">
+              <label className="block text-xs font-semibold text-blue-600 mb-1 ml-1">Search Address (Auto-fill)</label>
+              <AddressAutocomplete
+                onAddressSelect={handleAddressSelect}
+                placeholder="Type to search Google Maps..."
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1 ml-1">{t("address.label.province", "Province")}</label>
+                <input
+                  type="text"
+                  value={form.province}
+                  onChange={(e) => handleInput("province", e.target.value)}
+                  className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all"
+                  placeholder="Bangkok"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1 ml-1">{t("address.label.city", "District (Amphoe)")}</label>
+                <input
+                  type="text"
+                  value={form.city}
+                  onChange={(e) => handleInput("city", e.target.value)}
+                  className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all"
+                  placeholder="Bang Kapi"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1 ml-1">{t("address.label.sub_district", "Sub-district (Tambon)")}</label>
+                <input
+                  type="text"
+                  value={form.sub_district}
+                  onChange={(e) => handleInput("sub_district", e.target.value)} // Update both for consistency logic
+                  onBlur={(e) => handleInput("region", e.target.value)}
+                  className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all"
+                  placeholder="Hua Mak"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1 ml-1">{t("address.label.postal_code", "Postal Code")}</label>
+                <input
+                  type="text"
+                  value={form.postal_code}
+                  onChange={(e) => handleInput("postal_code", e.target.value)}
+                  className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all"
+                  placeholder="10240"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1 ml-1">{t("address.label.detail", "House No., Street, Building")}</label>
+              <textarea
+                rows="3"
+                value={form.detail}
+                onChange={(e) => handleInput("detail", e.target.value)}
+                className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="123/45 Moo 6..."
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Customs Info */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">{t("address.section.customs", "Customs Information")}</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1 ml-1">{t("address.label.identitycard", "ID Card Number")}</label>
+              <input
+                type="text"
+                value={form.identitycard}
+                onChange={(e) => handleInput("identitycard", e.target.value)}
+                className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all font-mono"
+                placeholder="13-digit ID"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1 ml-1">{t("address.label.clearancecode", "Customs Clearance Code")}</label>
+              <input
+                type="text"
+                value={form.clearancecode}
+                onChange={(e) => handleInput("clearancecode", e.target.value)}
+                className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all font-mono"
+                placeholder="TXXXXXXX"
+              />
+            </div>
+          </div>
+        </div>
+
+        <Button
+          onClick={handleSubmit}
+          className="w-full h-14 text-lg rounded-2xl shadow-lg hover:shadow-xl mt-4"
+          disabled={loading}
+        >
+          {loading ? t("common.processing", "Processing...") : t("address.submit", "Save Address")}
+        </Button>
       </div>
 
-      <div className="address-form-container">
-        {/* Người nhận section */}
-        <div className="form-section">
-          <div className="section-header">
-            <div className="section-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#e53e3e">
-                <circle cx="12" cy="12" r="10" fill="currentColor"/>
-                <path d="M12 6v6l4 2" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <h2 className="section-title">Người nhận</h2>
-            <div className="qr-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="3" width="8" height="8" stroke="currentColor" strokeWidth="2"/>
-                <rect x="13" y="3" width="8" height="8" stroke="currentColor" strokeWidth="2"/>
-                <rect x="3" y="13" width="8" height="8" stroke="currentColor" strokeWidth="2"/>
-                <rect x="13" y="13" width="8" height="8" stroke="currentColor" strokeWidth="2"/>
-              </svg>
-              <span>Quét QR</span>
-            </div>
-          </div>
-
-          {/* Số điện thoại */}
-          <div className="form-field">
-            <div className="field-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
-                <line x1="12" y1="18" x2="12.01" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <Input
-              type="tel"
-              data-field="userphones"
-              onInput={(e) => handleInput(e)}
-              defaultValue={form.userphones || addressForm["userphones"] || ''}
-              value={form.userphones || ''}
-              className="field-input"
-              placeholder="Số điện thoại*"
-            />
-            <div className="field-action">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
-                <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2"/>
-                <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2"/>
-                <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2"/>
-              </svg>
-            </div>
-          </div>
-
-          {/* Họ và tên */}
-          <div className="form-field">
-            <div className="field-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2"/>
-                <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
-              </svg>
-            </div>
-            <Input
-              type="text"
-              data-field="name"
-              onInput={(e) => handleInput(e)}
-              defaultValue={form.name || addressForm["name"] || ''}
-              value={form.name || ''}
-              className="field-input"
-              placeholder="Họ và tên*"
-            />
-          </div>
-
-          {/* Sử dụng địa danh mới toggle */}
-          <div className="form-field toggle-field">
-            <div className="toggle-container">
-              <div className="toggle-switch-red">
-                <input type="checkbox" id="useNewAddress" defaultChecked />
-                <label htmlFor="useNewAddress"></label>
-              </div>
-              <span className="toggle-text">Sử dụng địa danh mới</span>
-            </div>
-          </div>
-
-          {/* 确认地址栏 - 替换原来的 Địa chỉ chi tiết */}
-          {confirmedAddress.isConfirmed ? (
-            <div className="confirmed-address-section-inline">
-              <div className="confirmed-address-header-inline">
-                <div className="address-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#4CAF50" strokeWidth="2" fill="none"/>
-                    <circle cx="12" cy="10" r="3" stroke="#4CAF50" strokeWidth="2" fill="none"/>
-                  </svg>
-                </div>
-                <span className="confirmed-label-inline">Địa chỉ đã xác nhận</span>
-                <button
-                  className="edit-address-btn-inline"
-                  onClick={() => setConfirmedAddress(prev => ({ ...prev, isConfirmed: false }))}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" fill="none"/>
-                    <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  </svg>
-                </button>
-              </div>
-
-              <div className="confirmed-address-content-inline">
-                <div className="full-address-inline">
-                  <span className="address-text-inline">{confirmedAddress.fullAddress}</span>
-                </div>
-
-                {/* 只在有坐标信息时显示额外信息 */}
-                {confirmedAddress.coordinates && (
-                  <div className="address-coordinates-inline">
-                    <span className="coordinates-label-inline">📍</span>
-                    <span className="coordinates-value-inline">
-                      {confirmedAddress.coordinates.lat.toFixed(4)}, {confirmedAddress.coordinates.lng.toFixed(4)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="form-field" onClick={() => setaddressPicker(true)}>
-              <div className="field-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="2"/>
-                  <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-              </div>
-              <div className="field-input address-field">
-                <span className="address-placeholder">Địa chỉ chi tiết*</span>
-              </div>
-              <div className="field-action">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
-                  <polyline points="9,11 12,14 15,10" stroke="currentColor" strokeWidth="2" fill="none"/>
-                </svg>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Dynamic Address Form - Powered by Goong API */}
-        <div className="dynamic-address-section">
-          <DynamicAddressForm
-            onAddressChange={handleDynamicAddressChange}
-            initialAddress={{
-              detail: confirmedAddress.isConfirmed ? confirmedAddress.fullAddress : '',
-              province: confirmedAddress.province || form.userProvince || '',
-              district: confirmedAddress.district || form.userchengshi || '',
-              ward: confirmedAddress.ward || form.userregion || '',
-              street: confirmedAddress.street || form.userstree || '',
-              coordinates: confirmedAddress.coordinates || (form.latitude && form.longitude ? {
-                lat: parseFloat(form.latitude),
-                lng: parseFloat(form.longitude)
-              } : null)
-            }}
-          />
-        </div>
-
-
-        {/* Thời gian hẹn giao */}
-        <div className="delivery-time-section">
-          <div className="delivery-time">
-            <span className="delivery-label">Thời gian hẹn giao</span>
-            <div className="delivery-value">
-              <span>Cả ngày</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <polyline points="9,18 15,12 9,6" stroke="currentColor" strokeWidth="2"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* Submit button */}
-        <div className="submit-section">
-          <Button
-            className="submit-btn"
-            onClick={(e) => handleSubmit(e)}
-            disabled={loading}
-          >
-            {loading ? loadingText : "Tiếp tục"}
-          </Button>
-        </div>
-      </div>
-
-      {/* Loading component */}
       <Loading is={loading} text={loadingText} />
-
-
-    </Page>
+    </div>
   );
 };
 
-export default AddressPage;
+export default AddressCreatePage;

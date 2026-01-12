@@ -113,18 +113,18 @@ export const parseFormattedAddress = (formattedAddress) => {
   parts.forEach((part, index) => {
     // 检查是否是省/市
     if (part.includes('Thành phố') || part.includes('Tỉnh') ||
-        part === 'Hà Nội' || part === 'Đà Nẵng' || part === 'Cần Thơ' ||
-        part.includes('Thành phố Hồ Chí Minh') || part.includes('Hồ Chí Minh')) {
+      part === 'Hà Nội' || part === 'Đà Nẵng' || part === 'Cần Thơ' ||
+      part.includes('Thành phố Hồ Chí Minh') || part.includes('Hồ Chí Minh')) {
       province = part;
     }
     // 检查是否是区/县
     else if (part.includes('Quận') || part.includes('Huyện') ||
-             part.includes('Thành phố') || part.includes('Thị xã')) {
+      part.includes('Thành phố') || part.includes('Thị xã')) {
       district = part;
     }
     // 检查是否是街道/乡
     else if (part.includes('Phường') || part.includes('Xã') ||
-             part.includes('Thị trấn')) {
+      part.includes('Thị trấn')) {
       ward = part;
     }
     // 其他可能是街道地址
@@ -206,15 +206,52 @@ export const parseAddressData = (addressData) => {
 };
 
 /**
- * 反向地理编码解析
+ * Thailand 反向地理编码解析 (通过后端接口调用 Google Maps)
  * @param {number} lat - 纬度
  * @param {number} lng - 经度
- * @returns {Promise<Object>} 解析后的地址信息
+ * @returns {Promise<Object>} 解析后的泰国地址信息
+ */
+export const reverseGeocodeThai = async (lat, lng) => {
+  const request = (await import('./request')).default;
+  try {
+    // 注意：ThinkPHP 路由使用小写加下划线格式
+    const res = await request.post("line_app/parse_address&wxapp_id=10001", { lat, lng });
+    if (res.code === 1 && res.data) {
+      const data = res.data;
+      return {
+        province: data.province || '',
+        city: data.city || '', // District (Amphoe)
+        region: data.district || '', // Sub-district (Tambon)
+        sub_district: data.district || '',
+        postal_code: data.postal_code || '',
+        detail: data.formatted_address || '',
+        coordinates: { lat, lng },
+        formatted_address: data.formatted_address || ''
+      };
+    }
+  } catch (error) {
+    console.error('Thailand reverse geocoding error:', error);
+  }
+
+  return {
+    province: '',
+    city: '',
+    region: '',
+    sub_district: '',
+    postal_code: '',
+    detail: '',
+    coordinates: { lat, lng },
+    formatted_address: ''
+  };
+};
+
+/**
+ * 反向地理编码解析 (兼容原有的越南 Geocoding)
  */
 export const reverseGeocode = async (lat, lng) => {
-  // 使用经过测试的正确API密钥
+  // 检查是否为泰国市场 (通常通过配置或环境变量，这里暂且保留原有逻辑)
+  // ... 原有越南 Goong 逻辑 ...
   const GOONG_API_KEY = '5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj';
-  const FALLBACK_API_KEY = '7nGVvNpejuF0maLfRDz5T1tWxubVwTzLpSlTBNHI';
   const GOONG_BASE_URL = 'https://rsapi.goong.io';
 
   try {

@@ -1,706 +1,458 @@
 import React, { useEffect, useState } from "react";
-import { Page, useNavigate, Tabs, Input, Picker, Button } from "zmp-ui";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import {
-  categoryState,
-  countryState,
-  reportFormGoodsItemState,
-  reportFormState,
-  reportFormTypeState,
-} from "../../state";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import request from "../../utils/request";
-import Loading from "../../components/Loading/Index";
-import Header from "../../components/Header/Header";
-import "./Index.scss";
-import { showToast } from "zmp-sdk";
 import util from "../../utils/util";
+import Loading from "../../components/Loading/Index";
+import Button from "../../components/Button/Index";
 
 const PackReportPage = () => {
-  const setCountryData = useSetRecoilState(countryState);
-  const setCategoryData = useSetRecoilState(categoryState);
-  const setFormReportData = useSetRecoilState(reportFormState);
-  const setFormReportType = useSetRecoilState(reportFormTypeState);
-  const setFormReportGoodsItemData = useSetRecoilState(
-    reportFormGoodsItemState,
-  );
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const country = useRecoilValue(countryState);
-  const category = useRecoilValue(categoryState);
-  const formReport = useRecoilValue(reportFormState);
-  const formReportType = useRecoilValue(reportFormTypeState);
-  const formReportGoodsItem = useRecoilValue(reportFormGoodsItemState);
+
+  const [activeTab, setActiveTab] = useState("normal"); // 'normal' or 'batch'
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
-  const [storage, setStorage] = useState([]); // Kho hàng
-  const [form, setForm] = useState({}); // Dữ liệu biểu mẫu
-  const [formData, setFormData] = useState([]); // Dữ liệu biểu mẫu
-  const [express, setExpress] = useState(""); // Dữ liệu biểu mẫu
-  let [formGoodsItem, setFormGoodsItem] = useState([{}]);
-  let [privacy, setPrivacy] = useState(false);
+  const [storages, setStorages] = useState([]);
 
-  // Danh sách kho hàng
-  const getStorageList = () => {
-    request.get("/package/storage&wxapp_id=10001").then((res) => {
-      let _storage = [];
-      for (let i in res.data) {
-        _storage.push({
-          value: res.data[i]["shop_id"],
-          displayName: res.data[i]["shop_name"],
-        });
-      }
-      setStorage(_storage);
-    });
-  };
+  // Form State
+  const [country, setCountry] = useState(null); // { id, title }
+  const [storageId, setStorageId] = useState("");
+  const [storageName, setStorageName] = useState("");
+  const [trackingNo, setTrackingNo] = useState("");
+  const [batchTracking, setBatchTracking] = useState("");
+  const [category, setCategory] = useState(null); // { id, name }
+  const [goodsValue, setGoodsValue] = useState("");
+  const [remark, setRemark] = useState("");
+  const [isPrivacyAgreed, setIsPrivacyAgreed] = useState(false);
 
-  // Xử lý chọn kho hàng
-  const handlePicker = (e) => {
-    if (e.option) {
-      form["storage_id"] = e.option["value"];
-      formData["storeName"] = e.option["displayName"];
-      setForm(form);
-      setFormData(formData);
-      setFormReportData({ ...form, ...formData });
-    }
-  };
+  // Goods List (for single report)
+  const [goodsList, setGoodsList] = useState([{ name: "", price: "", qty: "" }]);
 
-  // Chuyển đến trang chọn
-  const toTargetSelect = (e, path) => {
-    navigate(path);
-  };
-
-  // Xử lý sự kiện nhập liệu
-  const handleInput = (e) => {
-    const field = e.target.dataset.field;
-    form[field] = e.target.value;
-    setForm(form);
-    setFormReportData({ ...form, ...formData });
-  };
-
-  // Xử lý nhập liệu cho mục hàng hóa
-  const handleGoodsItemInput = (e, index) => {
-    let field = e.target.dataset.field;
-    let _item = {};
-    if (!util.isEmpty(formGoodsItem[index])) {
-      _item = { ...formGoodsItem[index] };
-    }
-    _item[field] = e.target.value;
-    formGoodsItem[index] = _item;
-    setFormGoodsItem(formGoodsItem);
-    setFormReportGoodsItemData([...formGoodsItem]);
-  };
-
-  // Nhập số vận đơn
-  const handleInputExpress = (e) => {
-    setExpress(e.target.value);
-  };
-
-  // Thêm số vận đơn
-  const handleAddExpress = (e) => {
-    if (express == "") return;
-    if (form["express_sn"]) {
-      form["express_sn"] = form["express_sn"] + "," + express;
-    } else {
-      form["express_sn"] = express;
-    }
-    setExpress("");
-    setFormReportData({ ...form, ...formData });
-  };
-
-  // Thêm mục hàng hóa
-  const addGoodsItem = (e) => {
-    formGoodsItem.push({});
-    setFormGoodsItem([...formGoodsItem]);
-  };
-
-  // Xóa mục hàng hóa
-  const deleteGoodsItem = (e, index) => {
-    formGoodsItem.splice(index, 1);
-    if (index == 0) return false;
-    setFormGoodsItem([...formGoodsItem]);
-    setFormReportData({ ...form, ...formData });
-    setFormReportGoodsItemData([...formGoodsItem]);
-  };
-
-  // Khởi tạo dữ liệu
-  const getInitData = () => {
-    if (formReport) {
-      formData["storeName"] = formReport["storeName"];
-      formData["country"] = formReport["country"];
-      formData["class"] = formReport["class"];
-      formData["express_sn"] = formReport["express_sn"];
-      form["storage_id"] = formReport["storage_id"];
-      form["country_id"] = formReport["country_id"];
-      form["express_sn"] = formReport["express_sn"];
-      setForm(form);
-      setFormData(formData);
-    }
-    if (formReportGoodsItem) {
-      setFormGoodsItem(formReportGoodsItem);
-    }
-    getStorageList();
-  };
-
-  const handleTabClick = (e) => {
-    setFormReportType(e);
-  };
-
-  // Đặt chấp nhận chính sách bảo mật
-  const setPrivacys = (e) => {
-    privacy = privacy == false ? true : false;
-    setPrivacy(privacy);
-  };
-
-  // Gửi dự báo
-  const formSubmit = () => {
-    if (privacy == false) {
-      showToast({
-        message: "Vui lòng đồng ý với chính sách bảo mật trước",
-      });
-      return;
-    }
-    if (!form["country_id"]) {
-      showToast({
-        message: "Vui lòng chọn quốc gia gửi hàng",
-      });
-      return;
-    }
-    if (!form["storage_id"]) {
-      showToast({
-        message: "Vui lòng chọn kho hàng",
-      });
-      return;
-    }
-    if (!form["express_sn"]) {
-      showToast({
-        message: "Vui lòng nhập số vận đơn",
-      });
-      return;
-    }
-    form["express_id"] = 10577;
-    form["goodslist"] = formGoodsItem;
-    setLoading(true);
-    setLoadingText("Vui lòng đợi");
-    let urls = {
-      normal: "package/report&wxapp_id=10001",
-      batch: "/package/reportBatch&wxapp_id=10001",
-    };
-    request.post(urls[formReportType], { ...form }).then((res) => {
-      setLoading(false);
-      setLoadingText("");
-      setFormReportType("normal");
-      if (res.code == 1) {
-        showToast({
-          message: "Dự báo thành công",
-        });
-        return;
-      } else {
-        showToast({
-          message: res.msg,
-        });
-        return;
-      }
-    });
-  };
-  
+  // Load Initial Data
   useEffect(() => {
-    util.setBarPageView("Dự báo gói hàng");
-    util.checkLogin().then((res) => {
-      if (!res) {
-        navigate("/mine");
-      }
+    util.setBarPageView("Package Report");
+    util.checkLogin().then(isLogged => {
+      if (!isLogged) navigate("/mine");
     });
-    getInitData();
-    if (country) {
-      form["country_id"] = country["id"];
-      formData["country"] = country["title"];
-      setForm(form);
-      setFormData(formData);
-      setCountryData("");
-      setFormReportData({ ...form, ...formData });
+    fetchStorages();
+
+    // Check if returning from selection pages
+    const savedForm = sessionStorage.getItem("reportForm");
+    if (savedForm) {
+      const parsed = JSON.parse(savedForm);
+      // Restore basic fields
+      if (parsed.trackingNo) setTrackingNo(parsed.trackingNo);
+      if (parsed.batchTracking) setBatchTracking(parsed.batchTracking);
+      if (parsed.goodsValue) setGoodsValue(parsed.goodsValue);
+      if (parsed.remark) setRemark(parsed.remark);
+      if (parsed.storageId) {
+        setStorageId(parsed.storageId);
+        setStorageName(parsed.storageName);
+      }
+      if (parsed.goodsList) setGoodsList(parsed.goodsList);
+      // Clear session unique usage
+      sessionStorage.removeItem("reportForm");
     }
-    if (category) {
-      let category_name = "";
-      let class_ids = [];
-      category.forEach((item, index) => {
-        category_name += item["name"] + ",";
-        class_ids.push(item["category_id"]);
-      });
-      formData["class"] = category_name;
-      form["class_ids"] = class_ids.join(",");
-      setForm(form);
-      setCategoryData("");
-      setFormReportData({ ...form, ...formData });
+
+    // Check for selected Country
+    const selectedCountry = sessionStorage.getItem("selectedCountry");
+    if (selectedCountry) {
+      setCountry(JSON.parse(selectedCountry));
+      sessionStorage.removeItem("selectedCountry");
+      saveFormState(); // Update form state with new country
     }
-    return () => {};
+
+    // Check for selected Category
+    const selectedCategory = sessionStorage.getItem("selectedCategory");
+    if (selectedCategory) {
+      setCategory(JSON.parse(selectedCategory));
+      sessionStorage.removeItem("selectedCategory");
+      saveFormState();
+    }
+
   }, []);
 
+  const saveFormState = () => {
+    const formState = {
+      trackingNo,
+      batchTracking,
+      goodsValue,
+      remark,
+      storageId,
+      storageName,
+      goodsList
+    };
+    sessionStorage.setItem("reportForm", JSON.stringify(formState));
+  };
+
+  const fetchStorages = async () => {
+    try {
+      const res = await request.get("/package/storage&wxapp_id=10001");
+      if (res.data) {
+        setStorages(res.data.map(s => ({ value: s.shop_id, label: s.shop_name })));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCountrySelect = () => {
+    saveFormState();
+    navigate("/common/select/country");
+  };
+
+  const handleCategorySelect = () => {
+    saveFormState();
+    navigate("/common/select/category");
+  };
+
+  const handleStorageChange = (e) => {
+    const selectedId = e.target.value;
+    setStorageId(selectedId);
+    const selected = storages.find(s => s.value == selectedId);
+    if (selected) setStorageName(selected.label);
+  };
+
+  // Goods List Handlers
+  const updatedGoodsItem = (idx, field, val) => {
+    const newList = [...goodsList];
+    newList[idx][field] = val;
+    setGoodsList(newList);
+  };
+
+  const addGoodsItem = () => {
+    setGoodsList([...goodsList, { name: "", price: "", qty: "" }]);
+  };
+
+  const removeGoodsItem = (idx) => {
+    if (goodsList.length === 1) return;
+    const newList = [...goodsList];
+    newList.splice(idx, 1);
+    setGoodsList(newList);
+  };
+
+  // Tracking Handlers
+  const addBatchTracking = () => {
+    if (!trackingNo) return;
+    const current = batchTracking ? batchTracking + "," : "";
+    setBatchTracking(current + trackingNo);
+    setTrackingNo("");
+  };
+
+  const handleSubmit = async () => {
+    if (!isPrivacyAgreed) {
+      alert(t("report.error.privacy"));
+      return;
+    }
+    if (!country) {
+      alert(t("report.error.country"));
+      return;
+    }
+    if (!storageId) {
+      alert(t("report.error.warehouse"));
+      return;
+    }
+
+    const payload = {
+      country_id: country.id,
+      storage_id: storageId,
+      express_id: 10577, // Default express ID?
+      price: goodsValue,
+      remark: remark,
+      class_ids: category ? category.category_id : "", // Use ID or Name?
+    };
+
+    if (activeTab === 'normal') {
+      if (!trackingNo) {
+        alert(t("report.error.tracking"));
+        return;
+      }
+      payload.express_sn = trackingNo;
+
+      // Map goods list
+      // Original code: form["goodslist"] = formGoodsItem
+      // We need to map our goodsList to the expected format
+      payload.goodslist = goodsList.map(g => ({
+        pinming: g.name,
+        danjia: g.price,
+        shuliang: g.qty
+      }));
+    } else {
+      // Batch
+      if (!batchTracking && !trackingNo) {
+        alert(t("report.error.tracking"));
+        return;
+      }
+      let finalTracking = batchTracking;
+      // If user typed in input but didn't add to textarea, include it
+      if (trackingNo) {
+        finalTracking = finalTracking ? finalTracking + "," + trackingNo : trackingNo;
+      }
+      payload.express_sn = finalTracking;
+    }
+
+    setLoading(true);
+    setLoadingText(t("common.processing"));
+
+    const endpoint = activeTab === 'normal'
+      ? "package/report&wxapp_id=10001"
+      : "/package/reportBatch&wxapp_id=10001";
+
+    try {
+      const res = await request.post(endpoint, payload);
+      if (res.code === 1) {
+        alert(t("report.success.submit"));
+        navigate(-1); // Go back or clear form
+      } else {
+        alert(res.msg || t("common.error"));
+      }
+    } catch (err) {
+      console.error(err);
+      alert(t("common.error_network"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Page className="page report">
-      <Header></Header>
-      <div className="report-pages">
-        <div className="pages-table">
-          <Tabs
-            id="contact-list"
-            defaultActiveKey={formReportType}
-            onTabClick={(e) => {
-              handleTabClick(e);
-            }}
-          >
-            <Tabs.Tab key="normal" label="Dự báo đơn vận chuyển">
-              <div className="form">
-                <div className="form-group flex">
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" />
-                    </div>
-                    Quốc gia gửi hàng
-                  </div>
-                  <div className="form-content">
-                    <div
-                      className="form-picker"
-                      onClick={(e) => {
-                        toTargetSelect(e, "/common/select/country");
-                      }}
-                    >
-                      <div className="form-picker-input">
-                        {formData["country"] ? (
-                          formData["country"]
-                        ) : (
-                          <span className="default-value">Chọn quốc gia gửi hàng</span>
-                        )}
-                      </div>
-                      <div className="form-icon"></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="form-group flex">
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img26.png" />
-                    </div>
-                    Kho tập kết
-                  </div>
-                  <div className="form-content">
-                    <div className="form-content">
-                      <div className="form-picker">
-                        <div className="picker-default-value">
-                          {formReport["storeName"]}
-                        </div>
-                        <Picker
-                          mask
-                          maskClosable
-                          inputClass="picker"
-                          placeholder={
-                            formReport["storeName"] ? "" : "Chọn kho hàng"
-                          }
-                          onChange={(e) => handlePicker(e)}
-                          action={{
-                            text: "Xác nhận",
-                            close: true,
-                          }}
-                          data={[
-                            {
-                              options: storage,
-                              name: "option",
-                            },
-                          ]}
-                        />
-                        <div className="form-icon"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="gap"></div>
-                <div className="form-group flex">
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img40.png" />
-                    </div>
-                    Số vận đơn
-                  </div>
-                  <div className="form-content">
-                    <div className="form-input">
-                      <Input
-                        type="text"
-                        data-field="express_sn"
-                        onInput={(e) => handleInput(e)}
-                        defaultValue={formReport["express_sn"]}
-                        className="form-input"
-                        placeholder="Nhập số vận đơn"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="form-group" style={{ height: "auto" }}>
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img41.png" />
-                    </div>
-                    Danh sách hàng hóa
-                  </div>
-                  <div className="form-content">
-                    <div className="good-sheet">
-                      <div className="good-sheet-header">
-                        <div className="good-sheet-header-th">Tên hàng</div>
-                        <div className="good-sheet-header-th">Đơn giá</div>
-                        <div className="good-sheet-header-th">Số lượng</div>
-                        <div className="good-sheet-header-th">Thao tác</div>
-                      </div>
-                      <div className="good-sheet-body">
-                        {formGoodsItem.map((item, index) => {
-                          return (
-                            <div className="good-sheet-item" key={index}>
-                              <div className="good-sheet-td">
-                                <Input
-                                  className="good-inp"
-                                  data-field="pinming"
-                                  defaultValue={
-                                    formReportGoodsItem[index]
-                                      ? formReportGoodsItem[index]["pinming"]
-                                      : ""
-                                  }
-                                  onInput={(e) =>
-                                    handleGoodsItemInput(e, index)
-                                  }
-                                />
-                              </div>
-                              <div className="good-sheet-td">
-                                <Input
-                                  className="good-inp"
-                                  data-field="danjia"
-                                  defaultValue={
-                                    formReportGoodsItem[index]
-                                      ? formReportGoodsItem[index]["danjia"]
-                                      : ""
-                                  }
-                                  onInput={(e) =>
-                                    handleGoodsItemInput(e, index)
-                                  }
-                                />
-                              </div>
-                              <div className="good-sheet-td">
-                                <Input
-                                  className="good-inp"
-                                  data-field="shuliang"
-                                  defaultValue={
-                                    formReportGoodsItem[index]
-                                      ? formReportGoodsItem[index]["shuliang"]
-                                      : ""
-                                  }
-                                  onInput={(e) =>
-                                    handleGoodsItemInput(e, index)
-                                  }
-                                />
-                              </div>
-                              <div className="good-sheet-td">
-                                <div className="op">
-                                  <div
-                                    className="op-btn"
-                                    onClick={(e) => {
-                                      deleteGoodsItem(e, index);
-                                    }}
-                                  >
-                                    -
-                                  </div>
-                                  <div
-                                    className="op-btn"
-                                    onClick={(e) => {
-                                      addGoodsItem();
-                                    }}
-                                  >
-                                    +
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="form-group flex">
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" />
-                    </div>
-                    Loại hàng hóa
-                  </div>
-                  <div className="form-content">
-                    <div className="form-picker">
-                      <div
-                        className="form-picker-input"
-                        onClick={(e) => {
-                          toTargetSelect(e, "/common/select/category");
-                        }}
-                      >
-                        {formData["class"] ? (
-                          formData["class"]
-                        ) : (
-                          <span className="default-value">Chọn loại hàng hóa</span>
-                        )}
-                      </div>
-                      <div className="form-icon"></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="form-group flex">
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" />
-                    </div>
-                    Giá trị hàng hóa(￥)
-                  </div>
-                  <div className="form-content">
-                    <Input
-                      type="text"
-                      data-field="price"
-                      onInput={(e) => handleInput(e)}
-                      defaultValue={formReport["price"]}
-                      className="form-input"
-                      placeholder="Nhập giá trị hàng hóa"
-                    />
-                  </div>
-                </div>
-                <div className="form-group" style={{ height: 150 + "px" }}>
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img41.png" />
-                    </div>
-                    Ghi chú hàng hóa
-                  </div>
-                  <div className="form-content">
-                    <Input.TextArea
-                      className="form-textarea"
-                      data-field="remark"
-                      onInput={(e) => handleInput(e)}
-                      defaultValue={formReport["remark"]}
-                    />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <div className="protocol">
-                    <div
-                      className="check-status"
-                      onClick={(e) => {
-                        setPrivacys();
-                      }}
-                    >
-                      <img
-                        src={
-                          privacy
-                            ? "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img31.png"
-                            : "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img32.png"
-                        }
-                      />
-                    </div>
-                    Đã xem và đồng ý (Chính sách bảo mật người dùng)
-                  </div>
-                </div>
-              </div>
-            </Tabs.Tab>
-            <Tabs.Tab key="batch" label="Dự báo nhiều vận đơn">
-              <div className="form">
-                <div className="form-group flex">
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" />
-                    </div>
-                    Quốc gia gửi hàng
-                  </div>
-                  <div className="form-content">
-                    <div
-                      className="form-picker"
-                      onClick={(e) => {
-                        toTargetSelect(e, "/common/select/country");
-                      }}
-                    >
-                      <div className="form-picker-input">
-                        {formData["country"] ? (
-                          formData["country"]
-                        ) : (
-                          <span className="default-value">Chọn quốc gia gửi hàng</span>
-                        )}
-                      </div>
-                      <div className="form-icon"></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="form-group flex">
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img26.png" />
-                    </div>
-                    Kho tập kết
-                  </div>
-                  <div className="form-content">
-                    <div className="form-content">
-                      <div className="form-picker">
-                        <div className="picker-default-value">
-                          {formReport["storeName"]}
-                        </div>
-                        <Picker
-                          mask
-                          maskClosable
-                          inputClass="picker"
-                          placeholder={
-                            formReport["storeName"] ? "" : "Chọn kho hàng"
-                          }
-                          onChange={(e) => handlePicker(e)}
-                          action={{
-                            text: "Xác nhận",
-                            close: true,
-                          }}
-                          data={[
-                            {
-                              options: storage,
-                              name: "option",
-                            },
-                          ]}
-                        />
-                        <div className="form-icon"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="gap"></div>
-                <div className="form-group flex">
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img40.png" />
-                    </div>
-                    Số vận đơn
-                  </div>
-                  <div className="form-content">
-                    <div className="form-input">
-                      <input
-                        className="form-input mulit-input"
-                        value={express}
-                        onInput={(e) => {
-                          handleInputExpress(e);
-                        }}
-                        placeholder="Nhập số vận đơn"
-                      />
-                      <div
-                        className="form-add1"
-                        onClick={(e) => {
-                          handleAddExpress(e);
-                        }}
-                      >
-                        +
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="form-group" style={{ height: 250 + "px" }}>
-                  <div className="form-label" style={{ width: 100 + "%" }}>
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img40.png" />
-                    </div>
-                    Nhiều số vận đơn (phân cách bằng dấu phẩy)
-                  </div>
-                  <div className="form-content form-mulit-express">
-                    <textarea
-                      className="form-textarea mulit-express"
-                      data-field="express_sn"
-                      value={form["express_sn"]}
-                      onInput={(e) => handleInput(e)}
-                    />
-                    <div className="tips">
-                      Lưu ý: Giữa hai số vận đơn phải dùng dấu phẩy phân cách, nếu không biết cách làm, vui lòng sử dụng [Số vận đơn] ở trên, nhập một số rồi nhấn dấu +
-                    </div>
-                  </div>
-                </div>
-                <div className="form-group flex">
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" />
-                    </div>
-                    Loại hàng hóa
-                  </div>
-                  <div className="form-content">
-                    <div className="form-picker">
-                      <div
-                        className="form-picker-input"
-                        onClick={(e) => {
-                          toTargetSelect(e, "/common/select/category");
-                        }}
-                      >
-                        {formData["class"] ? (
-                          formData["class"]
-                        ) : (
-                          <span className="default-value">Chọn loại hàng hóa</span>
-                        )}
-                      </div>
-                      <div className="form-icon"></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="form-group flex">
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" />
-                    </div>
-                    Giá trị hàng hóa(￥)
-                  </div>
-                  <div className="form-content">
-                    <Input
-                      type="text"
-                      className="form-input"
-                      data-field="price"
-                      onInput={(e) => handleInput(e)}
-                      defaultValue={formReport["price"]}
-                      placeholder="Nhập giá trị hàng hóa"
-                    />
-                  </div>
-                </div>
-                <div className="form-group" style={{ height: 150 + "px" }}>
-                  <div className="form-label">
-                    <div className="form-label-icon">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img41.png" />
-                    </div>
-                    Ghi chú hàng hóa
-                  </div>
-                  <div className="form-content">
-                    <Input.TextArea
-                      data-field="remark"
-                      onInput={(e) => handleInput(e)}
-                      defaultValue={formReport["remark"]}
-                      className="form-textarea"
-                    />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <div className="protocol">
-                    <div
-                      className="check-status"
-                      onClick={(e) => {
-                        setPrivacys();
-                      }}
-                    >
-                      <img
-                        src={
-                          privacy
-                            ? "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img31.png"
-                            : "https://zhuanyun.sllowly.cn/assets/api/images/dzx_img32.png"
-                        }
-                      />
-                    </div>
-                    Đã xem và đồng ý (Chính sách bảo mật người dùng)
-                  </div>
-                </div>
-              </div>
-            </Tabs.Tab>
-          </Tabs>
-        </div>
+    <div className="min-h-screen bg-gray-50 pb-safe">
+      {/* Header */}
+      <div className="bg-white px-4 py-3 shadow-sm sticky top-0 z-10 flex items-center">
+        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-600">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 className="text-lg font-bold ml-2 text-gray-800">{t("report.title")}</h1>
       </div>
-      <div className="button">
-        <Button className="btn" onClick={(e) => formSubmit(e)}>
-          Lưu
+
+      {/* Tabs */}
+      <div className="flex bg-white border-b border-gray-100">
+        <button
+          onClick={() => setActiveTab("normal")}
+          className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'normal' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500'}`}
+        >
+          {t("report.tab_single")}
+        </button>
+        <button
+          onClick={() => setActiveTab("batch")}
+          className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'batch' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500'}`}
+        >
+          {t("report.tab_batch")}
+        </button>
+      </div>
+
+      <div className="p-4 space-y-4">
+
+        {/* Common Fields */}
+        <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
+          {/* Country */}
+          <div onClick={handleCountrySelect} className="flex justify-between items-center py-2 border-b border-gray-50 cursor-pointer">
+            <div className="flex items-center gap-2 text-gray-700">
+              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" className="w-5 h-5" />
+              <span className="font-medium">{t("report.form.country")}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-500 text-sm">
+              <span>{country ? country.title : t("report.placeholder.select_country")}</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+            </div>
+          </div>
+
+          {/* Warehouse */}
+          <div className="flex justify-between items-center py-2 border-b border-gray-50">
+            <div className="flex items-center gap-2 text-gray-700">
+              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img26.png" className="w-5 h-5" />
+              <span className="font-medium">{t("report.form.warehouse")}</span>
+            </div>
+            <select
+              value={storageId}
+              onChange={handleStorageChange}
+              className="bg-transparent text-right text-gray-800 text-sm focus:outline-none cursor-pointer dir-rtl"
+              style={{ direction: 'rtl' }}
+            >
+              <option value="">{t("report.placeholder.select_warehouse")}</option>
+              {storages.map(s => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Tracking */}
+        <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
+          {activeTab === 'normal' ? (
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-gray-700 font-medium">
+                <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img40.png" className="w-5 h-5" />
+                {t("report.form.tracking_no")}
+              </label>
+              <input
+                type="text"
+                value={trackingNo}
+                onChange={e => setTrackingNo(e.target.value)}
+                placeholder={t("report.placeholder.enter_tracking")}
+                className="w-full bg-gray-50 rounded-lg px-3 py-2 text-gray-800 border-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-gray-700 font-medium">
+                  <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img40.png" className="w-5 h-5" />
+                  {t("report.form.tracking_no")}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={trackingNo}
+                    onChange={e => setTrackingNo(e.target.value)}
+                    placeholder={t("report.placeholder.enter_tracking")}
+                    className="flex-1 bg-gray-50 rounded-lg px-3 py-2 text-gray-800 border-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <button onClick={addBatchTracking} className="bg-blue-50 text-blue-600 px-4 rounded-lg font-bold text-lg">+</button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-gray-700 font-medium text-sm">{t("report.form.batch_tracking")}</label>
+                <textarea
+                  rows="4"
+                  value={batchTracking}
+                  onChange={e => setBatchTracking(e.target.value)}
+                  placeholder={t("report.placeholder.enter_batch_tracking")}
+                  className="w-full bg-gray-50 rounded-lg p-3 text-gray-800 border-none focus:ring-1 focus:ring-blue-500 text-sm"
+                ></textarea>
+                <p className="text-xs text-gray-400">{t("report.form.batch_tip")}</p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Goods List (Single Only) */}
+        {activeTab === 'normal' && (
+          <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-gray-700 font-medium">
+                <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img41.png" className="w-5 h-5" />
+                {t("report.form.goods_list")}
+              </label>
+              <button onClick={addGoodsItem} className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded font-medium">{t("report.action.add")}</button>
+            </div>
+
+            {/* Table Header */}
+            <div className="grid grid-cols-10 gap-2 text-xs text-gray-500 font-medium pb-1 border-b border-gray-100">
+              <div className="col-span-4">{t("report.form.goods_name")}</div>
+              <div className="col-span-2 text-center">{t("report.form.goods_price")}</div>
+              <div className="col-span-2 text-center">{t("report.form.goods_qty")}</div>
+              <div className="col-span-2 text-right">#</div>
+            </div>
+
+            {/* Table Body */}
+            <div className="space-y-2">
+              {goodsList.map((item, idx) => (
+                <div key={idx} className="grid grid-cols-10 gap-2 items-center">
+                  <div className="col-span-4">
+                    <input
+                      type="text"
+                      value={item.name}
+                      onChange={e => updatedGoodsItem(idx, 'name', e.target.value)}
+                      className="w-full bg-gray-50 rounded px-2 py-1.5 text-xs text-gray-800"
+                      placeholder={t("report.placeholder.enter_goods_name")}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <input
+                      type="number"
+                      value={item.price}
+                      onChange={e => updatedGoodsItem(idx, 'price', e.target.value)}
+                      className="w-full bg-gray-50 rounded px-2 py-1.5 text-xs text-gray-800 text-center"
+                      placeholder="￥"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <input
+                      type="number"
+                      value={item.qty}
+                      onChange={e => updatedGoodsItem(idx, 'qty', e.target.value)}
+                      className="w-full bg-gray-50 rounded px-2 py-1.5 text-xs text-gray-800 text-center"
+                      placeholder="1"
+                    />
+                  </div>
+                  <div className="col-span-2 text-right">
+                    <button onClick={() => removeGoodsItem(idx)} className="text-red-500 p-1 font-bold text-lg">-</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Additional Info */}
+        <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
+          {/* Category */}
+          <div onClick={handleCategorySelect} className="flex justify-between items-center py-2 border-b border-gray-50 cursor-pointer">
+            <div className="flex items-center gap-2 text-gray-700">
+              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" className="w-5 h-5" />
+              <span className="font-medium">{t("report.form.category")}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-500 text-sm">
+              <span>{category ? category.name : t("report.placeholder.select_category")}</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+            </div>
+          </div>
+
+          {/* Value */}
+          <div className="flex justify-between items-center py-2 border-b border-gray-50">
+            <div className="flex items-center gap-2 text-gray-700">
+              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" className="w-5 h-5" />
+              <span className="font-medium">{t("report.form.total_value")}</span>
+            </div>
+            <input
+              type="number"
+              value={goodsValue}
+              onChange={e => setGoodsValue(e.target.value)}
+              placeholder={t("report.placeholder.enter_value")}
+              className="text-right text-gray-800 text-sm focus:outline-none bg-transparent"
+            />
+          </div>
+
+          {/* Remark */}
+          <div className="space-y-2 pt-2">
+            <label className="flex items-center gap-2 text-gray-700 font-medium">
+              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img41.png" className="w-5 h-5" />
+              {t("report.form.remark")}
+            </label>
+            <textarea
+              rows="2"
+              value={remark}
+              onChange={e => setRemark(e.target.value)}
+              placeholder={t("report.placeholder.enter_remark")}
+              className="w-full bg-gray-50 rounded-lg p-3 text-gray-800 border-none focus:ring-1 focus:ring-blue-500 text-sm"
+            ></textarea>
+          </div>
+        </div>
+
+        {/* Privacy */}
+        <div className="flex items-center gap-2 px-2">
+          <button onClick={() => setIsPrivacyAgreed(!isPrivacyAgreed)} className="focus:outline-none">
+            <div className={`w-5 h-5 rounded border flex items-center justify-center ${isPrivacyAgreed ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-300'}`}>
+              {isPrivacyAgreed && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+            </div>
+          </button>
+          <span className="text-sm text-gray-600">
+            {t("report.form.privacy_agree")} <span className="text-blue-600 underline font-medium cursor-pointer">{t("report.form.privacy_link")}</span>
+          </span>
+        </div>
+
+        {/* Submit */}
+        <Button onClick={handleSubmit} className="w-full h-12 text-lg rounded-xl shadow-lg shadow-blue-200 mt-4">
+          {t("report.action.submit")}
         </Button>
       </div>
+
       <Loading is={loading} text={loadingText} />
-    </Page>
+    </div>
   );
 };
+
 export default PackReportPage;

@@ -1,125 +1,144 @@
 import React, { useEffect } from "react";
-import { Page } from "zmp-ui";
 import { useRecoilValue } from "recoil";
-import { packageInfoState, userState } from "../../state";
-import "./Index.scss";
+import { useTranslation } from "react-i18next";
+import { packageInfoState } from "../../state";
 import util from "../../utils/util";
 import Header from "../../components/Header/Header";
 
 const PackDetailPage = () => {
-  const user = useRecoilValue(userState);
+  const { t } = useTranslation();
   const pack_info = useRecoilValue(packageInfoState);
 
   useEffect(() => {
-    util.setBarPageView("Chi tiết gói hàng");
-    return () => {
-      console.log("Mô phỏng componentWillUnmount thực thi sau khi hủy");
-    };
+    util.setBarPageView("Package Detail");
   }, []);
   
   return (
-    <Page className="page report">
-      <Header></Header>
-      <div className="form">
-        <div className="form-group flex">
-          <div className="form-label">
-            <div className="form-label-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" />
+    <div className="min-h-screen bg-gray-50 pb-safe">
+      <Header title={t("package.detail_title", "Package Details")} />
+
+      <div className="p-4 space-y-4">
+        {/* Country and Warehouse */}
+        <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <img 
+                src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" 
+                className="w-5 h-5 object-contain"
+                alt=""
+              />
             </div>
-            Quốc gia gửi hàng
+            <div className="flex-1">
+              <div className="text-xs text-gray-500 mb-1">
+                {t("package.form.country", "Origin Country")}
+              </div>
+              <div className="font-medium text-gray-800">
+                {pack_info.country || t("common.not_provided", "Not provided")}
+              </div>
+            </div>
           </div>
-          <div className="form-content">
-            <div className="form-picker">
-              <div className="form-picker-input">
-                {pack_info["country"] ? pack_info["country"] : ""}
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <img 
+                src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img26.png" 
+                className="w-5 h-5 object-contain"
+                alt=""
+              />
+            </div>
+            <div className="flex-1">
+              <div className="text-xs text-gray-500 mb-1">
+                {t("package.form.warehouse", "Warehouse")}
+              </div>
+              <div className="font-medium text-gray-800">
+                {pack_info.storage?.shop_name || t("package.form.select_warehouse", "Please select warehouse")}
               </div>
             </div>
           </div>
         </div>
-        <div className="form-group flex">
-          <div className="form-label">
-            <div className="form-label-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img26.png" />
+
+        {/* Package Info */}
+        <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <img 
+                src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img40.png" 
+                className="w-5 h-5 object-contain"
+                alt=""
+              />
             </div>
-            Kho tập kết
+            <div className="flex-1">
+              <div className="text-xs text-gray-500 mb-1">
+                {t("package.form.tracking_no", "Tracking Number")}
+              </div>
+              <div className="font-medium text-gray-800">
+                {pack_info.express_num || t("common.not_provided", "Not provided")}
+              </div>
+            </div>
           </div>
-          <div className="form-content">
-            <div className="form-content">
-              <div className="form-picker">
-                <div className="form-picker-input">
-                  {pack_info["storage"]
-                    ? pack_info["storage"]["shop_name"]
-                    : "Vui lòng chọn quốc gia gửi hàng"}
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <img 
+                src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" 
+                className="w-5 h-5 object-contain"
+                alt=""
+              />
+            </div>
+            <div className="flex-1">
+              <div className="text-xs text-gray-500 mb-1">
+                {t("package.form.category", "Category")}
+              </div>
+              <div className="font-medium text-gray-800">
+                {pack_info.class_name || t("package.form.select_category", "Please select category")}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <img 
+                src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" 
+                className="w-5 h-5 object-contain"
+                alt=""
+              />
+            </div>
+            <div className="flex-1">
+              <div className="text-xs text-gray-500 mb-1">
+                {t("package.form.value", "Value")} (฿)
+              </div>
+              <div className="font-medium text-gray-800">
+                {pack_info.price || "0"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Remarks */}
+        {pack_info.usermark && (
+          <div className="bg-white rounded-xl shadow-sm p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <img 
+                  src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img41.png" 
+                  className="w-5 h-5 object-contain"
+                  alt=""
+                />
+              </div>
+              <div className="flex-1">
+                <div className="text-xs text-gray-500 mb-2">
+                  {t("package.form.remark", "Remarks")}
+                </div>
+                <div className="text-gray-700 leading-relaxed">
+                  {pack_info.usermark}
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="gap"></div>
-        <div className="form-group flex">
-          <div className="form-label">
-            <div className="form-label-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img40.png" />
-            </div>
-            Số vận đơn
-          </div>
-          <div className="form-content">
-            <div className="form-content">
-              <div className="form-picker">
-                <div className="form-picker-input">
-                  {pack_info["express_num"] ? pack_info["express_num"] : ""}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="form-group flex">
-          <div className="form-label">
-            <div className="form-label-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" />
-            </div>
-            Loại hàng hóa
-          </div>
-          <div className="form-content">
-            <div className="form-picker">
-              <div className="form-picker-input">
-                {pack_info["class_name"]
-                  ? pack_info["class_name"]
-                  : "Vui lòng chọn loại hàng"}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="form-group flex">
-          <div className="form-label">
-            <div className="form-label-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" />
-            </div>
-            Giá trị hàng hóa (￥)
-          </div>
-          <div className="form-content">
-            <div className="form-picker">
-              <div className="form-picker-input">
-                {pack_info["price"] ? pack_info["price"] : ""}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="form-group" style={{ height: 150 + "px" }}>
-          <div className="form-label">
-            <div className="form-label-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img41.png" />
-            </div>
-            Ghi chú hàng hóa
-          </div>
-          <div className="form-content">
-            <div className="form-picker-input">
-              {pack_info["usermark"] ? pack_info["usermark"] : ""}
-            </div>
-          </div>
-        </div>
+        )}
       </div>
-    </Page>
+    </div>
   );
 };
+
 export default PackDetailPage;

@@ -1,301 +1,249 @@
 import React, { useEffect, useState } from "react";
-import { Page, useNavigate, Input, Picker, Button } from "zmp-ui";
+import { useNavigate } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useTranslation } from "react-i18next";
 import { queryFormState, countryState, categoryState } from "../../state";
-import Header from "../../components/Header/Header";
 import Tab from "../../components/Tab/Tab";
-import "./Index.scss";
+import Button from "../../components/Button/Index";
 import util from "../../utils/util";
 
 const FreightPage = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  // Global State
   const country = useRecoilValue(countryState);
   const category = useRecoilValue(categoryState);
   const setCountryData = useSetRecoilState(countryState);
   const setCategoryData = useSetRecoilState(categoryState);
   const setFormQueryData = useSetRecoilState(queryFormState);
-  const navigate = useNavigate();
   const formQuery = useRecoilValue(queryFormState);
-  const [form, setForm] = useState({ freeType: 1 }); // Dữ liệu biểu mẫu
-  const [formData, setFormData] = useState([]);
 
-  const UnitWeightForm = () => {
-    return (
-      <div>
-        <div className="form-group flex">
-          <div className="form-label">
-            <div className="form-label-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img40.png" />
-            </div>
-            Khối lượng (kg)
-          </div>
-          <div className="form-content">
-            <div className="form-input">
-              <Input
-                type="text"
-                className="form-input"
-                data-field="weight"
-                defaultValue={formQuery["weight"]}
-                onBlur={(e) => handleBlur(e)}
-                onChange={(e) => handleInput(e)}
-                placeholder="Nhập khối lượng kiện hàng"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="gap"></div>
-        <div className="form-group" style={{ height: 100 + "px" }}>
-          <div className="form-label">
-            <div className="form-label-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img41.png" />
-            </div>
-            Kích thước hàng hóa
-          </div>
-          <div className="form-content">
-            <div className="form-input-group ">
-              <div className="form-input-item">
-                <Input
-                  placeholder="Dài(cm)"
-                  data-field="length"
-                  defaultValue={formQuery["length"] || ""}
-                  onBlur={(e) => handleBlur(e)}
-                  onInput={(e) => handleInput(e)}
-                />
-              </div>
-              <div className="form-input-item">
-                <Input
-                  placeholder="Rộng(cm)"
-                  data-field="width"
-                  defaultValue={formQuery["width"] || ""}
-                  onBlur={(e) => handleBlur(e)}
-                  onInput={(e) => handleInput(e)}
-                />
-              </div>
-              <div className="form-input-item">
-                <Input
-                  placeholder="Cao(cm)"
-                  data-field="height"
-                  defaultValue={formQuery["height"] || ""}
-                  onBlur={(e) => handleBlur(e)}
-                  onInput={(e) => handleInput(e)}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // Local State
+  const [form, setForm] = useState({
+    freeType: 1, // 1: Weight, 2: Volume
+    weight: "",
+    length: "",
+    width: "",
+    height: "",
+    country_id: "",
+    class_ids: ""
+  });
+  const [displayData, setDisplayData] = useState({
+    countryName: "",
+    className: "",
+    unitName: "" // Will be set on init or change
+  });
 
-  const UnitForm = () => {
-    return (
-      <div>
-        <div className="form-group flex">
-          <div className="form-label">
-            <div className="form-label-icon">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img40.png" />
-            </div>
-            Khối lượng (CBM)
-          </div>
-          <div className="form-content">
-            <div className="form-input">
-              <Input
-                type="text"
-                className="form-input"
-                placeholder="Nhập khối lượng kiện hàng"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // Init form from global state if returning from selection
+  useEffect(() => {
+    util.setBarPageView("Freight");
 
-  const handlePicker = (e) => {
-    if (e.option) {
-      form["freeType"] = e.option["value"];
-      formData["unitName"] = e.option["displayName"];
-      setForm(form);
-      setFormData(formData);
-      setFormQueryData({ ...form, ...formData });
-    }
-  };
-
-  const handleBlur = () => {
-    setFormQueryData({ ...form, ...formData });
-  };
-
-  // Xử lý sự kiện nhập liệu
-  const handleInput = (e) => {
-    const field = e.target.dataset.field;
-    form[field] = e.target.value;
-  };
-
-  // Khởi tạo dữ liệu
-  const getInitData = () => {
+    // Restore from global state
     if (formQuery) {
-      console.log(formQuery, "fm");
-      formData["country"] = formQuery["country"];
-      formData["class"] = formQuery["class"];
-      form["freeType"] = formQuery["freeType"];
-      form["country_id"] = formQuery["country_id"];
-      form["length"] = formQuery["length"];
-      form["class_ids"] = formQuery["class_ids"];
-      form["width"] = formQuery["width"];
-      form["height"] = formQuery["height"];
-      form["weight"] = formQuery["weight"];
-      formData["unitName"] = formQuery["unitName"];
-      setForm(form);
-      setFormData(formData);
+      setForm(prev => ({
+        ...prev,
+        freeType: formQuery.freeType || 1,
+        weight: formQuery.weight || "",
+        length: formQuery.length || "",
+        width: formQuery.width || "",
+        height: formQuery.height || "",
+        country_id: formQuery.country_id || "",
+        class_ids: formQuery.class_ids || ""
+      }));
+      setDisplayData(prev => ({
+        ...prev,
+        countryName: formQuery.country || "",
+        className: formQuery.class || "",
+        unitName: formQuery.unitName || (formQuery.freeType == 2 ? t("freight.options.volume") : t("freight.options.weight"))
+      }));
     }
+
+    // Handle selections returning
+    if (country) {
+      setForm(prev => ({ ...prev, country_id: country.id }));
+      setDisplayData(prev => ({ ...prev, countryName: country.title }));
+      setCountryData(null); // Clear selection state
+    }
+
+    if (category && category.length > 0) {
+      const names = category.map(c => c.name).join(", ");
+      const ids = category.map(c => c.category_id).join(",");
+
+      setForm(prev => ({ ...prev, class_ids: ids }));
+      setDisplayData(prev => ({ ...prev, className: names }));
+      setCategoryData(null); // Clear selection state
+    }
+  }, [country, category, t]); // Added t to dependecy if language changes
+
+  // Update global state on field change/blur
+  const updateGlobalState = (newForm, newDisplay) => {
+    setFormQueryData({
+      ...newForm,
+      country: newDisplay.countryName,
+      class: newDisplay.className,
+      unitName: newDisplay.unitName
+    });
   };
-  
-  // Chuyển đến trang chọn
-  const toTargetSelect = (e, path) => {
-    navigate(path);
+
+  const handleInput = (field, value) => {
+    const updatedForm = { ...form, [field]: value };
+    setForm(updatedForm);
+    updateGlobalState(updatedForm, displayData);
+  };
+
+  const handleUnitChange = (e) => {
+    const val = parseInt(e.target.value);
+    const name = val === 1 ? t("freight.options.weight") : t("freight.options.volume");
+
+    const updatedForm = { ...form, freeType: val };
+    const updatedDisplay = { ...displayData, unitName: name };
+
+    setForm(updatedForm);
+    setDisplayData(updatedDisplay);
+    updateGlobalState(updatedForm, updatedDisplay);
   };
 
   const handleSubmit = () => {
+    if (!form.country_id) {
+      alert(t("freight.placeholder.region"));
+      return;
+    }
     navigate("/freight/result");
   };
 
-  useEffect(() => {
-    util.setBarPageView("Tính cước vận chuyển");
-    getInitData();
-    if (country) {
-      form["country_id"] = country["id"];
-      formData["country"] = country["title"];
-      setForm(form);
-      setFormData(formData);
-      setCountryData("");
-      setFormQueryData({ ...form, ...formData });
-    }
-    if (category) {
-      console.log("Chọn danh mục");
-      let category_name = "";
-      let class_ids = [];
-      category.forEach((item, index) => {
-        category_name += item["name"] + ",";
-        class_ids.push(item["category_id"]);
-      });
-      formData["class"] = category_name;
-      form["class_ids"] = class_ids.join(",");
-      setForm(form);
-      setCategoryData("");
-      console.log({ ...form, ...formData }, "saveFormQuery");
-      setFormQueryData({ ...form, ...formData });
-    }
-  }, []);
-  
   return (
-    <Page className="page freight">
-      <Header></Header>
-      <div className="freight-box">
-        <div className="tips">Lưu ý: Khối lượng có thể tăng khi đóng gói, khối lượng thực tế sẽ được tính khi xuất kho</div>
-        <div className="form">
-          <div className="form-group flex">
-            <div className="form-label">
-              <div className="form-label-icon">
-                <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" />
-              </div>
-              Khu vực nhận hàng
-            </div>
-            <div className="form-content">
-              <div
-                className="form-picker"
-                onClick={(e) => {
-                  toTargetSelect(e, "/common/select/country");
-                }}
-              >
-                <div className="form-picker-input">
-                  {formData["country"] ? (
-                    formData["country"]
-                  ) : (
-                    <span className="default-value">Chọn quốc gia nhận hàng</span>
-                  )}
-                </div>
-                <div className="form-icon"></div>
-              </div>
-            </div>
-          </div>
-          <div className="form-group flex">
-            <div className="form-label">
-              <div className="form-label-icon">
-                <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img26.png" />
-              </div>
-              Đơn vị tính
-            </div>
-            <div className="form-content">
-              <div className="form-content">
-                <div className="form-picker">
-                  <div className="picker-default-value">
-                    {formData["unitName"]}
-                  </div>
-                  <Picker
-                    mask
-                    maskClosable
-                    inputClass="picker"
-                    placeholder={formData["unitName"] ? "" : "Chọn quy tắc tính cước"}
-                    onChange={(e) => handlePicker(e)}
-                    action={{
-                      text: "Đóng",
-                      close: true,
-                    }}
-                    data={[
-                      {
-                        options: [
-                          { value: 1, displayName: "Khối lượng" },
-                          { value: 2, displayName: "Thể tích" },
-                        ],
-                        name: "option",
-                      },
-                    ]}
-                  />
-                  <div className="form-icon"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          {form["freeType"] == 1 ? <UnitWeightForm /> : <UnitForm />}
-          <div className="form-group flex">
-            <div className="form-label">
-              <div className="form-label-icon">
-                <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img28.png" />
-              </div>
-              Loại hàng hóa
-            </div>
-            <div className="form-content">
-              <div className="form-picker">
-                <div
-                  className="form-picker-input"
-                  onClick={(e) => {
-                    toTargetSelect(e, "/common/select/category");
-                  }}
-                >
-                  {formData["class"] ? (
-                    formData["class"]
-                  ) : (
-                    <span className="default-value">Chọn loại hàng hóa</span>
-                  )}
-                </div>
-                <div className="form-icon"></div>
-              </div>
-            </div>
-          </div>
-          <div
-            className="form-group flex"
-            style={{ height: 100 + "px", justifyContent: "center" }}
-          >
-            <Button
-              style={{ width: 90 + "%", marginTop: 20 + "px" }}
-              onClick={(e) => handleSubmit()}
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Header */}
+      <div className="bg-white p-4 shadow-sm text-center font-bold text-lg text-gray-800">
+        {t("freight.title")}
+      </div>
+
+      <div className="p-4 space-y-4">
+        {/* Tips */}
+        <div className="bg-orange-50 text-orange-600 p-3 rounded-lg text-xs leading-relaxed border border-orange-100">
+          {t("freight.tips")}
+        </div>
+
+        {/* Form */}
+        <div className="bg-white rounded-2xl shadow-sm p-4 space-y-6">
+
+          {/* Country Selector */}
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img23.png" className="w-5 h-5" />
+              {t("freight.section.region")}
+            </label>
+            <div
+              onClick={() => navigate("/common/select/country")}
+              className="bg-gray-50 p-4 rounded-xl flex justify-between items-center cursor-pointer active:bg-gray-100 transition"
             >
-              Tra cứu ngay
+              <span className={displayData.countryName ? "text-gray-800" : "text-gray-400"}>
+                {displayData.countryName || t("freight.placeholder.region")}
+              </span>
+              <span className="text-gray-300">&rsaquo;</span>
+            </div>
+          </div>
+
+          {/* Unit Selector */}
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img26.png" className="w-5 h-5" />
+              {t("freight.section.unit")}
+            </label>
+            <div className="relative">
+              <select
+                value={form.freeType}
+                onChange={handleUnitChange}
+                className="w-full appearance-none bg-gray-50 p-4 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={1}>{t("freight.options.weight")}</option>
+                <option value={2}>{t("freight.options.volume")}</option>
+              </select>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none">&darr;</span>
+            </div>
+          </div>
+
+          {/* Weight/Volume Inputs */}
+          <div className="space-y-4 pt-2 border-t border-gray-100">
+            {/* Weight */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img40.png" className="w-5 h-5" />
+                {t("freight.section.weight")}
+              </label>
+              <input
+                type="number"
+                value={form.weight}
+                onChange={(e) => handleInput("weight", e.target.value)}
+                placeholder={t("freight.placeholder.weight")}
+                className="w-full bg-gray-50 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Dimensions (Always show or conditional?) - Showing always as per original logic somewhat implied */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img41.png" className="w-5 h-5" />
+                {t("freight.section.dimensions")}
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                <input
+                  type="number"
+                  value={form.length}
+                  onChange={(e) => handleInput("length", e.target.value)}
+                  placeholder={t("freight.placeholder.length")}
+                  className="bg-gray-50 p-3 rounded-xl text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="number"
+                  value={form.width}
+                  onChange={(e) => handleInput("width", e.target.value)}
+                  placeholder={t("freight.placeholder.width")}
+                  className="bg-gray-50 p-3 rounded-xl text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="number"
+                  value={form.height}
+                  onChange={(e) => handleInput("height", e.target.value)}
+                  placeholder={t("freight.placeholder.height")}
+                  className="bg-gray-50 p-3 rounded-xl text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Goods Type Selector */}
+          <div className="space-y-2 pt-2 border-t border-gray-100">
+            <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+              <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img28.png" className="w-5 h-5" />
+              {t("freight.section.goods_type")}
+            </label>
+            <div
+              onClick={() => navigate("/common/select/category")}
+              className="bg-gray-50 p-4 rounded-xl flex justify-between items-center cursor-pointer active:bg-gray-100 transition"
+            >
+              <span className={displayData.className ? "text-gray-800" : "text-gray-400"}>
+                {displayData.className || t("freight.placeholder.goods_type")}
+              </span>
+              <span className="text-gray-300">&rsaquo;</span>
+            </div>
+          </div>
+
+          <div className="pt-4">
+            <Button
+              onClick={handleSubmit}
+              className="w-full text-lg h-12 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-transform"
+            >
+              {t("freight.calculate")}
             </Button>
           </div>
+
         </div>
       </div>
+
       <Tab current="freight" />
-    </Page>
+    </div>
   );
 };
 

@@ -1,0 +1,60 @@
+.claim-page {
+  min-height: 100vh;
+  background: #F9FAFB;
+
+  .claim-header {
+    position: relative;
+    overflow: hidden;
+    padding: 32px 24px;
+    background: linear-gradient(135deg, #00B900 0%, #009900 50%, #007700 100%);
+    
+    h1 {
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      color: white;
+    }
+
+    p {
+      font-size: 16px;
+      opacity: 0.9;
+      color: white;
+    }
+  }
+
+  .claim-content {
+    padding: 24px 16px;
+
+    form {
+      animation: slideInBottom 0.3s ease-out;
+    }
+  }
+}
+
+@keyframes slideInBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in-bottom {
+  animation: slideInBottom 0.3s ease-out;
+}

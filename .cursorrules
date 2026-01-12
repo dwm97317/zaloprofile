@@ -1,0 +1,62 @@
+# Zalo Mini App 项目规则 (Project Rules)
+
+## 1. 项目概览 (Project Overview)
+- **名称**: Hợp nhất bưu kiện Vũ Hương Trà (Vũ Hương Trà 包裹合并系统)
+- **业务**: 跨国物流/集运服务，支持包裹预报、打包申请、订单管理、运费估算等功能。
+- **技术栈**: React 18 + Vite + Recoil (状态管理) + Tailwind CSS (样式) + ZMP UI (组件库)。
+- **目标平台**: Zalo Mini App (ZMP)。
+
+## 2. 核心功能模块 (Core Modules)
+- **包裹预报 (Package Reporting)**: 用户预报国内快递单号及商品信息。支持单件预报和批量预报。
+- **打包申请 (Packing Request)**: 将在库包裹申请合并打包并选择线路。
+- **订单管理 (Order Management)**: 包含待审核、待支付、待发货、已发货及完成等状态流转。支持取消订单、查看详情、在线支付（模拟）。
+- **地址管理 (Address Management)**: 越南本地化地址管理，集成 Google Maps/Goong Maps 智能解析省、区、坊。
+- **运费计算 (Freight Calculation)**: 根据重量、体积、线路和商品分类估算运费。
+- **物流追踪 (Tracking)**: 实时查询包裹在库状态及出库后的物流轨迹。
+- **帮助中心 (Help Center)**: 新手指南、流程说明、禁运物品清单等。
+
+## 3. 开发规范 (Development Standards)
+
+### 3.1 状态管理 (Recoil)
+- **文件**: `src/state.js` 为唯一全局状态定义处。
+- **准则**: 跨页面共享的数据（如当前选中的 `orderId`、`addressInfo`、表单草稿 `reportFormState`）必须使用 atom。
+- **持久化**: 敏感信息（Token、用户信息）需结合 `zmp-sdk` 的 `getStorage/setStorage`。
+
+### 3.2 接口通信 (Request/API)
+- **统一入口**: 必须使用 `src/utils/request.js`。
+- **参数规范**: 所有接口请求必须自动携带 `wxapp_id=10001` 和 `platform=ZALO`。
+- **登录校验**: 调用业务接口前，必须使用 `util.checkLogin()` 验证 Token 存在。
+
+### 3.3 越南本地化 (Vietnam Localization)
+- **地址规范**: 越南地址包含 `Tỉnh/Thành phố` (省/直辖市)、`Quận/Huyện` (区/县)、`Phường/Xã` (坊/社/镇)。
+- **解析器**: 涉及地址选择必须通过 `src/utils/addressParser.js` 处理，确保行政区划数据准确传给后端。
+- **界面语言**: 所有的 UI 文本（Label、Toast、Placeholder）必须使用越南语。
+
+### 3.4 兼容性与修复 (Compatibility)
+- **初始化**: `src/app.js` 必须首屏加载 `compatibility-early.js` 和 `polyfills.js` 以修复部分设备下 JS 新特性的缺失。
+- **ZMP 专用修复**: `zalo-miniapp-fixes.js` 包含了对 ZMP Studio 模拟器和真机环境下标题显示、触控事件、布局高度的专项修复，不得随意删除。
+- **标题控制**: 必须通过 `util.setBarPageView(title)` 动态设置 ActionBar 标题。
+
+### 3.5 组件规范 (Components)
+- **UI 库**: 优先使用 `zmp-ui`。自定义 UI 需符合系统的蓝色调（`#1843EF`）。
+- **公共组件**:
+  - `Header`: 页面顶部的品牌展示或返回。
+  - `Tab`: 底部主导航（首页、运费、查询、我的）。
+  - `Loading`: 统一的加载遮罩。
+  - `Empty`: 列表无数据时的展示。
+
+## 4. 目录结构 (Folder Structure)
+- `src/pages/`: 业务页面，子目录即模块（Address, Order, Packages, Freight, Storage, QRLogin, article, Common, Mine, Query, Home）。
+- `src/utils/`: 逻辑工具（request, util, addressParser, addressApi, compatibility, vietnameseAddress）。
+- `src/components/`: 可复用组件。
+- `src/css/`: 全局样式及 SCSS 定义。
+
+## 5. 命令 (Commands)
+- `npm run start`: 本地调试（Zalo Mini App 开发者工具打开 `www` 目录或反代）。
+- `npm run build`: 编译打包。
+- `npm run deploy`: 上传版本至 Zalo 开放平台。
+
+## 6. 特别注意 (Important Notes)
+- **环境变量**: 接口 Base URL 在 `src/config/config.js` 中切换。
+- **图片资源**: CDN 资源主要存放在 `zhuanyun.sllowly.cn`。
+- **订单流程**: 核心链路为：预报 -> 入库 -> 申请打包 -> 审核/称重 -> 支付 -> 发货 -> 收货。
