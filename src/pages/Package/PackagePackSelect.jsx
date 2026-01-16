@@ -7,6 +7,7 @@ import request from "../../utils/request";
 import { toast } from "../../utils/toast";
 import Loading from "../../components/Loading/Index";
 import LineButton from "../../components/LineButton/Index";
+import OptimizedImage from "../../components/Common/OptimizedImage";
 import "./PackagePackSelect.scss";
 
 /**
@@ -364,7 +365,7 @@ const PackagePackSelectPage = () => {
                       <div className="mb-2">
                         <div className="flex gap-2 overflow-x-auto">
                           {pkg.images.map((img, idx) => (
-                            <img 
+                            <OptimizedImage
                               key={idx}
                               src={img} 
                               alt={`Package ${idx + 1}`}
@@ -373,7 +374,6 @@ const PackagePackSelectPage = () => {
                                 handleImageClick(pkg.images, idx);
                               }}
                               className="w-16 h-16 object-cover rounded-lg bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
-                              onError={(e) => { e.target.style.display = 'none'; }}
                             />
                           ))}
                         </div>
@@ -568,7 +568,7 @@ const PackagePackSelectPage = () => {
           )}
 
           <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
-            <img
+            <OptimizedImage
               src={imageModal.images[imageModal.currentIndex]}
               alt={`Package ${imageModal.currentIndex + 1}`}
               className="max-w-full max-h-full object-contain rounded-lg"

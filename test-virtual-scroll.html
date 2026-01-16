@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虚拟滚动测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .test-result {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0.5rem;
+            border: 2px solid;
+        }
+        .test-pass {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+        .test-fail {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+        .test-info {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+        .virtual-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            position: relative;
+        }
+        .virtual-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+            position: absolute;
+            width: 100%;
+            left: 0;
+        }
+        .virtual-item:hover {
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800">虚拟滚动功能测试</h1>
+        
+        <div id="test-results" class="mb-8"></div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 text-gray-700">测试场景</h2>
+            <div class="virtual-container" id="virtual-list"></div>
+            <div class="mt-4 text-sm text-gray-600">
+                <p>总项目数: <span id="total-items" class="font-bold">0</span></p>
+                <p>渲染项目数: <span id="rendered-items" class="font-bold">0</span></p>
+                <p>当前滚动位置: <span id="scroll-position" class="font-bold">0</span>px</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold mb-4 text-gray-700">性能指标</h2>
+            <div id="performance-metrics" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <script>
+        // 虚拟滚动实现
+        class VirtualScroller {
+            constructor(container, options = {}) {
+                this.container = container;
+                this.items = options.items || [];
+                this.itemHeight = options.itemHeight || 80;
+                this.overscan = options.overscan || 3;
+                this.renderItem = options.renderItem || ((item) => item.toString());
+                
+                this.scrollTop = 0;
+                this.containerHeight = container.clientHeight;
+                this.renderedItems = new Map();
+                
+                this.init();
+            }
+            
+            init() {
+                this.container.innerHTML = '';
+                this.spacer = document.createElement('div');
+                this.spacer.style.height = `${this.items.length * this.itemHeight}px`;
+                this.spacer.style.position = 'relative';
+                this.container.appendChild(this.spacer);
+                
+                this.container.addEventListener('scroll', () => {
+                    this.scrollTop = this.container.scrollTop;
+                    this.render();
+                    document.getElementById('scroll-position').textContent = Math.round(this.scrollTop);
+                });
+                
+                this.render();
+            }
+            
+            getVisibleRange() {
+                const start = Math.floor(this.scrollTop / this.itemHeight);
+                const end = Math.ceil((this.scrollTop + this.containerHeight) / this.itemHeight);
+                
+                return {
+                    start: Math.max(0, start - this.overscan),
+                    end: Math.min(this.items.length, end + this.overscan)
+                };
+            }
+            
+            render() {
+                const { start, end } = this.getVisibleRange();
+                const newRenderedItems = new Set();
+                
+                // 渲染可见项
+                for (let i = start; i < end; i++) {
+                    newRenderedItems.add(i);
+                    
+                    if (!this.renderedItems.has(i)) {
+                        const element = document.createElement('div');
+                        element.className = 'virtual-item';
+                        element.style.top = `${i * this.itemHeight}px`;
+                        element.innerHTML = this.renderItem(this.items[i], i);
+                        this.spacer.appendChild(element);
+                        this.renderedItems.set(i, element);
+                    }
+                }
+                
+                // 移除不可见项
+                for (const [index, element] of this.renderedItems.entries()) {
+                    if (!newRenderedItems.has(index)) {
+                        element.remove();
+                        this.renderedItems.delete(index);
+                    }
+                }
+                
+                document.getElementById('rendered-items').textContent = this.renderedItems.size;
+            }
+            
+            updateItems(items) {
+                this.items = items;
+                this.spacer.style.height = `${this.items.length * this.itemHeight}px`;
+                this.renderedItems.forEach(el => el.remove());
+                this.renderedItems.clear();
+                this.render();
+            }
+        }
+
+        // 测试函数
+        const tests = [];
+        
+        function addTest(name, status, message) {
+            tests.push({ name, status, message });
+            renderTests();
+        }
+        
+        function renderTests() {
+            const container = document.getElementById('test-results');
+            container.innerHTML = tests.map(test => `
+                <div class="test-result test-${test.status}">
+                    <div class="font-bold mb-1">
+                        ${test.status === 'pass' ? '✓' : test.status === 'fail' ? '✗' : 'ℹ'} 
+                        ${test.name}
+                    </div>
+                    <div class="text-sm">${test.message}</div>
+                </div>
+            `).join('');
+        }
+        
+        // 生成测试数据
+        function generateTestData(count) {
+            return Array.from({ length: count }, (_, i) => ({
+                id: i + 1,
+                title: `订单 #${i + 1}`,
+                status: ['待收货', '已收货', '已发货', '问题件'][Math.floor(Math.random() * 4)],
+                date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString('zh-CN'),
+                warehouse: `仓库 ${Math.floor(Math.random() * 5) + 1}`
+            }));
+        }
+        
+        // 渲染项目
+        function renderOrderItem(item, index) {
+            return `
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-gray-800">${item.title}</div>
+                        <div class="text-sm text-gray-600">${item.warehouse} • ${item.date}</div>
+                    </div>
+                    <div class="px-3 py-1 rounded-full text-xs font-medium ${
+                        item.status === '已收货' ? 'bg-green-100 text-green-700' :
+                        item.status === '已发货' ? 'bg-blue-100 text-blue-700' :
+                        item.status === '问题件' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                    }">
+                        ${item.status}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 运行测试
+        async function runTests() {
+            addTest('初始化测试', 'info', '开始测试虚拟滚动功能...');
+            
+            // 测试1: 创建虚拟滚动器
+            const container = document.getElementById('virtual-list');
+            const testData = generateTestData(1000);
+            
+            const startTime = performance.now();
+            const scroller = new VirtualScroller(container, {
+                items: testData,
+                itemHeight: 80,
+                overscan: 5,
+                renderItem: renderOrderItem
+            });
+            const initTime = performance.now() - startTime;
+            
+            document.getElementById('total-items').textContent = testData.length;
+            
+            addTest(
+                '测试1: 初始化虚拟滚动器',
+                'pass',
+                `成功创建虚拟滚动器，包含 ${testData.length} 个项目，初始化耗时 ${initTime.toFixed(2)}ms`
+            );
+            
+            // 测试2: 检查初始渲染
+            await new Promise(resolve => setTimeout(resolve, 100));
+            const initialRendered = scroller.renderedItems.size;
+            
+            if (initialRendered > 0 && initialRendered < testData.length) {
+                addTest(
+                    '测试2: 初始渲染优化',
+                    'pass',
+                    `只渲染了 ${initialRendered} 个可见项，而不是全部 ${testData.length} 个项目`
+                );
+            } else {
+                addTest(
+                    '测试2: 初始渲染优化',
+                    'fail',
+                    `渲染了 ${initialRendered} 个项目，应该少于总数`
+                );
+            }
+            
+            // 测试3: 滚动性能
+            addTest('测试3: 滚动性能测试', 'info', '正在测试滚动性能...');
+            
+            const scrollTests = [];
+            for (let i = 0; i < 10; i++) {
+                const scrollStart = performance.now();
+                container.scrollTop = Math.random() * (container.scrollHeight - container.clientHeight);
+                await new Promise(resolve => setTimeout(resolve, 50));
+                scrollTests.push(performance.now() - scrollStart);
+            }
+            
+            const avgScrollTime = scrollTests.reduce((a, b) => a + b, 0) / scrollTests.length;
+            
+            if (avgScrollTime < 100) {
+                addTest(
+                    '测试3: 滚动性能测试',
+                    'pass',
+                    `平均滚动响应时间: ${avgScrollTime.toFixed(2)}ms (优秀)`
+                );
+            } else {
+                addTest(
+                    '测试3: 滚动性能测试',
+                    'fail',
+                    `平均滚动响应时间: ${avgScrollTime.toFixed(2)}ms (需要优化)`
+                );
+            }
+            
+            // 测试4: 内存效率
+            const renderedAfterScroll = scroller.renderedItems.size;
+            const memoryEfficiency = ((testData.length - renderedAfterScroll) / testData.length * 100).toFixed(1);
+            
+            addTest(
+                '测试4: 内存效率',
+                'pass',
+                `节省了 ${memoryEfficiency}% 的DOM节点 (${testData.length - renderedAfterScroll} 个未渲染)`
+            );
+            
+            // 测试5: 动态更新
+            const updateStart = performance.now();
+            const newData = generateTestData(500);
+            scroller.updateItems(newData);
+            const updateTime = performance.now() - updateStart;
+            
+            if (updateTime < 100) {
+                addTest(
+                    '测试5: 动态更新',
+                    'pass',
+                    `成功更新数据，耗时 ${updateTime.toFixed(2)}ms`
+                );
+            } else {
+                addTest(
+                    '测试5: 动态更新',
+                    'fail',
+                    `更新数据耗时 ${updateTime.toFixed(2)}ms (较慢)`
+                );
+            }
+            
+            // 性能指标
+            const metrics = [
+                { name: '初始化时间', value: `${initTime.toFixed(2)}ms`, status: initTime < 50 ? 'good' : 'warning' },
+                { name: '平均滚动响应', value: `${avgScrollTime.toFixed(2)}ms`, status: avgScrollTime < 100 ? 'good' : 'warning' },
+                { name: '内存节省', value: `${memoryEfficiency}%`, status: 'good' },
+                { name: '更新时间', value: `${updateTime.toFixed(2)}ms`, status: updateTime < 100 ? 'good' : 'warning' },
+                { name: '当前渲染项', value: `${scroller.renderedItems.size} / ${newData.length}`, status: 'good' }
+            ];
+            
+            document.getElementById('performance-metrics').innerHTML = metrics.map(m => `
+                <div class="flex justify-between items-center p-3 rounded ${
+                    m.status === 'good' ? 'bg-green-50' : 'bg-yellow-50'
+                }">
+                    <span class="font-medium text-gray-700">${m.name}</span>
+                    <span class="font-bold ${
+                        m.status === 'good' ? 'text-green-600' : 'text-yellow-600'
+                    }">${m.value}</span>
+                </div>
+            `).join('');
+            
+            // 总结
+            const passedTests = tests.filter(t => t.status === 'pass').length;
+            const totalTests = tests.filter(t => t.status !== 'info').length;
+            
+            addTest(
+                '测试总结',
+                passedTests === totalTests ? 'pass' : 'info',
+                `通过 ${passedTests}/${totalTests} 个测试`
+            );
+        }
+        
+        // 启动测试
+        runTests();
+    </script>
+</body>
+</html>

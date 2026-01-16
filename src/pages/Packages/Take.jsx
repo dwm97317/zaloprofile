@@ -107,7 +107,7 @@ const PackTakePage = () => {
             <div key={index} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
               <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2 text-gray-700 font-medium">
-                  <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img27.png" className="w-4 h-4 object-contain" />
+                  <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img27.png" className="w-4 h-4 object-contain" />
                   <span>{t("take.labels.package_no")}: <span className="text-gray-900 font-bold">{item.express_num || item.express_sn || "N/A"}</span></span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -126,7 +126,7 @@ const PackTakePage = () => {
           ))
         ) : (
           <div className="bg-white rounded-2xl p-10 text-center shadow-sm mt-6">
-            <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img29.png" className="w-24 h-24 mx-auto mb-4 opacity-50" />
+            <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img29.png" className="w-24 h-24 mx-auto mb-4 opacity-50" />
             <p className="text-gray-400">{t("common.no_data")}</p>
           </div>
         )}

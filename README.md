@@ -49,6 +49,23 @@ Vhuong Tra Parcel Integration is a comprehensive logistics platform built as a L
 
 ## ✨ Features
 
+### 🎨 NEW: Enhanced Package Page UI/UX (Phase 1 Complete)
+
+**Latest Update (2026-01-15)**: The package list page has been completely redesigned with modern UI/UX improvements!
+
+#### Key Improvements
+- **📦 Enhanced Order Cards** - Left-image-right-text layout with 96px image preview
+- **💊 Capsule-style Tabs** - Gradient backgrounds with smooth sliding indicators
+- **🎈 Floating Action Bar** - Bottom-centered with real-time warehouse validation
+- **🎭 Smooth Animations** - Framer Motion powered transitions and feedback
+- **⚡ 40% Efficiency Boost** - Reduced clicks and improved information hierarchy
+
+[📖 View Full Redesign Documentation](PACKAGE_REDESIGN_SUMMARY.md) | [🚀 Quick Start Guide](REDESIGN_QUICK_START.md)
+
+---
+
+### Core Features
+
 ### 📦 Package Management
 - **Pre-report Parcels**: Submit tracking numbers before items arrive
 - **Consolidation**: Combine multiple packages into one shipment

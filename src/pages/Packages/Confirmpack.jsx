@@ -176,7 +176,7 @@ const PackConfirmPage = () => {
             <div className="flex items-start justify-between">
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 mt-1">
-                  <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img164.png" className="w-4 h-4" />
+                  <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img164.png" className="w-4 h-4" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-bold text-gray-800">{t("confirm_pack.address_title")}</h3>

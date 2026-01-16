@@ -216,7 +216,7 @@ const FreightPage = () => {
           {/* Goods Type Selector */}
           <div className="space-y-2 pt-2 border-t border-gray-100">
             <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-              <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img28.png" className="w-5 h-5" />
+              <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img28.png" className="w-5 h-5" />
               {t("freight.section.goods_type")}
             </label>
             <div

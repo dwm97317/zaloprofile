@@ -5,7 +5,9 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   base: "",
   plugins: [
-    react(),
+    react({
+      include: "**/*.{jsx,js}",
+    }),
   ],
   build: {
     target: "esnext",
@@ -14,5 +16,17 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true
-  }
+  },
+  esbuild: {
+    loader: "jsx",
+    include: /src\/.*\.jsx?$/,
+    exclude: []
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        ".js": "jsx",
+      },
+    },
+  },
 });

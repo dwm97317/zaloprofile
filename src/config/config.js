@@ -4,7 +4,7 @@ import { appEnv } from "./env";
 const devBaseURL = "http://localhost:8080/index.php?s=api/";
 
 // 生产环境配置
-const proBaseURL = "http://localhost:8080/index.php?s=api/";
+const proBaseURL = "https://longthai.itaoth.com/index.php?s=api/";
 
 // 根据环境选择 API 地址
 export const BASE_URL = appEnv === "development" ? devBaseURL : proBaseURL;

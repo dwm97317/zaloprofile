@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps API Key Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .api-key {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            color: #4a5568;
+            margin-top: 10px;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .status.loading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .test-result {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .test-result h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+        
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .test-item .icon {
+            font-size: 24px;
+        }
+        
+        .test-item .label {
+            flex: 1;
+            color: #4a5568;
+        }
+        
+        .test-item .value {
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .suggestions {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .suggestion-item {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .suggestion-item:hover {
+            background: #f7fafc;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-main {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .suggestion-secondary {
+            font-size: 14px;
+            color: #718096;
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Google Maps API Key 测试</h1>
+            <p>测试 API Key 的各项功能</p>
+            <div class="api-key">
+                <strong>API Key:</strong> AIzaSyAFNYbGfacZk_-e4U2HDC-j3uYBVGBDzyk
+            </div>
+        </div>
+
+        <!-- Test 1: Maps JavaScript API -->
+        <div class="test-section">
+            <h2>
+                <span>1️⃣ Maps JavaScript API</span>
+                <span class="status loading" id="status-maps">测试中...</span>
+            </h2>
+            <p>测试基本地图加载功能</p>
+            <div id="map"></div>
+            <div class="test-result" id="result-maps" style="display: none;"></div>
+        </div>
+
+        <!-- Test 2: Places Autocomplete -->
+        <div class="test-section">
+            <h2>
+                <span>2️⃣ Places Autocomplete API</span>
+                <span class="status loading" id="status-autocomplete">等待测试...</span>
+            </h2>
+            <p>测试地址搜索自动完成功能（输入泰国地址试试）</p>
+            <input 
+                type="text" 
+                id="autocomplete-input" 
+                class="search-box" 
+                placeholder="输入地址，例如: สยามพารากอน, Bangkok, Siam Paragon..."
+            >
+            <div id="suggestions" class="suggestions" style="display: none;"></div>
+            <div class="test-result" id="result-autocomplete" style="display: none;"></div>
+        </div>
+
+        <!-- Test 3: Places Details -->
+        <div class="test-section">
+            <h2>
+                <span>3️⃣ Places Details API</span>
+                <span class="status loading" id="status-details">等待测试...</span>
+            </h2>
+            <p>测试地点详情获取功能（从上面选择一个地址）</p>
+            <div class="test-result" id="result-details" style="display: none;"></div>
+        </div>
+
+        <!-- Test 4: Geocoding -->
+        <div class="test-section">
+            <h2>
+                <span>4️⃣ Geocoding API</span>
+                <span class="status loading" id="status-geocoding">测试中...</span>
+            </h2>
+            <p>测试反向地理编码功能（坐标转地址）</p>
+            <div class="test-result" id="result-geocoding" style="display: none;"></div>
+        </div>
+
+        <!-- Summary -->
+        <div class="test-section">
+            <h2>📊 测试总结</h2>
+            <div id="summary" class="test-result">
+                <div class="loading-spinner"></div>
+                <span style="margin-left: 10px;">正在运行测试...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyAFNYbGfacZk_-e4U2HDC-j3uYBVGBDzyk';
+        const testResults = {
+            maps: false,
+            autocomplete: false,
+            details: false,
+            geocoding: false
+        };
+
+        // Load Google Maps API
+        function loadGoogleMapsAPI() {
+            return new Promise((resolve, reject) => {
+                if (window.google && window.google.maps) {
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&language=th`;
+                script.async = true;
+                script.defer = true;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Test 1: Maps JavaScript API
+        async function testMapsAPI() {
+            try {
+                await loadGoogleMapsAPI();
+                
+                const map = new google.maps.Map(document.getElementById('map'), {
+                    center: { lat: 13.7563, lng: 100.5018 }, // Bangkok
+                    zoom: 12,
+                    mapTypeControl: true,
+                    streetViewControl: true
+                });
+
+                // Add marker
+                const marker = new google.maps.Marker({
+                    position: { lat: 13.7563, lng: 100.5018 },
+                    map: map,
+                    title: 'Bangkok, Thailand',
+                    animation: google.maps.Animation.DROP
+                });
+
+                updateStatus('maps', 'success', '✅ 成功');
+                showResult('maps', `
+                    <h3>✅ Maps JavaScript API 测试成功</h3>
+                    <div class="test-item">
+                        <span class="icon">🗺️</span>
+                        <span class="label">地图加载</span>
+                        <span class="value">成功</span>
+                    </div>
+                    <div class="test-item">
+                        <span class="icon">📍</span>
+                        <span class="label">标记显示</span>
+                        <span class="value">成功</span>
+                    </div>
+                    <div class="test-item">
+                        <span class="icon">📌</span>
+                        <span class="label">中心位置</span>
+                        <span class="value">Bangkok (13.7563, 100.5018)</span>
+                    </div>
+                `);
+                testResults.maps = true;
+            } catch (error) {
+                updateStatus('maps', 'error', '❌ 失败');
+                showResult('maps', `
+                    <div class="error-message">
+                        <strong>❌ Maps JavaScript API 测试失败</strong><br>
+                        错误: ${error.message}
+                    </div>
+                `);
+                testResults.maps = false;
+            }
+        }
+
+        // Test 2: Places Autocomplete
+        let autocompleteService;
+        let placesService;
+
+        async function testAutocompleteAPI() {
+            try {
+                await loadGoogleMapsAPI();
+                
+                autocompleteService = new google.maps.places.AutocompleteService();
+                placesService = new google.maps.places.PlacesService(document.createElement('div'));
+
+                const input = document.getElementById('autocomplete-input');
+                const suggestionsDiv = document.getElementById('suggestions');
+
+                input.addEventListener('input', async (e) => {
+                    const query = e.target.value;
+                    if (query.length < 2) {
+                        suggestionsDiv.style.display = 'none';
+                        return;
+                    }
+
+                    updateStatus('autocomplete', 'loading', '⏳ 搜索中...');
+
+                    try {
+                        const request = {
+                            input: query,
+                            componentRestrictions: { country: 'th' }
+                        };
+
+                        autocompleteService.getPlacePredictions(request, (predictions, status) => {
+                            if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+                                updateStatus('autocomplete', 'success', '✅ 成功');
+                                displaySuggestions(predictions);
+                                testResults.autocomplete = true;
+                                
+                                showResult('autocomplete', `
+                                    <h3>✅ Places Autocomplete API 测试成功</h3>
+                                    <div class="test-item">
+                                        <span class="icon">🔍</span>
+                                        <span class="label">搜索结果</span>
+                                        <span class="value">${predictions.length} 个建议</span>
+                                    </div>
+                                    <div class="test-item">
+                                        <span class="icon">🌏</span>
+                                        <span class="label">国家限制</span>
+                                        <span class="value">泰国 (TH)</span>
+                                    </div>
+                                `);
+                            } else {
+                                updateStatus('autocomplete', 'error', '❌ 无结果');
+                            }
+                        });
+                    } catch (error) {
+                        updateStatus('autocomplete', 'error', '❌ 失败');
+                        showResult('autocomplete', `
+                            <div class="error-message">
+                                <strong>❌ Autocomplete API 测试失败</strong><br>
+                                错误: ${error.message}
+                            </div>
+                        `);
+                    }
+                });
+
+                updateStatus('autocomplete', 'success', '✅ 就绪');
+            } catch (error) {
+                updateStatus('autocomplete', 'error', '❌ 失败');
+                showResult('autocomplete', `
+                    <div class="error-message">
+                        <strong>❌ Places Autocomplete API 初始化失败</strong><br>
+                        错误: ${error.message}
+                    </div>
+                `);
+            }
+        }
+
+        function displaySuggestions(predictions) {
+            const suggestionsDiv = document.getElementById('suggestions');
+            suggestionsDiv.innerHTML = '';
+            suggestionsDiv.style.display = 'block';
+
+            predictions.forEach(prediction => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerHTML = `
+                    <div class="suggestion-main">${prediction.structured_formatting.main_text}</div>
+                    <div class="suggestion-secondary">${prediction.structured_formatting.secondary_text || ''}</div>
+                `;
+                item.onclick = () => testPlaceDetails(prediction.place_id);
+                suggestionsDiv.appendChild(item);
+            });
+        }
+
+        // Test 3: Places Details
+        async function testPlaceDetails(placeId) {
+            updateStatus('details', 'loading', '⏳ 加载中...');
+
+            const request = {
+                placeId: placeId,
+                fields: ['name', 'formatted_address', 'address_components', 'geometry', 'place_id']
+            };
+
+            placesService.getDetails(request, (place, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    updateStatus('details', 'success', '✅ 成功');
+                    
+                    const components = place.address_components || [];
+                    const getComponent = (type) => components.find(c => c.types.includes(type))?.long_name || 'N/A';
+
+                    showResult('details', `
+                        <h3>✅ Places Details API 测试成功</h3>
+                        <div class="test-item">
+                            <span class="icon">📍</span>
+                            <span class="label">地点名称</span>
+                            <span class="value">${place.name}</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="icon">📮</span>
+                            <span class="label">完整地址</span>
+                            <span class="value">${place.formatted_address}</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="icon">🏙️</span>
+                            <span class="label">省份</span>
+                            <span class="value">${getComponent('administrative_area_level_1')}</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="icon">🏘️</span>
+                            <span class="label">区/县</span>
+                            <span class="value">${getComponent('administrative_area_level_2')}</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="icon">📬</span>
+                            <span class="label">邮编</span>
+                            <span class="value">${getComponent('postal_code')}</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="icon">🌐</span>
+                            <span class="label">坐标</span>
+                            <span class="value">${place.geometry.location.lat().toFixed(6)}, ${place.geometry.location.lng().toFixed(6)}</span>
+                        </div>
+                    `);
+                    testResults.details = true;
+
+                    // Update map
+                    const map = new google.maps.Map(document.getElementById('map'), {
+                        center: place.geometry.location,
+                        zoom: 15
+                    });
+                    new google.maps.Marker({
+                        position: place.geometry.location,
+                        map: map,
+                        title: place.name
+                    });
+
+                    document.getElementById('suggestions').style.display = 'none';
+                } else {
+                    updateStatus('details', 'error', '❌ 失败');
+                    showResult('details', `
+                        <div class="error-message">
+                            <strong>❌ Places Details API 测试失败</strong><br>
+                            状态: ${status}
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Test 4: Geocoding
+        async function testGeocodingAPI() {
+            try {
+                await loadGoogleMapsAPI();
+                
+                const geocoder = new google.maps.Geocoder();
+                const latlng = { lat: 13.7563, lng: 100.5018 }; // Bangkok
+
+                geocoder.geocode({ location: latlng }, (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        updateStatus('geocoding', 'success', '✅ 成功');
+                        showResult('geocoding', `
+                            <h3>✅ Geocoding API 测试成功</h3>
+                            <div class="test-item">
+                                <span class="icon">📍</span>
+                                <span class="label">输入坐标</span>
+                                <span class="value">13.7563, 100.5018</span>
+                            </div>
+                            <div class="test-item">
+                                <span class="icon">📮</span>
+                                <span class="label">解析地址</span>
+                                <span class="value">${results[0].formatted_address}</span>
+                            </div>
+                            <div class="test-item">
+                                <span class="icon">🔢</span>
+                                <span class="label">结果数量</span>
+                                <span class="value">${results.length} 个</span>
+                            </div>
+                        `);
+                        testResults.geocoding = true;
+                    } else {
+                        updateStatus('geocoding', 'error', '❌ 失败');
+                        showResult('geocoding', `
+                            <div class="error-message">
+                                <strong>❌ Geocoding API 测试失败</strong><br>
+                                状态: ${status}
+                            </div>
+                        `);
+                    }
+                });
+            } catch (error) {
+                updateStatus('geocoding', 'error', '❌ 失败');
+                showResult('geocoding', `
+                    <div class="error-message">
+                        <strong>❌ Geocoding API 测试失败</strong><br>
+                        错误: ${error.message}
+                    </div>
+                `);
+            }
+        }
+
+        // Helper functions
+        function updateStatus(test, status, text) {
+            const statusEl = document.getElementById(`status-${test}`);
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = text;
+        }
+
+        function showResult(test, html) {
+            const resultEl = document.getElementById(`result-${test}`);
+            resultEl.innerHTML = html;
+            resultEl.style.display = 'block';
+        }
+
+        function updateSummary() {
+            const total = Object.keys(testResults).length;
+            const passed = Object.values(testResults).filter(r => r).length;
+            const failed = total - passed;
+
+            const summaryEl = document.getElementById('summary');
+            summaryEl.innerHTML = `
+                <h3>测试完成</h3>
+                <div class="test-item">
+                    <span class="icon">📊</span>
+                    <span class="label">总测试数</span>
+                    <span class="value">${total}</span>
+                </div>
+                <div class="test-item">
+                    <span class="icon">✅</span>
+                    <span class="label">通过</span>
+                    <span class="value" style="color: #065f46;">${passed}</span>
+                </div>
+                <div class="test-item">
+                    <span class="icon">❌</span>
+                    <span class="label">失败</span>
+                    <span class="value" style="color: #991b1b;">${failed}</span>
+                </div>
+                <div class="test-item">
+                    <span class="icon">📈</span>
+                    <span class="label">成功率</span>
+                    <span class="value">${((passed/total)*100).toFixed(0)}%</span>
+                </div>
+            `;
+        }
+
+        // Run tests
+        async function runTests() {
+            await testMapsAPI();
+            await testAutocompleteAPI();
+            await testGeocodingAPI();
+            
+            // Update summary after a delay
+            setTimeout(updateSummary, 2000);
+        }
+
+        // Start tests when page loads
+        window.onload = runTests;
+    </script>
+</body>
+</html>

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content:"
+      content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob: gap: content:"
     />
     <meta
       name="viewport"
@@ -34,7 +34,8 @@
               get: function() { return originalSrc; },
               set: function(value) {
                 originalSrc = value;
-                if (value && value.indexOf('eruda') !== -1) {
+                // 确保 value 是字符串再调用 indexOf
+                if (value && typeof value === 'string' && value.indexOf('eruda') !== -1) {
                   console.log('[HTML兼容性修复] 阻止 eruda 脚本加载:', value);
                   // 不设置 src，阻止加载
                   return;

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Address List API</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border-left: 4px solid #4CAF50;
+    }
+    .error {
+      border-left-color: #f44336;
+      background: #ffebee;
+    }
+    pre {
+      background: #263238;
+      color: #aed581;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .address-item {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+    .address-item h3 {
+      margin: 0 0 10px 0;
+      color: #1976d2;
+    }
+    .field {
+      margin: 5px 0;
+      padding: 5px;
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+    .field-name {
+      font-weight: bold;
+      color: #666;
+      display: inline-block;
+      width: 150px;
+    }
+    .field-value {
+      color: #333;
+    }
+    .object-warning {
+      color: #f44336;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏠 Test Address List API</h1>
+    
+    <div>
+      <button onclick="testDevelopment()">Test Development API</button>
+      <button onclick="testProduction()">Test Production API</button>
+    </div>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const DEV_API = 'https://localhost:9000/api.php/api';
+    const PROD_API = 'https://h5.zdn.vn/api.php/api';
+
+    async function testAPI(baseURL, env) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = `<div class="result">Testing ${env} API...</div>`;
+
+      try {
+        const url = `${baseURL}/address/lists?wxapp_id=10001`;
+        
+        console.log(`Fetching: ${url}`);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const data = await response.json();
+        
+        console.log('Response:', data);
+
+        let html = `<div class="result">
+          <h2>✅ ${env} API Response</h2>
+          <p><strong>Status:</strong> ${response.status}</p>
+          <p><strong>Code:</strong> ${data.code}</p>
+          <p><strong>Message:</strong> ${data.msg || 'N/A'}</p>
+        `;
+
+        if (data.data && data.data.list) {
+          html += `<h3>📋 Address List (${data.data.list.length} items)</h3>`;
+          
+          data.data.list.forEach((item, index) => {
+            const hasObjectIssue = typeof item.region === 'object' || 
+                                   typeof item.city === 'object' || 
+                                   typeof item.province === 'object';
+            
+            html += `<div class="address-item">
+              <h3>Address #${index + 1} ${item.is_default == 1 ? '⭐ (Default)' : ''}</h3>
+              <div class="field">
+                <span class="field-name">ID:</span>
+                <span class="field-value">${item.address_id}</span>
+              </div>
+              <div class="field">
+                <span class="field-name">Name:</span>
+                <span class="field-value">${item.name}</span>
+              </div>
+              <div class="field">
+                <span class="field-name">Phone:</span>
+                <span class="field-value">${item.phone}</span>
+              </div>
+              <div class="field">
+                <span class="field-name">Detail:</span>
+                <span class="field-value">${item.detail || 'N/A'}</span>
+              </div>
+              <div class="field ${typeof item.region === 'object' ? 'object-warning' : ''}">
+                <span class="field-name">Region:</span>
+                <span class="field-value">${typeof item.region === 'object' ? '⚠️ [OBJECT]' : item.region || 'N/A'}</span>
+                ${typeof item.region === 'object' ? `<br><pre>${JSON.stringify(item.region, null, 2)}</pre>` : ''}
+              </div>
+              <div class="field ${typeof item.city === 'object' ? 'object-warning' : ''}">
+                <span class="field-name">City:</span>
+                <span class="field-value">${typeof item.city === 'object' ? '⚠️ [OBJECT]' : item.city || 'N/A'}</span>
+              </div>
+              <div class="field ${typeof item.province === 'object' ? 'object-warning' : ''}">
+                <span class="field-name">Province:</span>
+                <span class="field-value">${typeof item.province === 'object' ? '⚠️ [OBJECT]' : item.province || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-name">Country:</span>
+                <span class="field-value">${item.country || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-name">Postal Code:</span>
+                <span class="field-value">${item.postal_code || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-name">Latitude:</span>
+                <span class="field-value">${item.latitude || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-name">Longitude:</span>
+                <span class="field-value">${item.longitude || 'N/A'}</span>
+              </div>
+              ${hasObjectIssue ? '<p class="object-warning">⚠️ This address has object fields that will display as [object Object]</p>' : ''}
+            </div>`;
+          });
+        }
+
+        html += `<h3>📄 Full Response JSON</h3>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        </div>`;
+
+        resultDiv.innerHTML = html;
+
+      } catch (error) {
+        console.error('Error:', error);
+        resultDiv.innerHTML = `<div class="result error">
+          <h2>❌ Error</h2>
+          <p>${error.message}</p>
+          <pre>${error.stack}</pre>
+        </div>`;
+      }
+    }
+
+    function testDevelopment() {
+      testAPI(DEV_API, 'Development');
+    }
+
+    function testProduction() {
+      testAPI(PROD_API, 'Production');
+    }
+  </script>
+</body>
+</html>

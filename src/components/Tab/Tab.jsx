@@ -4,6 +4,41 @@ import { useTranslation } from "react-i18next";
 import { useSetRecoilState } from "recoil";
 import { packageStatusState } from "../../state";
 
+// SVG 图标组件 - Heroicons 风格
+const HomeIcon = ({ active, className }) => (
+  <svg className={className} fill={active ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? 0 : 2} 
+          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+  </svg>
+);
+
+const SearchIcon = ({ active, className }) => (
+  <svg className={className} fill={active ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? 0 : 2} 
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+);
+
+const BoxIcon = ({ active, className }) => (
+  <svg className={className} fill={active ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? 0 : 2} 
+          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+  </svg>
+);
+
+const UserIcon = ({ active, className }) => (
+  <svg className={className} fill={active ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? 0 : 2} 
+          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+);
+
+const LightningIcon = ({ className }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
+  </svg>
+);
+
 const Tab = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,15 +57,13 @@ const Tab = () => {
       id: "home",
       path: "/",
       label: t("tab.home"),
-      iconActive: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_imgs11.png",
-      iconInactive: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_imgs1.png",
+      icon: HomeIcon,
     },
     {
       id: "query",
       path: "/query",
       label: t("tab.query"),
-      iconActive: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_imgs22.png",
-      iconInactive: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_imgs2.png",
+      icon: SearchIcon,
     },
     {
       id: "center",
@@ -42,8 +75,7 @@ const Tab = () => {
       id: "packages",
       path: "/order/package",
       label: t("tab.received", "เข้าคลังแล้ว"),
-      iconActive: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_imgs33.png",
-      iconInactive: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_imgs3.png",
+      icon: BoxIcon,
       onClick: () => {
         setPackageStatus(2); // Set to received status
         navigate("/order/package");
@@ -53,8 +85,7 @@ const Tab = () => {
       id: "mine",
       path: "/mine",
       label: t("tab.mine"),
-      iconActive: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_imgs44.png",
-      iconInactive: "https://zhuanyun.sllowly.cn/assets/api/images/dzx_imgs4.png",
+      icon: UserIcon,
     },
   ];
 
@@ -80,7 +111,7 @@ const Tab = () => {
                                 rounded-full shadow-2xl
                                 group-hover:scale-110 group-active:scale-95
                                 transition-all duration-200">
-                  <span className="text-2xl">⚡</span>
+                  <LightningIcon className="w-7 h-7 text-white" />
                 </div>
                 
                 {/* Notification dot */}
@@ -93,21 +124,17 @@ const Tab = () => {
         }
 
         const active = isActive(tab.path);
+        const IconComponent = tab.icon;
 
         return (
           <div
             key={index}
             onClick={() => tab.onClick ? tab.onClick() : navigate(tab.path)}
-            className={`flex flex-col items-center justify-center w-full h-full cursor-pointer pb-1 ${active ? "text-blue-600" : "text-gray-400"
-              }`}
+            className={`flex flex-col items-center justify-center w-full h-full cursor-pointer pb-1 transition-colors ${
+              active ? "text-primary-600" : "text-gray-400"
+            }`}
           >
-            <div className="w-6 h-6 mb-1">
-              <img
-                src={active ? tab.iconActive : tab.iconInactive}
-                alt={tab.label}
-                className="w-full h-full object-contain"
-              />
-            </div>
+            <IconComponent active={active} className="w-6 h-6 mb-1" />
             <span className="text-[10px] font-medium leading-none">{tab.label}</span>
           </div>
         );

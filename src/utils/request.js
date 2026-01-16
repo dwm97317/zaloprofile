@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BASE_URL, TIMEOUT } from "../config/config";
+import { BASE_URL, TIMEOUT, WXAPP_ID } from "../config/config";
 
 // Default settings
 axios.defaults.headers["Content-Type"] = "application/json";
@@ -12,21 +12,17 @@ axios.interceptors.request.use(
     // Get token from localStorage (standard web practice)
     const token = localStorage.getItem("token");
 
+    // Initialize params if not exists
+    if (config.params === undefined) {
+      config.params = {};
+    }
+
+    // Always add wxapp_id
+    config.params["wxapp_id"] = WXAPP_ID;
+
+    // Add token if exists
     if (token) {
-      if (config.method === "get") {
-        if (config.params === undefined) {
-          config.params = {};
-        }
-        config.params["token"] = token;
-      }
-      if (config.method === "post") {
-        if (config.data === undefined) {
-          config.data = {};
-        }
-        config.data["token"] = token;
-      }
-      // Or use Authorization header if backend prefers
-      // config.headers.Authorization = `Bearer ${token}`;
+      config.params["token"] = token;
     }
 
     config.headers.platform = "LINE"; // Changed from ZALO

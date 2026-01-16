@@ -1,6 +1,9 @@
 <!-- OPENSPEC:START -->
 # OpenSpec Instructions
-
+所有结构化整理、总结、PRD、文档
+由我来决定何时需要
+你只能在单一问题层面回答
+每次只解决一个局部，不做全局回顾
 These instructions are for AI assistants working in this project.
 
 Always open `@/openspec/AGENTS.md` when the request:

@@ -86,7 +86,7 @@ const FreightResultPage = () => {
 
       {/* Tips */}
       <div className="bg-orange-50 p-4 flex gap-3 items-start mx-4 mt-4 rounded-xl border border-orange-100">
-        <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img34.png" className="w-5 h-5 flex-shrink-0 mt-0.5 object-contain" />
+        <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img34.png" className="w-5 h-5 flex-shrink-0 mt-0.5 object-contain" />
         <p className="text-sm text-orange-700 leading-relaxed font-medium">
           {t("freight.result.note")}
         </p>

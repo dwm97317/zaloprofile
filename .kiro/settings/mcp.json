@@ -14,7 +14,12 @@
         "playwright_screenshot",
         "playwright_close",
         "playwright_evaluate",
-        "playwright_evaluate"
+        "playwright_evaluate",
+        "playwright_get_visible_text",
+        "playwright_fill",
+        "playwright_fill",
+        "playwright_click",
+        "playwright_get_visible_html"
       ]
     }
   }

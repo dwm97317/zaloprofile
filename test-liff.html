@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIFF Configuration Test</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #06C755 0%, #00B900 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #06C755;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .status.loading {
+            background: #FFF3CD;
+            color: #856404;
+        }
+        
+        .status.success {
+            background: #D4EDDA;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #F8D7DA;
+            color: #721C24;
+        }
+        
+        .info-section {
+            margin-bottom: 25px;
+        }
+        
+        .info-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .info-item {
+            background: #F8F9FA;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .info-label {
+            color: #666;
+            font-weight: 500;
+            display: inline-block;
+            width: 120px;
+        }
+        
+        .info-value {
+            color: #333;
+            word-break: break-all;
+        }
+        
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #F8F9FA;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .profile-pic {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #06C755;
+        }
+        
+        .profile-info {
+            flex: 1;
+        }
+        
+        .profile-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .profile-id {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #06C755 0%, #00B900 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        .json-output {
+            background: #2D2D2D;
+            color: #A9B7C6;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #F8F9FA;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature-icon {
+            font-size: 20px;
+        }
+        
+        .feature-status {
+            margin-left: auto;
+            font-weight: 600;
+        }
+        
+        .feature-status.ok {
+            color: #28A745;
+        }
+        
+        .feature-status.fail {
+            color: #DC3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 LIFF Configuration Test</h1>
+        <p class="subtitle">LINE Mini App 配置测试工具</p>
+        
+        <div id="status" class="status loading">
+            ⏳ 正在初始化 LIFF...
+        </div>
+        
+        <div id="content" style="display: none;">
+            <!-- Backend Config -->
+            <div class="info-section">
+                <div class="info-title">📡 Backend Configuration</div>
+                <div id="backendConfig"></div>
+            </div>
+            
+            <!-- LIFF Info -->
+            <div class="info-section">
+                <div class="info-title">📱 LIFF Information</div>
+                <div id="liffInfo"></div>
+            </div>
+            
+            <!-- User Profile -->
+            <div class="info-section">
+                <div class="info-title">👤 User Profile</div>
+                <div id="userProfile"></div>
+            </div>
+            
+            <!-- Features -->
+            <div class="info-section">
+                <div class="info-title">✨ Features Check</div>
+                <ul id="features" class="feature-list"></ul>
+            </div>
+            
+            <!-- Actions -->
+            <button onclick="testAPI()">🧪 Test Backend API</button>
+            <button onclick="copyConfig()">📋 Copy Configuration</button>
+            <button onclick="location.reload()">🔄 Reload Test</button>
+        </div>
+        
+        <div id="error" style="display: none;">
+            <div class="info-section">
+                <div class="info-title">❌ Error Details</div>
+                <div id="errorDetails" class="json-output"></div>
+            </div>
+            <button onclick="location.reload()">🔄 Retry</button>
+        </div>
+    </div>
+    
+    <script>
+        const BASE_URL = 'http://localhost:8080/index.php?s=api/';
+        let backendConfig = null;
+        
+        async function init() {
+            try {
+                // 1. Fetch backend configuration
+                const response = await fetch(`${BASE_URL}line_app/base&wxapp_id=10001`);
+                const data = await response.json();
+                
+                if (!data.data || !data.data.config) {
+                    throw new Error('Invalid backend response');
+                }
+                
+                backendConfig = data.data.config;
+                displayBackendConfig(backendConfig);
+                
+                // 2. Initialize LIFF
+                if (!backendConfig.is_enable) {
+                    showStatus('⚠️ LIFF is disabled in backend. Enable it to test.', 'error');
+                    return;
+                }
+                
+                await liff.init({ liffId: backendConfig.liff_id });
+                
+                // 3. Check login status
+                if (!liff.isLoggedIn()) {
+                    showStatus('🔐 Not logged in. Redirecting to LINE login...', 'loading');
+                    liff.login();
+                    return;
+                }
+                
+                // 4. Get user profile
+                const profile = await liff.getProfile();
+                displayUserProfile(profile);
+                
+                // 5. Display LIFF info
+                displayLIFFInfo();
+                
+                // 6. Check features
+                checkFeatures();
+                
+                showStatus('✅ LIFF initialized successfully!', 'success');
+                document.getElementById('content').style.display = 'block';
+                
+            } catch (error) {
+                console.error('LIFF init error:', error);
+                showStatus('❌ LIFF initialization failed', 'error');
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('errorDetails').textContent = JSON.stringify({
+                    message: error.message,
+                    stack: error.stack,
+                    backendConfig: backendConfig
+                }, null, 2);
+            }
+        }
+        
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function displayBackendConfig(config) {
+            const html = `
+                <div class="info-item">
+                    <span class="info-label">Enabled:</span>
+                    <span class="info-value">${config.is_enable ? '✅ Yes' : '❌ No'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">LIFF ID:</span>
+                    <span class="info-value">${config.liff_id}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Size:</span>
+                    <span class="info-value">${config.liff_size}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Scopes:</span>
+                    <span class="info-value">${config.scopes.join(', ')}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Bot Link:</span>
+                    <span class="info-value">${config.bot_link}</span>
+                </div>
+            `;
+            document.getElementById('backendConfig').innerHTML = html;
+        }
+        
+        function displayLIFFInfo() {
+            const context = liff.getContext();
+            const html = `
+                <div class="info-item">
+                    <span class="info-label">LIFF ID:</span>
+                    <span class="info-value">${liff.id}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">In Client:</span>
+                    <span class="info-value">${liff.isInClient() ? '✅ Yes' : '❌ No (External Browser)'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Logged In:</span>
+                    <span class="info-value">${liff.isLoggedIn() ? '✅ Yes' : '❌ No'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">OS:</span>
+                    <span class="info-value">${liff.getOS()}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Language:</span>
+                    <span class="info-value">${liff.getLanguage()}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Version:</span>
+                    <span class="info-value">${liff.getVersion()}</span>
+                </div>
+            `;
+            document.getElementById('liffInfo').innerHTML = html;
+        }
+        
+        function displayUserProfile(profile) {
+            const html = `
+                <div class="profile">
+                    <img src="${profile.pictureUrl}" alt="Profile" class="profile-pic">
+                    <div class="profile-info">
+                        <div class="profile-name">${profile.displayName}</div>
+                        <div class="profile-id">User ID: ${profile.userId}</div>
+                        ${profile.statusMessage ? `<div class="profile-id">${profile.statusMessage}</div>` : ''}
+                    </div>
+                </div>
+            `;
+            document.getElementById('userProfile').innerHTML = html;
+        }
+        
+        function checkFeatures() {
+            const features = [
+                { name: 'Get Profile', check: () => liff.getProfile },
+                { name: 'Get ID Token', check: () => liff.getIDToken },
+                { name: 'Get Access Token', check: () => liff.getAccessToken },
+                { name: 'Get Context', check: () => liff.getContext },
+                { name: 'Open Window', check: () => liff.openWindow },
+                { name: 'Close Window', check: () => liff.closeWindow },
+                { name: 'Send Messages', check: () => liff.sendMessages },
+                { name: 'Share Target Picker', check: () => liff.shareTargetPicker }
+            ];
+            
+            const html = features.map(feature => {
+                const available = feature.check() !== undefined;
+                return `
+                    <li class="feature-item">
+                        <span class="feature-icon">${available ? '✅' : '❌'}</span>
+                        <span>${feature.name}</span>
+                        <span class="feature-status ${available ? 'ok' : 'fail'}">
+                            ${available ? 'Available' : 'Not Available'}
+                        </span>
+                    </li>
+                `;
+            }).join('');
+            
+            document.getElementById('features').innerHTML = html;
+        }
+        
+        async function testAPI() {
+            try {
+                const response = await fetch(`${BASE_URL}line_app/base&wxapp_id=10001`);
+                const data = await response.json();
+                alert('✅ Backend API is working!\n\n' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                alert('❌ Backend API error:\n\n' + error.message);
+            }
+        }
+        
+        function copyConfig() {
+            const config = {
+                backend: backendConfig,
+                liff: {
+                    id: liff.id,
+                    isInClient: liff.isInClient(),
+                    isLoggedIn: liff.isLoggedIn(),
+                    os: liff.getOS(),
+                    language: liff.getLanguage(),
+                    version: liff.getVersion()
+                }
+            };
+            
+            navigator.clipboard.writeText(JSON.stringify(config, null, 2));
+            alert('✅ Configuration copied to clipboard!');
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

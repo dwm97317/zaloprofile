@@ -144,7 +144,35 @@ const AddressBookPage = () => {
               </div>
 
               <p className="text-gray-600 text-sm leading-relaxed border-b border-gray-100 pb-3 mb-3">
-                {[item.detail, item.region, item.city, item.province, item.country].filter(Boolean).join(", ")}
+                {(() => {
+                  // Build address string, handling region field properly
+                  const parts = [];
+                  
+                  if (item.detail) parts.push(item.detail);
+                  
+                  // Handle region - it might be a string or object
+                  if (item.region) {
+                    if (typeof item.region === 'string') {
+                      // If it's a string like "Thailand,Province,City,", parse it
+                      const regionParts = item.region.split(',').filter(Boolean);
+                      // Skip "Thailand" and use province/city from region if not already set
+                      if (regionParts.length > 1 && !item.province) {
+                        parts.push(regionParts[1]); // Province
+                      }
+                      if (regionParts.length > 2 && !item.city) {
+                        parts.push(regionParts[2]); // City
+                      }
+                    }
+                    // If region is an object, skip it (don't display [object Object])
+                  }
+                  
+                  // Add city and province if they exist and aren't already added
+                  if (item.city && typeof item.city === 'string') parts.push(item.city);
+                  if (item.province && typeof item.province === 'string') parts.push(item.province);
+                  if (item.country && typeof item.country === 'string') parts.push(item.country);
+                  
+                  return parts.join(", ");
+                })()}
               </p>
             </div>
 

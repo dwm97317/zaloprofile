@@ -1,20 +1,40 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { useTranslation } from "react-i18next";
-import { packageInfoState, expressSnState, userState, packageIdsState, selectionModeState } from "../../state";
+import { packageInfoState, expressSnState, packageIdsState, selectionModeState } from "../../state";
 import request from "../../utils/request";
 import util from "../../utils/util";
 import Loading from "../../components/Loading/Index";
-import Button from "../../components/Button/Index";
 import { toast } from "../../utils/toast";
 import Tab from "../../components/Tab/Tab";
+import VirtualizedOrderList from "../../components/Order/VirtualizedOrderList";
+import OrderCard from "../../components/Order/OrderCard";
+import EnhancedOrderCard from "../../components/Order/EnhancedOrderCard";
+import EnhancedTabBar from "../../components/Order/EnhancedTabBar";
+import FloatingActionBar from "../../components/Order/FloatingActionBar";
+import OrderCardSkeleton from "../../components/Order/OrderCardSkeleton";
+import OptimizedImage from "../../components/Common/OptimizedImage";
+import EmptyState from "../../components/Common/EmptyState";
+import ErrorState from "../../components/Common/ErrorState";
+import PullToRefresh from "../../components/Common/PullToRefresh";
+import LocalStatisticsPanel from "../../components/Order/LocalStatisticsPanel";
+import CompactStatisticsWidget from "../../components/Order/CompactStatisticsWidget";
+import SearchWithHistory from "../../components/Order/SearchWithHistory";
+import { useOrderFilter } from "../../hooks/useOrderFilter";
+import { useLocalStatistics } from "../../hooks/useLocalStatistics";
+import { useSearchHistory } from "../../hooks/useSearchHistory";
+import { useToast } from "../../hooks/useToast";
+import { performanceMonitor } from "../../utils/performanceMonitor";
 import "./Index.scss";
+
+// Lazy load heavy components
+const FilterPanel = lazy(() => import("../../components/Order/FilterPanel"));
+const QuickActionPanel = lazy(() => import("../../components/Order/QuickActionPanel"));
 
 const OrderPackagePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const user = useRecoilValue(userState);
   const setPackage = useSetRecoilState(packageInfoState);
   const setExpress = useSetRecoilState(expressSnState);
   const setPackageIds = useSetRecoilState(packageIdsState);
@@ -24,19 +44,63 @@ const OrderPackagePage = () => {
   const [list, setList] = useState([]);
   const [tab, setTab] = useState(2);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [count, setCount] = useState({
     nocount: 0,
     yescount: 0,
     yessend: 0,
     procount: 0,
+    outboundcount: 0, // 已出库数量（待支付+已支付）
+    completedcount: 0, // 已完成数量（已收货）
   });
   const [searchText, setSearchText] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedId, setSelectedId] = useState(0);
   const [selectedPackages, setSelectedPackages] = useState([]);
   const [imageModal, setImageModal] = useState({ show: false, images: [], currentIndex: 0 });
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [quickActionOrder, setQuickActionOrder] = useState(null);
+  const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
+  
+  // Use hooks
+  const { history, addSearch, removeSearch, clearHistory } = useSearchHistory();
+  const toastManager = useToast();
+  
+  // Use filter hook - must be before useLocalStatistics
+  const {
+    filteredOrders,
+    filters,
+    updateFilters,
+    resetFilters,
+    availableWarehouses,
+    availableCountries,
+    availableStatuses,
+    hasActiveFilters,
+  } = useOrderFilter(list);
+  
+  // Use statistics hook - must be after filteredOrders is defined
+  const statistics = useLocalStatistics(filteredOrders);
+  
+  // 分页状态
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 20,
+    total: 0,
+    hasMore: true
+  });
+  
+  // 数据缓存
+  const [cache, setCache] = useState({});
+  const [countCache, setCountCache] = useState(null);
+  const [countCacheTime, setCountCacheTime] = useState(0);
+  
+  // 搜索防抖
+  const [searchDebounceTimer, setSearchDebounceTimer] = useState(null);
 
   useEffect(() => {
+    // Start performance monitoring
+    performanceMonitor.start();
+    
     util.checkLogin(fetchOrderList).then((res) => {
       if (res) {
         fetchToDoCount();
@@ -45,35 +109,91 @@ const OrderPackagePage = () => {
       }
     });
     util.setBarPageView("Package List");
+
+    // Cleanup
+    return () => {
+      performanceMonitor.stop();
+    };
   }, []);
 
   const fetchOrderList = async (params) => {
+    // 生成缓存key
+    const currentTab = params?.tab ?? tab;
+    const keyword = params?.keyword ?? searchText;
+    const page = params?.page ?? 1;
+    const cacheKey = `${currentTab}_${keyword}_${page}`;
+    
+    // 检查缓存（非强制刷新时）
+    if (!params?.forceRefresh && cache[cacheKey]) {
+      setList(cache[cacheKey].data);
+      setPagination(cache[cacheKey].pagination);
+      setError(null);
+      performanceMonitor.trackCacheHit();
+      return;
+    }
+    
     setLoading(true);
+    setError(null);
+    performanceMonitor.trackAPICall();
     const url = "package/outside&wxapp_id=10001";
     let query = {
-      status: params ? params.tab : tab,
+      status: currentTab,
+      page: page,
+      page_size: 20
     };
-    if (params && params.keyword) query.keyword = params.keyword;
-    else if (searchText) query.keyword = searchText;
+    if (keyword) query.keyword = keyword;
 
     try {
       const res = await request.get(url, query);
       if (res.data && Array.isArray(res.data.data)) {
-        setList(res.data.data);
+        const newData = res.data.data;
+        const newPagination = {
+          currentPage: res.data.current_page || 1,
+          pageSize: res.data.per_page || 20,
+          total: res.data.total || 0,
+          hasMore: (res.data.current_page || 1) < (res.data.last_page || 1)
+        };
+        
+        setList(newData);
+        setPagination(newPagination);
+        
+        // 缓存数据
+        setCache(prev => ({ 
+          ...prev, 
+          [cacheKey]: { 
+            data: newData, 
+            pagination: newPagination 
+          } 
+        }));
       } else {
         setList([]);
+        setPagination({ currentPage: 1, pageSize: 20, total: 0, hasMore: false });
       }
     } catch (err) {
       console.error(err);
+      setError(err.message || 'Failed to load orders');
+      setList([]);
+      setPagination({ currentPage: 1, pageSize: 20, total: 0, hasMore: false });
+      toastManager.error(t('common.error.load_failed', 'โหลดข้อมูลไม่สำเร็จ'));
     } finally {
       setLoading(false);
     }
   };
 
   const fetchToDoCount = async () => {
+    // 检查缓存（5分钟内）
+    const now = Date.now();
+    if (countCache && (now - countCacheTime) < 5 * 60 * 1000) {
+      setCount(countCache);
+      return;
+    }
+    
     try {
       const res = await request.get("/package/countpack&wxapp_id=10001");
       setCount(res.data);
+      // 缓存统计数据
+      setCountCache(res.data);
+      setCountCacheTime(now);
     } catch (err) {
       console.error(err);
     }
@@ -83,7 +203,8 @@ const OrderPackagePage = () => {
     setTab(newTab);
     setSelectionMode(false);
     setSelectedPackages([]);
-    fetchOrderList({ tab: newTab });
+    setPagination({ currentPage: 1, pageSize: 20, total: 0, hasMore: true });
+    fetchOrderList({ tab: newTab, page: 1 });
   };
 
   const toggleSelectionMode = () => {
@@ -106,8 +227,8 @@ const OrderPackagePage = () => {
   };
 
   const handleSelectAll = () => {
-    // Only select packages with status 2 (received)
-    const selectableIds = list.filter(item => item.status === 2).map((item) => item.id);
+    // Only select packages with status 2 (received) from filtered orders
+    const selectableIds = filteredOrders.filter(item => item.status === 2).map((item) => item.id);
     setSelectedPackages(selectableIds);
   };
 
@@ -121,8 +242,8 @@ const OrderPackagePage = () => {
       return;
     }
 
-    // 检查是否所有选中的包裹都来自同一个仓库
-    const selectedItems = list.filter(item => selectedPackages.includes(item.id));
+    // Check if all selected packages are from the same warehouse
+    const selectedItems = filteredOrders.filter(item => selectedPackages.includes(item.id));
     const storageIds = [...new Set(selectedItems.map(item => item.storage_id))];
     
     if (storageIds.length > 1) {
@@ -136,9 +257,61 @@ const OrderPackagePage = () => {
     navigate("/packages/pack");
   };
 
-  const handleSearch = () => {
-    fetchOrderList({ tab: tab, keyword: searchText });
-  };
+  const handleSearch = useCallback(() => {
+    // Clear previous timer
+    if (searchDebounceTimer) {
+      clearTimeout(searchDebounceTimer);
+    }
+    
+    // Set new timer (300ms debounce)
+    const timer = setTimeout(() => {
+      // Add to search history if not empty
+      if (searchText.trim()) {
+        addSearch(searchText.trim());
+      }
+      // Update filter keyword instead of fetching
+      updateFilters({ keyword: searchText });
+    }, 300);
+    
+    setSearchDebounceTimer(timer);
+  }, [searchDebounceTimer, searchText, updateFilters, addSearch]);
+  
+  const handleRefresh = useCallback(() => {
+    // 清除缓存并重新加载
+    setCache({});
+    setPagination({ currentPage: 1, pageSize: 20, total: 0, hasMore: true });
+    fetchOrderList({ tab: tab, keyword: searchText, page: 1, forceRefresh: true });
+    fetchToDoCount();
+    toastManager.success(t('common.refreshed', 'รีเฟรชสำเร็จ'));
+  }, [tab, searchText, toastManager, t]);
+
+  const handlePullToRefresh = useCallback(async () => {
+    // Pull-to-refresh handler
+    await handleRefresh();
+  }, [handleRefresh]);
+
+  const handleLongPress = useCallback((order) => {
+    if (!selectionMode) {
+      setQuickActionOrder(order);
+      setIsQuickActionOpen(true);
+    }
+  }, [selectionMode]);
+  
+  const handleLoadMore = useCallback(() => {
+    if (!loading && pagination.hasMore) {
+      const nextPage = pagination.currentPage + 1;
+      fetchOrderList({ tab: tab, keyword: searchText, page: nextPage });
+    }
+  }, [loading, pagination, tab, searchText]);
+  
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+      }
+    };
+  }, [searchDebounceTimer]);
 
   const handleDetail = (item) => {
     setPackage(item);
@@ -198,45 +371,22 @@ const OrderPackagePage = () => {
     }));
   };
 
-  const getStatusText = (status) => {
-    const statusMap = {
-      1: t("package.status.not_received", "ยังไม่ได้รับ"),
-      2: t("package.status.received", "ได้รับแล้ว"),
-      3: t("package.status.pending_verify", "รอตรวจสอบ"),
-      4: t("package.status.verified", "ตรวจสอบแล้ว"),
-      5: t("package.status.pending_pack", "รอแพ็ค"),
-      6: t("package.status.packed", "แพ็คแล้ว"),
-      7: t("package.status.pending_payment", "รอชำระเงิน"),
-      8: t("package.status.shipped", "จัดส่งแล้ว"),
-      "-1": t("package.status.issue", "มีปัญหา")
-    };
-    return statusMap[status] || t("package.status.unknown", "ไม่ทราบสถานะ");
-  };
-
-  const getStatusColor = (status) => {
-    const colorMap = {
-      1: "bg-gray-100 text-gray-700",
-      2: "bg-blue-100 text-blue-700",
-      3: "bg-yellow-100 text-yellow-700",
-      4: "bg-green-100 text-green-700",
-      5: "bg-orange-100 text-orange-700",
-      6: "bg-purple-100 text-purple-700",
-      7: "bg-red-100 text-red-700",
-      8: "bg-green-100 text-green-700",
-      "-1": "bg-red-100 text-red-700"
-    };
-    return colorMap[status] || "bg-gray-100 text-gray-700";
-  };
-
   const tabs = [
     { id: 2, label: t("package.tabs.received"), countKey: "yescount" },
-    { id: 8, label: t("package.tabs.shipped"), countKey: "yessend" },
+    { id: 56, label: t("package.tabs.outbound", "已出库"), countKey: "outboundcount" },
+    { id: 9, label: t("package.tabs.shipped"), countKey: "yessend" },
+    { id: 10, label: t("package.tabs.completed", "已完成"), countKey: "completedcount" },
     { id: 1, label: t("package.tabs.not_received"), countKey: "nocount" },
     { id: -1, label: t("package.tabs.issue"), countKey: "procount" },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 pb-safe">
+      {/* Floating Compact Statistics Widget */}
+      {!loading && !error && filteredOrders.length > 0 && (
+        <CompactStatisticsWidget statistics={statistics} />
+      )}
+
       <div className="bg-white px-4 py-3 shadow-sm sticky top-0 z-10 flex items-center">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-600">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,34 +396,59 @@ const OrderPackagePage = () => {
         <h1 className="text-lg font-bold ml-2 text-gray-800">{t("package.title")}</h1>
       </div>
 
-      <div className="bg-white px-2 pt-2 border-b border-gray-100 flex overflow-x-auto no-scrollbar">
-        {tabs.map((tItem) => (
-          <div
-            key={tItem.id}
-            onClick={() => handleTabChange(tItem.id)}
-            className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors cursor-pointer whitespace-nowrap
-                  ${tab === tItem.id ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
-            {tItem.label} ({count[tItem.countKey] || 0})
-          </div>
-        ))}
-      </div>
+      <EnhancedTabBar 
+        tabs={tabs}
+        activeTab={tab}
+        onTabChange={handleTabChange}
+        counts={count}
+      />
 
       <div className="p-4 bg-white border-b border-gray-100">
-        <div className="relative">
-          <input
-            type="text"
+        <div className="flex gap-2">
+          <SearchWithHistory
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            onBlur={handleSearch}
+            onChange={(value) => {
+              setSearchText(value);
+              handleSearch();
+            }}
+            onSearch={(term) => {
+              setSearchText(term);
+              updateFilters({ keyword: term });
+            }}
+            history={history}
+            onRemoveHistory={removeSearch}
+            onClearHistory={clearHistory}
             placeholder={t("package.search_placeholder")}
-            className="w-full bg-gray-100 text-gray-800 text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-100"
           />
-          <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <button
+            onClick={() => setIsFilterPanelOpen(true)}
+            className={`p-2.5 rounded-xl transition-colors relative ${
+              hasActiveFilters 
+                ? 'bg-primary-500 text-white' 
+                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+            }`}
+            title={t("filter.title", "ตัวกรอง")}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            {hasActiveFilters && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+            )}
+          </button>
+          <button
+            onClick={handleRefresh}
+            className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+            title={t("common.refresh", "รีเฟรช")}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
         </div>
       </div>
 
-      {tab === 2 && list.length > 0 && !selectionMode && (
+      {tab === 2 && filteredOrders.length > 0 && !selectionMode && (
         <div className="px-4 py-3 bg-gradient-to-r from-primary-500 to-primary-600">
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 mb-3 border border-white/20">
             <div className="flex items-start gap-2 text-white text-sm">
@@ -294,257 +469,135 @@ const OrderPackagePage = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
             <span>
-              {`${t("package.apply_packing", "สมัครแพ็คพัสดุ")} (${list.length})`}
+              {`${t("package.apply_packing", "สมัครแพ็คพัสดุ")} (${filteredOrders.length})`}
             </span>
           </button>
         </div>
       )}
 
       <div className="p-4 space-y-4">
-        {loading ? (
-          <div className="py-10 text-center"><Loading is={true} /></div>
-        ) : list.length > 0 ? (
+        {/* Statistics Panel - Removed from here, now floating */}
+
+        {loading && list.length === 0 ? (
+          <div className="space-y-4">
+            <OrderCardSkeleton />
+            <OrderCardSkeleton />
+            <OrderCardSkeleton />
+          </div>
+        ) : error ? (
+          <ErrorState 
+            message={error} 
+            onRetry={() => fetchOrderList({ tab, keyword: searchText, page: 1, forceRefresh: true })} 
+          />
+        ) : filteredOrders.length > 0 ? (
           <>
-            {selectionMode && (
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedPackages.length > 0 && selectedPackages.length === list.filter(item => item.status === 2).length}
-                      onChange={selectedPackages.length === list.filter(item => item.status === 2).length ? handleDeselectAll : handleSelectAll}
-                      className="w-6 h-6 rounded border-2 border-primary-500 text-primary-600 focus:ring-2 focus:ring-primary-200 cursor-pointer"
-                    />
-                    <span className="text-sm font-medium text-gray-700">
-                      {selectedPackages.length === list.filter(item => item.status === 2).length && selectedPackages.length > 0
-                        ? t("package.select_pack.deselect_all", "ยกเลิกทั้งหมด")
-                        : t("package.select_pack.select_all", "เลือกทั้งหมด")
-                      }
-                    </span>
+            {/* Virtualized Order List */}
+            <PullToRefresh onRefresh={handlePullToRefresh}>
+              <div style={{ height: 'calc(100vh - 400px)', minHeight: '400px' }}>
+                <VirtualizedOrderList
+                  items={filteredOrders}
+                  estimateSize={250}
+                  overscan={3}
+                  renderItem={(item, index) => (
+                    <div key={item.id} className="mb-4">
+                      <EnhancedOrderCard
+                        item={item}
+                        index={index}
+                        selectionMode={selectionMode}
+                        isSelected={selectedPackages.includes(item.id)}
+                        onToggleSelection={togglePackageSelection}
+                        onDetail={handleDetail}
+                        onEdit={handleEdit}
+                        onLogistics={handleLogistics}
+                        onConfirmCancel={confirmCancel}
+                        onImageClick={handleImageClick}
+                        onLongPress={handleLongPress}
+                      />
+                    </div>
+                  )}
+                  onLoadMore={handleLoadMore}
+                  hasMore={pagination.hasMore}
+                  loading={loading}
+                />
+              </div>
+            </PullToRefresh>
+            
+            {/* Load More Button */}
+            {!loading && pagination.hasMore && filteredOrders.length > 0 && (
+              <button
+                onClick={handleLoadMore}
+                className="w-full py-3 bg-white border-2 border-gray-200 text-gray-600 font-medium rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                {t("common.load_more", "โหลดเพิ่มเติม")} ({pagination.currentPage} / {Math.ceil(pagination.total / pagination.pageSize)})
+              </button>
+            )}
+            
+            {/* Pagination Info */}
+            {filteredOrders.length > 0 && (
+              <div className="text-center text-xs text-gray-400 py-2">
+                {hasActiveFilters && (
+                  <div className="mb-2 text-primary-600 font-medium">
+                    {t("filter.showing_filtered", "แสดงผลลัพธ์ที่กรอง")}: {filteredOrders.length} / {list.length}
                   </div>
-                  <div className="flex items-center gap-2 bg-primary-50 px-3 py-1.5 rounded-lg">
-                    <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-sm font-bold text-primary-700">
-                      {selectedPackages.length} / {list.filter(item => item.status === 2).length}
-                    </span>
-                  </div>
-                </div>
-                
-                {selectedPackages.length > 0 && (() => {
-                  const selectedItems = list.filter(item => selectedPackages.includes(item.id));
-                  const storageIds = [...new Set(selectedItems.map(item => item.storage_id))];
-                  const warehouseNames = [...new Set(selectedItems.map(item => item.storage?.shop_name).filter(Boolean))];
-                  
-                  if (storageIds.length > 1) {
-                    return (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-                        <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        <div className="text-xs text-red-700">
-                          <p className="font-medium mb-1">{t("package.warehouse_notice.error", "ไม่สามารถแพ็คร่วมกันได้")}</p>
-                          <p>{t("package.warehouse_notice.different_warehouse", "พัสดุที่เลือกมาจากคลังที่แตกต่างกัน กรุณาเลือกพัสดุจากคลังเดียวกัน")}</p>
-                        </div>
-                      </div>
-                    );
-                  } else if (warehouseNames.length > 0) {
-                    return (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-start gap-2">
-                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div className="text-xs text-green-700">
-                          <p className="font-medium">{t("package.warehouse_notice.same_warehouse", "คลังเดียวกัน")}: {warehouseNames[0]}</p>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
+                )}
+                {t("common.showing", "แสดง")} {filteredOrders.length} {t("common.of", "จาก")} {pagination.total} {t("common.items", "รายการ")}
               </div>
             )}
-
-            {list.map((item, index) => {
-              const isSelectable = selectionMode && item.status === 2;
-              const isSelected = selectedPackages.includes(item.id);
-              
-              return (
-              <div
-                key={index}
-                onClick={() => isSelectable && togglePackageSelection(item.id, item)}
-                className={`bg-white rounded-2xl p-4 shadow-sm border transition-all relative ${
-                  isSelectable && isSelected
-                    ? 'border-primary-500 border-2 bg-primary-50'
-                    : 'border-gray-100'
-                } ${isSelectable ? 'cursor-pointer active:scale-[0.98]' : ''} ${selectionMode && !isSelectable ? 'opacity-50' : ''}`}
-              >
-                {selectionMode && (
-                  <div className="absolute top-4 left-4 z-10 pointer-events-none">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => {}}
-                      disabled={!isSelectable}
-                      className={`w-6 h-6 rounded border-2 text-primary-600 focus:ring-2 focus:ring-primary-200 pointer-events-none ${
-                        isSelectable ? 'border-primary-500 cursor-pointer' : 'border-gray-300 cursor-not-allowed'
-                      }`}
-                      readOnly
-                    />
-                  </div>
-                )}
-
-                <div className={`flex justify-between items-start mb-3 pb-3 border-b border-gray-50 ${selectionMode ? 'ml-8' : ''}`}>
-                  <div className="flex items-center gap-2">
-                    <div className="bg-blue-50 p-1.5 rounded-lg">
-                      <img src="https://zhuanyun.sllowly.cn/assets/api/images//dzx_img24.png" className="w-4 h-4" />
-                    </div>
-                    <span className="font-bold text-gray-800 text-sm">{item.storage?.shop_name || t("package.labels.warehouse")}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs font-bold px-2 py-1 rounded ${getStatusColor(item.status)}`}>
-                      {getStatusText(item.status)}
-                    </span>
-                    {!selectionMode && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDetail(item);
-                        }}
-                        className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100"
-                      >
-                        {t("common.view_detail")}
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <InfoItem label={t("package.labels.tracking_no", "เลขพัสดุ")} value={item.express_num} />
-                  {item.mark && (
-                    <InfoItem label={t("package.labels.mark", "唛头")} value={item.mark} />
-                  )}
-                  <InfoItem label={t("package.labels.country")} value={item.country?.title || t("package.labels.not_provided")} />
-                  <InfoItem label={t("package.labels.items")} value={item.class_name} />
-                  {(item.weight || item.length || item.width || item.height) && (
-                    <InfoItem 
-                      label={t("package.labels.dimensions", "ขนาด/น้ำหนัก")} 
-                      value={`${item.length || '-'}×${item.width || '-'}×${item.height || '-'} cm / ${item.weight || '-'} kg`} 
-                    />
-                  )}
-                  <InfoItem label={t("package.labels.report_time")} value={item.created_time} />
-                </div>
-
-                {item.images && item.images.length > 0 && (
-                  <div className="mb-4 pb-4 border-b border-gray-50">
-                    <p className="text-xs text-gray-500 mb-2">{t("package.labels.goods_images", "รูปสินค้า")}:</p>
-                    <div className="flex gap-2 overflow-x-auto">
-                      {item.images.map((img, idx) => (
-                        <img 
-                          key={idx}
-                          src={img} 
-                          alt={`Package ${idx + 1}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageClick(item.images, idx);
-                          }}
-                          className="w-20 h-20 object-cover rounded-lg bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
-                          onError={(e) => { e.target.style.display = 'none'; }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {!selectionMode && (
-                  <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-50">
-                    {item.status != -1 && item.status != 3 && (
-                      <>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            confirmCancel(item.id);
-                          }}
-                          className="flex-1 text-xs font-medium text-red-500 bg-red-50 py-2 rounded-lg hover:bg-red-100"
-                        >
-                          {t("package.cancel_report")}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(item);
-                          }}
-                          className="flex-1 text-xs font-medium text-gray-600 bg-gray-100 py-2 rounded-lg hover:bg-gray-200"
-                        >
-                          {t("package.edit_report")}
-                        </button>
-                      </>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleLogistics(item.express_num);
-                      }}
-                      className="flex-1 text-xs font-medium text-blue-600 bg-blue-50 py-2 rounded-lg hover:bg-blue-100"
-                    >
-                      {t("package.view_logistics")}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )})}
           </>
+        ) : list.length > 0 && filteredOrders.length === 0 ? (
+          <EmptyState
+            icon={
+              <svg className="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+            }
+            title={t("filter.no_results", "ไม่พบผลลัพธ์ที่ตรงกับตัวกรอง")}
+            description={t("filter.no_results_desc", "ลองปรับเปลี่ยนตัวกรองหรือคำค้นหาของคุณ")}
+            actionLabel={t("filter.clear_filters", "ล้างตัวกรอง")}
+            onAction={resetFilters}
+          />
         ) : (
-          <div className="text-center py-10 text-gray-400 text-sm">{t("common.no_data")}</div>
+          <EmptyState
+            icon={
+              <svg className="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+            }
+            title={t("common.no_data", "ไม่มีข้อมูล")}
+            description={t("package.no_orders", "ยังไม่มีพัสดุในสถานะนี้")}
+          />
         )}
       </div>
 
-      {selectionMode && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-white/95 border-t border-gray-200 p-4 pb-safe shadow-2xl z-20">
-          <div className="max-w-md mx-auto">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-1">
-                  {t("package.select_pack.selected", "เลือกแล้ว")}
-                </p>
-                <p className="text-lg font-bold text-gray-900">
-                  {selectedPackages.length} <span className="text-gray-400 font-normal">/ {list.length}</span>
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={toggleSelectionMode}
-                className="flex-1 py-3.5 rounded-xl border-2 border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition-all active:scale-[0.98]"
-              >
-                {t("common.cancel", "ยกเลิก")}
-              </button>
-              <button
-                onClick={handleApplyPacking}
-                className={`flex-1 py-3.5 rounded-xl font-bold transition-all shadow-lg ${
-                  selectedPackages.length === 0
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 hover:shadow-xl active:scale-[0.98]'
-                }`}
-                disabled={selectedPackages.length === 0}
-              >
-                <span className="flex items-center justify-center gap-2">
-                  {t("package.select_pack.next", "ถัดไป")}
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5M6 12H6" />
-                  </svg>
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <FloatingActionBar
+        visible={selectionMode}
+        selectedCount={selectedPackages.length}
+        totalCount={filteredOrders.filter(item => item.status === 2).length}
+        onApplyPacking={handleApplyPacking}
+        onCancel={toggleSelectionMode}
+        onSelectAll={handleSelectAll}
+        onDeselectAll={handleDeselectAll}
+        warehouseValidation={(() => {
+          if (selectedPackages.length === 0) return null;
+          
+          const selectedItems = filteredOrders.filter(item => selectedPackages.includes(item.id));
+          const storageIds = [...new Set(selectedItems.map(item => item.storage_id))];
+          const warehouseNames = [...new Set(selectedItems.map(item => item.storage?.shop_name).filter(Boolean))];
+          
+          if (storageIds.length > 1) {
+            return {
+              valid: false,
+              message: t("package.warehouse_notice.different_warehouse", "พัสดุที่เลือกมาจากคลังที่แตกต่างกัน กรุณาเลือกพัสดุจากคลังเดียวกัน")
+            };
+          } else if (warehouseNames.length > 0) {
+            return {
+              valid: true,
+              warehouseName: warehouseNames[0]
+            };
+          }
+          return null;
+        })()}
+      />
 
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -602,7 +655,7 @@ const OrderPackagePage = () => {
           )}
 
           <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
-            <img
+            <OptimizedImage
               src={imageModal.images[imageModal.currentIndex]}
               alt={`Package ${imageModal.currentIndex + 1}`}
               className="max-w-full max-h-full object-contain rounded-lg"
@@ -618,15 +671,38 @@ const OrderPackagePage = () => {
 
       {/* Bottom Navigation */}
       <Tab />
+
+      {/* Toast Container */}
+      <toastManager.ToastContainer />
+
+      {/* Filter Panel */}
+      <Suspense fallback={<div className="fixed inset-0 bg-black/20 z-40" />}>
+        <FilterPanel
+          isOpen={isFilterPanelOpen}
+          onClose={() => setIsFilterPanelOpen(false)}
+          filters={filters}
+          onApply={updateFilters}
+          availableWarehouses={availableWarehouses}
+          availableCountries={availableCountries}
+          availableStatuses={availableStatuses}
+        />
+      </Suspense>
+
+      {/* Quick Action Panel */}
+      {quickActionOrder && (
+        <Suspense fallback={null}>
+          <QuickActionPanel
+            order={quickActionOrder}
+            isOpen={isQuickActionOpen}
+            onClose={() => {
+              setIsQuickActionOpen(false);
+              setQuickActionOrder(null);
+            }}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };
-
-const InfoItem = ({ label, value }) => (
-  <div className="flex justify-between text-sm">
-    <span className="text-gray-500">{label}:</span>
-    <span className="text-gray-800 font-medium truncate max-w-[60%]">{value}</span>
-  </div>
-);
 
 export default OrderPackagePage;

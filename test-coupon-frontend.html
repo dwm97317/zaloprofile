@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>优惠券功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f9f9f9;
+            border-left: 3px solid #4CAF50;
+        }
+        .checklist li::before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎫 优惠券功能测试</h1>
+
+    <div class="test-section">
+        <h2>📋 实现清单</h2>
+        <ul class="checklist">
+            <li>API 服务封装 (src/api/coupon.js)</li>
+            <li>ReceiveButton 组件 (src/components/Coupon/ReceiveButton.jsx)</li>
+            <li>CouponCard 组件 (src/components/Coupon/CouponCard.jsx)</li>
+            <li>EmptyState 组件 (src/components/Coupon/EmptyState.jsx)</li>
+            <li>LoadingState 组件 (src/components/Coupon/LoadingState.jsx)</li>
+            <li>CouponCenter 页面 (src/pages/Coupon/Center.jsx)</li>
+            <li>路由配置 (/coupon/center)</li>
+            <li>我的页面入口 (Mine/Index.jsx)</li>
+            <li>泰语翻译 (locales/th/translation.json)</li>
+            <li>中文翻译 (locales/zh/translation.json)</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 功能特性</h2>
+        <ul class="checklist">
+            <li>优惠券列表展示（按 sort 排序）</li>
+            <li>优惠券卡片（渐变色、圆角设计）</li>
+            <li>领取按钮（三种状态：可领取、已领取、已抢光）</li>
+            <li>乐观更新 UI（领取后立即更新界面）</li>
+            <li>加载状态（骨架屏）</li>
+            <li>空状态提示</li>
+            <li>错误处理和重试</li>
+            <li>下拉刷新</li>
+            <li>Toast 提示</li>
+            <li>多语言支持（泰语、中文）</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 测试步骤</h2>
+        <div class="info status">
+            <strong>前提条件：</strong>
+            <ul>
+                <li>后端 API 已部署并运行</li>
+                <li>已有测试用户 token</li>
+                <li>数据库中有可领取的优惠券</li>
+            </ul>
+        </div>
+
+        <h3>1. 启动开发服务器</h3>
+        <pre>cd zalo_mini_app-master
+npm run dev</pre>
+
+        <h3>2. 访问领券中心</h3>
+        <p>方式一：从"我的"页面进入</p>
+        <pre>1. 访问 http://localhost:3000/mine
+2. 点击"领券中心"入口</pre>
+
+        <p>方式二：直接访问</p>
+        <pre>http://localhost:3000/coupon/center</pre>
+
+        <h3>3. 测试功能</h3>
+        <ul>
+            <li>✓ 查看优惠券列表是否正确显示</li>
+            <li>✓ 检查优惠券颜色是否正确（蓝/红/紫/黄）</li>
+            <li>✓ 点击"立即领取"按钮</li>
+            <li>✓ 验证按钮状态变为"已领取"</li>
+            <li>✓ 检查 Toast 提示是否显示</li>
+            <li>✓ 尝试重复领取（应该显示"已领取"）</li>
+            <li>✓ 测试下拉刷新功能</li>
+            <li>✓ 测试网络错误重试</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🔗 相关文件</h2>
+        <pre>
+前端组件：
+├── src/api/coupon.js                          # API 服务
+├── src/components/Coupon/
+│   ├── CouponCard.jsx                         # 优惠券卡片
+│   ├── ReceiveButton.jsx                      # 领取按钮
+│   ├── EmptyState.jsx                         # 空状态
+│   ├── LoadingState.jsx                       # 加载状态
+│   └── index.js                               # 组件导出
+├── src/pages/Coupon/Center.jsx                # 领券中心页面
+├── src/pages/Mine/Index.jsx                   # 我的页面（入口）
+├── src/components/app.jsx                     # 路由配置
+└── src/locales/
+    ├── th/translation.json                    # 泰语翻译
+    └── zh/translation.json                    # 中文翻译
+
+后端 API：
+└── Lineminiapp/source/application/api/controller/Coupon.php
+
+测试文件：
+├── Lineminiapp/test_coupon_receive.php        # PHP 测试脚本
+└── Lineminiapp/test_coupon_api.html           # HTML 测试页面
+        </pre>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 API 端点</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background: #f0f0f0;">
+                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">方法</th>
+                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">端点</th>
+                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">说明</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">GET</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">/api/coupon/lists</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">获取优惠券列表</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">POST</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">/api/coupon/receive</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">领取优惠券</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ 验收标准</h2>
+        <ul class="checklist">
+            <li>优惠券列表正确显示</li>
+            <li>领取按钮状态正确</li>
+            <li>领取成功后 UI 更新</li>
+            <li>错误提示清晰明确</li>
+            <li>性能指标达标（列表加载 < 2s）</li>
+            <li>多语言切换正常</li>
+            <li>UI 符合设计规范（圆角、渐变色）</li>
+        </ul>
+    </div>
+
+    <div class="success status">
+        <strong>✨ 实现完成！</strong><br>
+        优惠券领取功能已完整实现，包括前端页面、组件、API 集成、路由配置和国际化翻译。
+    </div>
+</body>
+</html>

@@ -1,0 +1,381 @@
+// Grade Component Styles
+// 会员等级组件样式
+
+// ============================================
+// GradeBadge Component Styles
+// 等级徽章样式 - 勋章形式
+// ============================================
+
+.grade-badge {
+  position: relative;
+  transition: all 0.3s ease;
+  
+  // Medal container
+  &__medal {
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  // Hexagon shapes
+  &__hexagon,
+  &__border {
+    transition: all 0.3s ease;
+  }
+  
+  // Glow effect
+  &__glow {
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  
+  // Icon and text
+  &__icon-emoji {
+    display: inline-block;
+    line-height: 1;
+    transition: transform 0.3s ease;
+  }
+  
+  &__level-text {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    transition: transform 0.3s ease;
+  }
+  
+  &__name {
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+  
+  // Hover effects
+  &:hover {
+    .grade-badge__medal {
+      transform: scale(1.1) rotate(5deg);
+    }
+    
+    .grade-badge__glow {
+      opacity: 1 !important;
+    }
+    
+    .grade-badge__icon-emoji {
+      transform: scale(1.1);
+    }
+    
+    .grade-badge__name {
+      opacity: 0.8;
+    }
+  }
+  
+  // Click animation
+  &:active {
+    .grade-badge__medal {
+      transform: scale(0.95) rotate(0deg);
+    }
+  }
+  
+  // Level-specific styles and animations
+  &--diamond {
+    .grade-badge__medal {
+      animation: pulse-diamond 2s ease-in-out infinite;
+    }
+    
+    .grade-badge__hexagon {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+  }
+  
+  &--platinum {
+    .grade-badge__medal {
+      animation: pulse-platinum 2.5s ease-in-out infinite;
+    }
+    
+    .grade-badge__hexagon {
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+    }
+  }
+  
+  &--gold {
+    .grade-badge__medal {
+      animation: pulse-gold 3s ease-in-out infinite;
+    }
+    
+    .grade-badge__hexagon {
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+    }
+  }
+  
+  &--normal {
+    .grade-badge__hexagon {
+      box-shadow: 0 0 10px rgba(107, 114, 128, 0.2);
+    }
+  }
+}
+
+// Pulse animations for different levels
+@keyframes pulse-diamond {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.7));
+  }
+}
+
+@keyframes pulse-platinum {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(99, 102, 241, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.7));
+  }
+}
+
+@keyframes pulse-gold {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.7));
+  }
+}
+
+// ============================================
+// GradeProgress Component Styles
+// 等级进度条样式
+// ============================================
+
+.grade-progress {
+  // Base styles handled by Tailwind
+  
+  &__bar {
+    position: relative;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  &__fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #fbbf24 0%, #f97316 100%);
+    transition: width 0.3s ease-out;
+    border-radius: 9999px;
+    box-shadow: 0 1px 3px rgba(251, 191, 36, 0.3);
+    
+    // Animated shimmer effect
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      animation: shimmer 2s infinite;
+    }
+  }
+  
+  &__info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+    
+    span {
+      white-space: nowrap;
+    }
+  }
+  
+  &__max {
+    text-align: center;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #faf5ff 0%, #e0e7ff 100%);
+    border-radius: 0.5rem;
+    
+    span {
+      color: #7c3aed;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+// ============================================
+// GradeCard Component Styles
+// 等级卡片样式
+// ============================================
+
+.grade-card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  
+  &__discount {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #ea580c;
+    background-color: #fff7ed;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(234, 88, 12, 0.1);
+  }
+}
+
+// ============================================
+// PriceWithDiscount Component Styles
+// 折扣价格展示样式
+// ============================================
+
+.price {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.price-with-discount {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  
+  &__original {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+  }
+  
+  &__member {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #ea580c;
+    
+    // Highlight animation on mount
+    animation: priceHighlight 0.5s ease-out;
+  }
+  
+  &__tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #ea580c;
+    background-color: #fff7ed;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid #fed7aa;
+  }
+}
+
+@keyframes priceHighlight {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// ============================================
+// Responsive Design
+// 响应式设计
+// ============================================
+
+@media (max-width: 640px) {
+  .grade-card {
+    padding: 0.875rem;
+    
+    &__header {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    &__discount {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.625rem;
+    }
+  }
+  
+  .grade-badge {
+    &--lg {
+      font-size: 0.875rem;
+      padding: 0.5rem 0.75rem;
+    }
+  }
+  
+  .price-with-discount {
+    &__member {
+      font-size: 1rem;
+    }
+  }
+}
+
+// ============================================
+// Dark Mode Support (Optional)
+// 深色模式支持（可选）
+// ============================================
+
+@media (prefers-color-scheme: dark) {
+  .grade-card {
+    background: #1f2937;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+  }
+  
+  .price {
+    color: #f9fafb;
+  }
+  
+  .grade-progress {
+    &__bar {
+      background-color: #374151;
+    }
+    
+    &__info {
+      color: #9ca3af;
+    }
+  }
+}

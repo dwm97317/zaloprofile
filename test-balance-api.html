@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试余额API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>余额API测试工具</h1>
+    
+    <div class="test-section">
+        <h2>1. 配置</h2>
+        <label>API Base URL:</label>
+        <input type="text" id="baseUrl" value="https://zhuanyun.sllowly.cn/index.php?s=api/" />
+        <br>
+        <label>Token:</label>
+        <input type="text" id="token" placeholder="从localStorage获取" />
+        <br>
+        <label>wxapp_id:</label>
+        <input type="text" id="wxappId" value="10001" />
+        <br>
+        <button onclick="loadFromLocalStorage()">从LocalStorage加载Token</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. 测试 user/detail API</h2>
+        <button onclick="testUserDetail()">测试 user/detail</button>
+        <div id="userDetailResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 测试 user/balanceLog API</h2>
+        <button onclick="testBalanceLog('all')">全部记录</button>
+        <button onclick="testBalanceLog('recharge')">充值记录</button>
+        <button onclick="testBalanceLog('payment')">消费记录</button>
+        <div id="balanceLogResult"></div>
+    </div>
+
+    <script>
+        // 从localStorage加载token
+        function loadFromLocalStorage() {
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            if (token) {
+                document.getElementById('token').value = token;
+                showResult('userDetailResult', `<p class="success">Token已加载: ${token}</p><p>User ID: ${userId}</p>`, false);
+            } else {
+                showResult('userDetailResult', '<p class="error">未找到token，请先登录系统</p>', false);
+            }
+        }
+
+        // 显示结果
+        function showResult(elementId, content, isJson = true) {
+            const element = document.getElementById(elementId);
+            if (isJson) {
+                element.innerHTML = `<pre>${content}</pre>`;
+            } else {
+                element.innerHTML = content;
+            }
+        }
+
+        // 测试 user/detail API
+        async function testUserDetail() {
+            const baseUrl = document.getElementById('baseUrl').value;
+            const token = document.getElementById('token').value;
+            const wxappId = document.getElementById('wxappId').value;
+
+            if (!token) {
+                showResult('userDetailResult', '<p class="error">请先输入Token</p>', false);
+                return;
+            }
+
+            showResult('userDetailResult', '<p>正在请求...</p>', false);
+
+            try {
+                const url = `${baseUrl}user/detail&wxapp_id=${wxappId}&token=${token}`;
+                console.log('请求URL:', url);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                });
+
+                const data = await response.json();
+                console.log('API响应:', data);
+
+                // 提取余额信息
+                let balanceInfo = '';
+                if (data.code === 1 && data.data && data.data.userInfo) {
+                    const u = data.data.userInfo;
+                    balanceInfo = `
+                        <div class="success">
+                            <h3>✅ API调用成功</h3>
+                            <p><strong>余额 (balance):</strong> ${u.balance || 0}</p>
+                            <p><strong>累计充值 (recharge_money):</strong> ${u.recharge_money || 0}</p>
+                            <p><strong>累计消费 (pay_money):</strong> ${u.pay_money || 0}</p>
+                            <p><strong>累计消费 (expend_money):</strong> ${u.expend_money || 0}</p>
+                            <p><strong>用户ID:</strong> ${u.user_id}</p>
+                            <p><strong>昵称:</strong> ${u.nickName}</p>
+                        </div>
+                    `;
+                } else {
+                    balanceInfo = `<p class="error">❌ API返回错误: ${data.msg || '未知错误'}</p>`;
+                }
+
+                showResult('userDetailResult', 
+                    balanceInfo + '<h4>完整响应:</h4>' + JSON.stringify(data, null, 2), 
+                    false
+                );
+            } catch (error) {
+                console.error('请求失败:', error);
+                showResult('userDetailResult', 
+                    `<p class="error">❌ 请求失败: ${error.message}</p>`, 
+                    false
+                );
+            }
+        }
+
+        // 测试 user/balanceLog API
+        async function testBalanceLog(type) {
+            const baseUrl = document.getElementById('baseUrl').value;
+            const token = document.getElementById('token').value;
+            const wxappId = document.getElementById('wxappId').value;
+
+            if (!token) {
+                showResult('balanceLogResult', '<p class="error">请先输入Token</p>', false);
+                return;
+            }
+
+            showResult('balanceLogResult', `<p>正在请求 ${type} 记录...</p>`, false);
+
+            try {
+                let url = `${baseUrl}user/balanceLog?page=1&wxapp_id=${wxappId}&token=${token}`;
+                
+                // 根据类型添加scene参数
+                if (type === 'recharge') {
+                    url += '&scene=1';
+                } else if (type === 'payment') {
+                    url += '&scene=2';
+                }
+
+                console.log('请求URL:', url);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                });
+
+                const data = await response.json();
+                console.log('API响应:', data);
+
+                // 提取记录信息
+                let logInfo = '';
+                if (data.code === 1 && data.data && data.data.list) {
+                    const logs = data.data.list.data || [];
+                    logInfo = `
+                        <div class="success">
+                            <h3>✅ API调用成功</h3>
+                            <p><strong>记录总数:</strong> ${data.data.list.total || 0}</p>
+                            <p><strong>当前页:</strong> ${data.data.list.current_page || 1}</p>
+                            <p><strong>每页条数:</strong> ${data.data.list.per_page || 15}</p>
+                            <p><strong>本页记录数:</strong> ${logs.length}</p>
+                        </div>
+                        <h4>前3条记录:</h4>
+                        <ul>
+                    `;
+                    
+                    logs.slice(0, 3).forEach(log => {
+                        const type = log.sence_type === 1 ? '充值(+)' : '消费(-)';
+                        const color = log.sence_type === 1 ? 'green' : 'red';
+                        logInfo += `
+                            <li>
+                                <strong style="color: ${color}">${type} ${log.money}฿</strong> - 
+                                ${log.describe} 
+                                (时间: ${new Date(log.create_time * 1000).toLocaleString('zh-CN')})
+                            </li>
+                        `;
+                    });
+                    
+                    logInfo += '</ul>';
+                } else {
+                    logInfo = `<p class="error">❌ API返回错误: ${data.msg || '未知错误'}</p>`;
+                }
+
+                showResult('balanceLogResult', 
+                    logInfo + '<h4>完整响应:</h4>' + JSON.stringify(data, null, 2), 
+                    false
+                );
+            } catch (error) {
+                console.error('请求失败:', error);
+                showResult('balanceLogResult', 
+                    `<p class="error">❌ 请求失败: ${error.message}</p>`, 
+                    false
+                );
+            }
+        }
+
+        // 页面加载时自动尝试加载token
+        window.onload = function() {
+            loadFromLocalStorage();
+        };
+    </script>
+</body>
+</html>

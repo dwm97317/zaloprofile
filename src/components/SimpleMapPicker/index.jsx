@@ -1,251 +1,202 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { reverseGeocode } from '../../utils/addressParser';
-import './index.scss';
+import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
-// 配置常量
-const CONFIG = {
-  GOONG_API_KEY: '5uo0DOu7oFhOoqtxFhyZemwhmkI0XiFTiq66c0Nj',
-  DEFAULT_CENTER: { lat: 10.762622, lng: 106.660172 }, // 胡志明市中心
-  DEFAULT_ZOOM: 15,
-  STATIC_MAP_SIZE: '600x400'
-};
-
-const SimpleMapPicker = ({ 
-  onLocationSelect, 
-  initialLocation, 
-  height = 300,
-  className = ''
-}) => {
-  const [currentLocation, setCurrentLocation] = useState(
-    initialLocation || CONFIG.DEFAULT_CENTER
-  );
-  const [markerPosition, setMarkerPosition] = useState({ x: 50, y: 50 }); // 百分比位置
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [zoom, setZoom] = useState(CONFIG.DEFAULT_ZOOM);
-  
+const SimpleMapPicker = ({ onLocationSelect, initialCenter }) => {
+  const { t } = useTranslation();
   const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentAddress, setCurrentAddress] = useState('');
+  const [isLocating, setIsLocating] = useState(false);
 
-  // 生成静态地图URL - 使用MapBox静态地图API
-  const getStaticMapUrl = useCallback((center, zoomLevel) => {
-    const { lat, lng } = center;
-    const width = 600;
-    const height = 400;
+  useEffect(() => {
+    if (!window.google || !window.google.maps) {
+      console.error('Google Maps not loaded');
+      return;
+    }
 
-    // 使用MapBox静态地图API（免费版本）
-    // 格式: https://api.mapbox.com/styles/v1/{username}/{style_id}/static/{overlay}/{lon},{lat},{zoom},{bearing},{pitch}/{width}x{height}{@2x}?access_token={access_token}
-
-    // 使用公开的地图服务，不需要API密钥
-    // 这里使用一个简单的静态地图生成服务
-    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoomLevel}&size=${width}x${height}&markers=color:red%7C${lat},${lng}&key=AIzaSyDummy`;
+    initializeMap();
   }, []);
 
-  // 处理地图点击
-  const handleMapClick = useCallback(async (event) => {
-    if (!mapRef.current) return;
+  const initializeMap = async () => {
+    const defaultCenter = initialCenter || { lat: 13.7563, lng: 100.5018 }; // Bangkok
 
-    const rect = mapRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    
-    // 计算点击位置的百分比
-    const xPercent = (x / rect.width) * 100;
-    const yPercent = (y / rect.height) * 100;
-    
-    setMarkerPosition({ x: xPercent, y: yPercent });
+    // Create map
+    const map = new window.google.maps.Map(mapRef.current, {
+      center: defaultCenter,
+      zoom: 15,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      zoomControl: true,
+      gestureHandling: 'greedy',
+    });
 
-    // 计算实际的经纬度（简化计算）
-    const mapWidth = rect.width;
-    const mapHeight = rect.height;
-    
-    // 基于当前中心点和缩放级别计算新的经纬度
-    const metersPerPixel = 156543.03392 * Math.cos(currentLocation.lat * Math.PI / 180) / Math.pow(2, zoom);
-    const offsetX = (x - mapWidth / 2) * metersPerPixel;
-    const offsetY = (mapHeight / 2 - y) * metersPerPixel;
-    
-    const newLat = currentLocation.lat + (offsetY / 111320);
-    const newLng = currentLocation.lng + (offsetX / (111320 * Math.cos(currentLocation.lat * Math.PI / 180)));
+    mapInstanceRef.current = map;
 
-    const newLocation = { lat: newLat, lng: newLng };
-    setCurrentLocation(newLocation);
+    // Add drag end listener
+    map.addListener('dragend', () => {
+      const center = map.getCenter();
+      reverseGeocode(center.lat(), center.lng());
+    });
 
-    await performReverseGeocode(newLat, newLng);
-  }, [currentLocation, zoom]);
+    // Add zoom change listener
+    map.addListener('zoom_changed', () => {
+      const center = map.getCenter();
+      reverseGeocode(center.lat(), center.lng());
+    });
 
-  // 执行反向地理编码
-  const performReverseGeocode = useCallback(async (lat, lng) => {
-    setIsLoading(true);
-    setError(null);
+    setIsLoading(false);
 
-    try {
-      const addressData = await reverseGeocode(lat, lng);
-      
-      if (onLocationSelect) {
-        onLocationSelect({
-          ...addressData,
-          coordinates: { lat, lng }
-        });
-      }
-    } catch (error) {
-      console.error('反向地理编码失败:', error);
-      setError('获取地址信息失败，请重试');
-    } finally {
-      setIsLoading(false);
+    // Auto-locate user
+    getCurrentLocation();
+  };
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      console.warn('Geolocation not supported');
+      return;
     }
-  }, [onLocationSelect]);
 
-  // 处理缩放
-  const handleZoomIn = useCallback(() => {
-    if (zoom < 18) {
-      setZoom(prev => prev + 1);
-    }
-  }, [zoom]);
+    setIsLocating(true);
 
-  const handleZoomOut = useCallback(() => {
-    if (zoom > 8) {
-      setZoom(prev => prev - 1);
-    }
-  }, [zoom]);
-
-  // 处理定位
-  const handleCurrentLocation = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      if (!navigator.geolocation) {
-        throw new Error('浏览器不支持地理定位');
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          const newLocation = { lat: latitude, lng: longitude };
-          
-          setCurrentLocation(newLocation);
-          setMarkerPosition({ x: 50, y: 50 }); // 重置标记到中心
-          setZoom(16);
-
-          await performReverseGeocode(latitude, longitude);
-        },
-        (error) => {
-          console.error('定位失败:', error);
-          setError('定位失败，请检查定位权限');
-          setIsLoading(false);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const location = { lat: latitude, lng: longitude };
+        
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setCenter(location);
+          mapInstanceRef.current.setZoom(16);
         }
-      );
-    } catch (error) {
-      console.error('定位错误:', error);
-      setError('定位功能不可用');
-      setIsLoading(false);
-    }
-  }, [performReverseGeocode]);
 
-  // 当初始位置改变时更新
-  useEffect(() => {
-    if (initialLocation) {
-      setCurrentLocation(initialLocation);
-      setMarkerPosition({ x: 50, y: 50 });
+        reverseGeocode(latitude, longitude);
+        setIsLocating(false);
+      },
+      (error) => {
+        console.warn('Geolocation error:', error);
+        setIsLocating(false);
+        // Use default location (Bangkok)
+        const defaultLat = 13.7563;
+        const defaultLng = 100.5018;
+        reverseGeocode(defaultLat, defaultLng);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const geocoder = new window.google.maps.Geocoder();
+      const latlng = { lat, lng };
+
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const place = results[0];
+          setCurrentAddress(place.formatted_address);
+
+          // Parse address components
+          const components = place.address_components || [];
+          const getComponent = (type) => {
+            const component = components.find(c => c.types.includes(type));
+            return component?.long_name || '';
+          };
+
+          const addressData = {
+            formatted_address: place.formatted_address,
+            detail: place.formatted_address,
+            province: getComponent('administrative_area_level_1'),
+            city: getComponent('administrative_area_level_2'), // Amphoe
+            sub_district: getComponent('sublocality_level_1') || getComponent('sublocality'), // Tambon
+            postal_code: getComponent('postal_code'),
+            coordinates: { lat, lng }
+          };
+
+          if (onLocationSelect) {
+            onLocationSelect(addressData);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Reverse geocode error:', error);
     }
-  }, [initialLocation]);
+  };
+
+  const handleRecenter = () => {
+    getCurrentLocation();
+  };
 
   return (
-    <div 
-      className={`simple-map-picker ${className}`}
-      style={{ height: typeof height === 'number' ? `${height}px` : height }}
-    >
-      {error && (
-        <div className="map-error">
-          <span className="error-text">{error}</span>
-          <button 
-            className="retry-button"
-            onClick={() => setError(null)}
-          >
-            关闭
-          </button>
-        </div>
-      )}
-      
-      {isLoading && (
-        <div className="map-loading">
-          <div className="loading-spinner"></div>
-          <span>正在获取地址信息...</span>
-        </div>
-      )}
+    <div className="relative w-full h-[400px] rounded-2xl overflow-hidden border-2 border-gray-200">
+      {/* Map Container */}
+      <div ref={mapRef} className="w-full h-full" />
 
-      <div className="map-container">
-        <img
-          ref={mapRef}
-          src={getStaticMapUrl(currentLocation, zoom)}
-          alt="地图"
-          className="map-image"
-          onClick={handleMapClick}
-          onError={() => setError('地图加载失败')}
-        />
-        
-        {/* 自定义标记 */}
-        <div 
-          className="map-marker"
-          style={{
-            left: `${markerPosition.x}%`,
-            top: `${markerPosition.y}%`
-          }}
+      {/* Center Marker (Fixed Pin) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full pointer-events-none z-10">
+        <svg 
+          className="w-12 h-12 text-red-500 drop-shadow-lg animate-bounce" 
+          fill="currentColor" 
+          viewBox="0 0 24 24"
         >
-          <div className="marker-pin"></div>
-          <div className="marker-pulse"></div>
-        </div>
-
-        {/* 地图控件 */}
-        <div className="map-controls">
-          <button 
-            className="control-button zoom-in"
-            onClick={handleZoomIn}
-            disabled={zoom >= 18}
-          >
-            +
-          </button>
-          <button 
-            className="control-button zoom-out"
-            onClick={handleZoomOut}
-            disabled={zoom <= 8}
-          >
-            -
-          </button>
-          <button 
-            className="control-button location-btn"
-            onClick={handleCurrentLocation}
-            disabled={isLoading}
-          >
-            📍
-          </button>
-        </div>
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </svg>
       </div>
 
-      <div className="map-instructions">
-        <span>点击地图选择位置 | 缩放: {zoom}</span>
-      </div>
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/90 flex items-center justify-center z-20">
+          <div className="text-center">
+            <div className="animate-spin h-10 w-10 border-4 border-blue-500 rounded-full border-t-transparent mx-auto mb-2"></div>
+            <p className="text-sm text-gray-600">{t('map.loading', 'Loading map...')}</p>
+          </div>
+        </div>
+      )}
 
-      <div className="location-info">
-        <span>当前位置: {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}</span>
+      {/* Locating Overlay */}
+      {isLocating && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg z-20 flex items-center gap-2">
+          <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div>
+          <span className="text-sm font-medium">{t('map.locating', 'Locating...')}</span>
+        </div>
+      )}
+
+      {/* Address Display */}
+      {currentAddress && !isLoading && (
+        <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-lg z-20">
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <p className="text-sm text-gray-700 flex-1 leading-relaxed">{currentAddress}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Recenter Button */}
+      <button
+        onClick={handleRecenter}
+        className="absolute top-4 right-4 bg-white hover:bg-gray-50 p-3 rounded-full shadow-lg z-20 transition-all cursor-pointer active:scale-95"
+        title={t('map.recenter', 'My Location')}
+      >
+        <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
+
+      {/* Instructions */}
+      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md z-20">
+        <p className="text-xs text-gray-600 font-medium">
+          📍 {t('map.instruction', 'Drag map to select location')}
+        </p>
       </div>
     </div>
   );
-};
-
-SimpleMapPicker.propTypes = {
-  onLocationSelect: PropTypes.func,
-  initialLocation: PropTypes.shape({
-    lat: PropTypes.number,
-    lng: PropTypes.number
-  }),
-  height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  className: PropTypes.string
 };
 
 export default SimpleMapPicker;

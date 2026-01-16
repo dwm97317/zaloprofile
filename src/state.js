@@ -123,3 +123,19 @@ export const packageStatusState = atom({
   key: "packageStatus",
   default: "",
 });
+
+// 会员等级相关状态
+export const userGradeState = atom({
+  key: "userGrade",
+  default: null, // UserGrade | null
+});
+
+export const gradeListState = atom({
+  key: "gradeList",
+  default: [], // UserGrade[]
+});
+
+export const userExpendState = atom({
+  key: "userExpend",
+  default: 0, // number
+});

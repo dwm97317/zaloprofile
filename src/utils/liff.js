@@ -118,21 +118,44 @@ export const initLIFF = async () => {
         }
 
         // 3. Authenticate with backend
-        const idToken = liff.getIDToken();
+        // 尝试获取有效的 ID Token
+        let idToken = null;
+        try {
+            idToken = await liff.getIDToken();
+            console.log("🔑 LIFF ID Token obtained (first 50 chars):", idToken.substring(0, 50) + "...");
+        } catch (error) {
+            console.error("Failed to get ID Token:", error);
+        }
         if (idToken) {
-            // 注意：ThinkPHP 路由使用小写加下划线格式
-            const loginRes = await axios.post(`${BASE_URL}passport/login_mp_line`, {
-                idToken: idToken,
-                wxapp_id: 10001
-            }, {
-                headers: { platform: "LINE" }
-            });
+            // 发送 ID Token 到后端进行验证和登录
+            // postForm() 方法期望数据在 form 键下
+            const loginRes = await axios.post(
+                `${BASE_URL}passport/login_mp_line&wxapp_id=10001`,
+                { 
+                    form: {
+                        id_token: idToken
+                    }
+                },
+                {
+                    headers: { 
+                        platform: "LINE",
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            console.log("🔐 Login API Response:", loginRes.data);
 
             if (loginRes.data && loginRes.data.code === 1) {
-                localStorage.setItem("token", loginRes.data.data.token);
-                localStorage.setItem("userId", loginRes.data.data.userId);
+                const { token, userId, nickname } = loginRes.data.data;
+                localStorage.setItem("token", token);
+                localStorage.setItem("userId", userId.toString());
+                console.log("✅ LINE login successful");
+                console.log("   User:", nickname);
+                console.log("   Token:", token.substring(0, 20) + "...");
+                console.log("   Token saved to localStorage");
             } else {
-                console.error("Backend authentication failed:", loginRes.data.msg);
+                console.error("❌ Backend authentication failed:", loginRes.data?.msg || "Unknown error");
             }
         }
 

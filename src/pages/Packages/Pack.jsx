@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { useTranslation } from "react-i18next";
 import { packageIdsState } from "../../state";
 import request from "../../utils/request";
-import { handleApiError } from "../../utils/errorHandler";
 import { toast } from "../../utils/toast";
 import Loading from "../../components/Loading/Index";
-import LineButton from "../../components/LineButton/Index";
-import LineInput from "../../components/LineInput/Index";
+import OptimizedImage from "../../components/Common/OptimizedImage";
+import PackHeroSection from "../../components/Pack/PackHeroSection";
+import EnhancedPackageCard from "../../components/Pack/EnhancedPackageCard";
+import ShippingRouteSelector from "../../components/Pack/ShippingRouteSelector";
+import DestinationSelector from "../../components/Pack/DestinationSelector";
+import PackingServiceCard from "../../components/Pack/PackingServiceCard";
+import CostSummaryBar from "../../components/Pack/CostSummaryBar";
 
 const PackingApplicationPage = () => {
   const { t } = useTranslation();
@@ -30,6 +34,9 @@ const PackingApplicationPage = () => {
     remark: "",
     waitreceivedmoney: 0
   });
+  
+  // Image modal state
+  const [imageModal, setImageModal] = useState({ show: false, images: [], currentIndex: 0 });
   
   useEffect(() => {
     console.log('Pack page loaded, packageIds:', packageIds);
@@ -126,7 +133,7 @@ const PackingApplicationPage = () => {
   };
   
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     // Validation
     if (!form.line_id) {
@@ -180,6 +187,52 @@ const PackingApplicationPage = () => {
     }));
   };
   
+  // Image modal handlers
+  const handleImageClick = (images, index) => {
+    setImageModal({ show: true, images, currentIndex: index });
+  };
+
+  const closeImageModal = () => {
+    setImageModal({ show: false, images: [], currentIndex: 0 });
+  };
+
+  const nextImage = () => {
+    setImageModal(prev => ({
+      ...prev,
+      currentIndex: (prev.currentIndex + 1) % prev.images.length
+    }));
+  };
+
+  const prevImage = () => {
+    setImageModal(prev => ({
+      ...prev,
+      currentIndex: prev.currentIndex === 0 ? prev.images.length - 1 : prev.currentIndex - 1
+    }));
+  };
+  
+  // Calculate current step based on form completion
+  const getCurrentStep = () => {
+    if (!form.line_id) return 2; // On route selection
+    if (!form.address_id) return 3; // On destination selection
+    return 4; // Ready to confirm
+  };
+
+  // Calculate costs
+  const calculateCosts = () => {
+    const shippingCost = 0; // Would come from selected line
+    const serviceCost = packServices
+      .filter(s => form.pack_ids.includes(s.id))
+      .reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0);
+    return {
+      shippingCost,
+      serviceCost,
+      totalCost: shippingCost + serviceCost
+    };
+  };
+
+  const costs = calculateCosts();
+  const canSubmit = form.line_id && form.address_id && !submitting;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -189,142 +242,137 @@ const PackingApplicationPage = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="bg-white px-4 py-3 shadow-sm sticky top-0 z-10 flex items-center">
-        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-600">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h1 className="text-lg font-bold ml-2 text-gray-800">
-          {t("package.packing_application", "สมัครแพ็คพัสดุ")}
-        </h1>
-      </div>
+    <div className="min-h-screen bg-gray-50 pb-32">
+      {/* Hero Section with Progress */}
+      <PackHeroSection 
+        currentStep={getCurrentStep()}
+        packageCount={packages.length}
+      />
       
-      {/* Selected Packages Section */}
-      <div className="p-4 bg-white border-b border-gray-100">
-        <h2 className="text-sm font-bold text-gray-700 mb-3">
-          {t("package.selected_packages", "พัสดุที่เลือก")} ({packages.length})
-        </h2>
-        <div className="space-y-2">
-          {packages.map((pkg) => (
-            <div key={pkg.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-800">{pkg.order_sn}</p>
-                  <p className="text-xs text-gray-500 mt-1">{pkg.express_num}</p>
-                </div>
-                {pkg.weight && (
-                  <span className="text-xs text-gray-600 bg-white px-2 py-1 rounded">
-                    {pkg.weight} kg
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="p-4 space-y-6">
-        {/* Line Selection */}
+      {/* Main Content */}
+      <div className="p-4 space-y-4">
+        {/* Selected Packages - Compact Cards */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            {t("package.shipping_line", "เส้นทางการจัดส่ง")} <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={form.line_id}
-            onChange={(e) => setForm({...form, line_id: e.target.value})}
-            className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            required
-          >
-            <option value="">{t("package.select_line", "เลือกเส้นทางการจัดส่ง")}</option>
-            {lines.map((line, index) => (
-              <option key={`line-${line.id || line.line_id}-${index}`} value={line.id || line.line_id}>
-                {line.name || line.line_name}
-              </option>
+          <h2 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+            <span>📦</span>
+            <span>{t("package.selected_packages", "พัสดุที่เลือก")} ({packages.length})</span>
+          </h2>
+          <div className="grid grid-cols-1 gap-3">
+            {packages.map((pkg) => (
+              <EnhancedPackageCard
+                key={pkg.id}
+                pkg={pkg}
+                onImageClick={handleImageClick}
+              />
             ))}
-          </select>
+          </div>
         </div>
-        
-        {/* Address Selection */}
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            {t("package.delivery_address", "ที่อยู่จัดส่ง")} <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={form.address_id}
-            onChange={(e) => setForm({...form, address_id: e.target.value})}
-            className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            required
-          >
-            <option value="">{t("package.select_address", "เลือกที่อยู่จัดส่ง")}</option>
-            {addresses.map((addr, index) => (
-              <option key={`addr-${addr.address_id}-${index}`} value={addr.address_id}>
-                {addr.name} - {addr.detail}
-              </option>
-            ))}
-          </select>
-        </div>
-        
+
+        {/* Shipping Route Selection */}
+        <ShippingRouteSelector
+          lines={lines}
+          selectedLineId={form.line_id}
+          onSelect={(lineId) => setForm({...form, line_id: lineId})}
+        />
+
+        {/* Destination Selection */}
+        <DestinationSelector
+          addresses={addresses}
+          selectedAddressId={form.address_id}
+          onSelect={(addressId) => setForm({...form, address_id: addressId})}
+          onAddNew={() => navigate('/address/add')}
+        />
+
         {/* Packing Services */}
-        {packServices.length > 0 && (
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-3">
-              {t("package.packing_services", "บริการแพ็ค")}
-            </label>
-            <div className="space-y-2">
-              {packServices.map(service => (
-                <label 
-                  key={service.id} 
-                  className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={form.pack_ids.includes(service.id)}
-                    onChange={() => togglePackService(service.id)}
-                    className="w-5 h-5 rounded border-2 border-blue-500 text-blue-500 focus:ring-2 focus:ring-blue-200"
-                  />
-                  <div className="flex-1">
-                    <span className="text-sm font-medium text-gray-800">{service.name}</span>
-                    {service.price && (
-                      <span className="text-sm text-blue-600 font-bold ml-2">฿{service.price}</span>
-                    )}
-                  </div>
-                </label>
-              ))}
+        <PackingServiceCard
+          services={packServices}
+          selectedServiceIds={form.pack_ids}
+          onToggle={togglePackService}
+        />
+
+        {/* Remarks */}
+        <div className="bg-white rounded-2xl shadow-lg p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+              📝
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-800 text-base">
+                {t("package.remarks", "หมายเหตุ")}
+              </h3>
+              <p className="text-xs text-gray-500">
+                ข้อความเพิ่มเติม (ไม่บังคับ)
+              </p>
             </div>
           </div>
-        )}
-        
-        {/* Remarks */}
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            {t("package.remarks", "หมายเหตุ")}
-          </label>
           <textarea
             value={form.remark}
             onChange={(e) => setForm({...form, remark: e.target.value})}
             placeholder={t("package.remarks_placeholder", "กรอกหมายเหตุ (ไม่บังคับ)")}
-            className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200 min-h-[100px]"
+            className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 min-h-[100px] transition-all"
             rows="4"
           />
         </div>
-        
-        {/* Submit Button */}
-        <div className="pt-4">
-          <LineButton
-            type="submit"
-            variant="primary"
-            size="lg"
-            fullWidth
-            loading={submitting}
+      </div>
+
+      {/* Cost Summary Bar */}
+      <CostSummaryBar
+        visible={true}
+        shippingCost={costs.shippingCost}
+        serviceCost={costs.serviceCost}
+        totalCost={costs.totalCost}
+        onSubmit={handleSubmit}
+        disabled={!canSubmit}
+        loading={submitting}
+      />
+      
+      {/* Image Modal */}
+      {imageModal.show && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-sm" onClick={closeImageModal}>
+          <button
+            onClick={closeImageModal}
+            className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
           >
-            {t("package.submit_application", "ยืนยันการสมัคร")}
-          </LineButton>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {imageModal.images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                className="absolute left-4 z-10 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                className="absolute right-4 z-10 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+            <OptimizedImage
+              src={imageModal.images[imageModal.currentIndex]}
+              alt={`Package ${imageModal.currentIndex + 1}`}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+            {imageModal.images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
+                {imageModal.currentIndex + 1} / {imageModal.images.length}
+              </div>
+            )}
+          </div>
         </div>
-      </form>
+      )}
     </div>
   );
 };

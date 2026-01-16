@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试产品类别 API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .category-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #e3f2fd;
+            border-radius: 5px;
+            border-left: 4px solid #2196F3;
+        }
+        .error {
+            color: #f44336;
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+        .success {
+            color: #4CAF50;
+            background: #e8f5e9;
+            border-left-color: #4CAF50;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🧪 测试产品类别 API</h2>
+        
+        <div>
+            <button onclick="testCategoryAPI()">测试获取产品类别</button>
+            <button onclick="clearResult()">清空结果</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:9000/index.php?s=/api';
+        
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const div = document.createElement('div');
+            div.className = `category-item ${type}`;
+            div.textContent = message;
+            result.appendChild(div);
+            result.scrollTop = result.scrollHeight;
+        }
+
+        function clearResult() {
+            document.getElementById('result').innerHTML = '';
+        }
+
+        async function testCategoryAPI() {
+            clearResult();
+            log('🚀 开始测试产品类别 API...', 'info');
+            
+            try {
+                const url = `${API_BASE}/category/lists&wxapp_id=10001`;
+                log(`📡 请求 URL: ${url}`, 'info');
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                log(`📊 响应状态: ${response.status} ${response.statusText}`, 'info');
+
+                const data = await response.json();
+                log('✅ API 响应成功', 'success');
+                log(`返回数据:\n${JSON.stringify(data, null, 2)}`, 'info');
+
+                if (data.code === 1 && data.data?.data) {
+                    const categories = data.data.data;
+                    log(`\n📦 找到 ${categories.length} 个产品类别:`, 'success');
+                    
+                    categories.forEach((cat, index) => {
+                        log(`\n类别 ${index + 1}:
+  - ID: ${cat.category_id}
+  - 名称: ${cat.name}
+  - 图片: ${cat.image?.file_path || '无'}`, 'info');
+                    });
+                } else {
+                    log('⚠️ API 返回格式不正确或没有数据', 'error');
+                }
+
+            } catch (error) {
+                log(`❌ 错误: ${error.message}`, 'error');
+                log(`详细信息: ${error.stack}`, 'error');
+            }
+        }
+
+        // 页面加载时自动测试
+        window.onload = () => {
+            log('💡 点击"测试获取产品类别"按钮开始测试', 'info');
+        };
+    </script>
+</body>
+</html>
