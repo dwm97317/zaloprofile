@@ -46,6 +46,9 @@ import MarkPage from "../pages/Mark/Index";
 import CouponCenterPage from "../pages/Coupon/Center";
 import MessageIndexPage from "../pages/Message/Index";
 import MessageDetailPage from "../pages/Message/Detail";
+import ReferralInvitePage from "../pages/Referral/Invite";
+import ReferralMyReferralsPage from "../pages/Referral/MyReferrals";
+import ReferralLeaderboardPage from "../pages/Referral/Leaderboard";
 
 import Loading from "./Loading/Index";
 
@@ -99,6 +102,9 @@ const MyApp = () => {
               <Route path="/coupon/center" element={<CouponCenterPage />} />
               <Route path="/message/index" element={<MessageIndexPage />} />
               <Route path="/message/detail" element={<MessageDetailPage />} />
+              <Route path="/referral/invite" element={<ReferralInvitePage />} />
+              <Route path="/referral/list" element={<ReferralMyReferralsPage />} />
+              <Route path="/referral/leaderboard" element={<ReferralLeaderboardPage />} />
 
               {/* Legacy fallback */}
               <Route path="/zapps/757872350750612320/*" element={<HomePage />} />

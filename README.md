@@ -463,6 +463,30 @@ This project was migrated from **Zalo Mini App** to **LINE Mini App** in January
 
 ---
 
+## 🔌 Kiro Powers
+
+This project includes Kiro Powers - modular knowledge bases and tools that enhance development workflows.
+
+### Available Powers
+
+#### Git Best Practices
+**Location**: `powers/git-best-practices/`  
+**Type**: Knowledge Base Power (No MCP server)
+
+Essential Git workflows and best practices for modern development teams. Provides comprehensive guidance on:
+
+- **Branching Strategies**: Feature branches, hotfixes, and release management
+- **Commit Conventions**: Conventional commit format with types (feat, fix, docs, etc.)
+- **Common Workflows**: Step-by-step guides for feature development and bug fixes
+- **Troubleshooting**: Solutions for merge conflicts, wrong branch commits, and more
+- **Quick Reference**: Handy command cheat sheet
+
+**Keywords**: git, version-control, workflow, best-practices, collaboration
+
+**Usage**: Access the power documentation at `powers/git-best-practices/POWER.md` for detailed workflows and best practices.
+
+---
+
 ## 📄 License
 
 UNLICENSED - Private project

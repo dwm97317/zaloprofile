@@ -60,3 +60,14 @@ const getImages = () => {
 
 ## UI 规范
 - 泰语默认、圆角卡片 (`rounded-2xl`)、渐变图标背景
+
+## 数据库连接配置
+// 数据库配置
+$config = [
+    'host' => '103.119.1.84',
+    'database' => 'xinsuju',
+    'username' => 'xinsuju',
+    'password' => 'cJGzwZTDCLHzWXN4',
+    'port' => '3306',
+    'charset' => 'utf8',
+]
