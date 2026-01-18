@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
 import { useTranslation } from "react-i18next";
+import classNames from "classnames";
 import { storageIdState } from "../../state";
 import request from "../../utils/request";
 import util from "../../utils/util";
 import { toast } from "../../utils/toast";
 import Dropdown from "../../components/Common/Dropdown";
+import { CopyIcon, WarehouseIcon, ChevronRightIcon, MapIcon, UserIcon } from "../../components/Icons";
+import Tab from "../../components/Tab/Tab";
 
 // 数字转中文
 const numberToChinese = (num) => {
@@ -23,6 +26,7 @@ const StoragePage = () => {
   const [userId, setUserId] = useState('');
   const [selectedMarkByWarehouse, setSelectedMarkByWarehouse] = useState({});
   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     util.setBarPageView("Storage List");
@@ -30,6 +34,7 @@ const StoragePage = () => {
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const [storageRes, userRes] = await Promise.all([
         request.get("page/storageList&wxapp_id=10001"),
@@ -43,23 +48,23 @@ const StoragePage = () => {
       // 处理用户唛头和 UID
       let marks = [];
       let uid = '';
-      
+
       if (userRes.code === 1 && userRes.data?.userInfo) {
         const u = userRes.data.userInfo;
         marks = u.usermark || [];
         uid = String(u.uid || u.id || '');
       }
-      
+
       // 如果 API 没有返回 UID，从 localStorage 获取
       if (!uid) {
         uid = localStorage.getItem("userId") || localStorage.getItem("lineUserId") || '';
       }
-      
-      console.log('Fetched UID:', uid, 'Marks:', marks);
-      
+
+      // console.log('Fetched UID:', uid, 'Marks:', marks);
+
       setUserMarks(marks);
       setUserId(uid);
-      
+
       // 为每个仓库初始化默认选中的唛头
       const initialSelection = {};
       storageList.forEach(item => {
@@ -71,6 +76,8 @@ const StoragePage = () => {
       setList([]);
       const uid = localStorage.getItem("userId") || localStorage.getItem("lineUserId") || '';
       setUserId(uid);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,19 +160,19 @@ const StoragePage = () => {
     const selectedMark = selectedMarkByWarehouse[item.shop_id] || '';
     const fullAddressWithMark = getFullAddressWithMark(item, selectedMark);
     const markAndUid = getMarkAndUid(selectedMark);
-    
+
     let text = `${t("storage.detail.recipient", "收件人")}: ${item.linkman}
 ${t("storage.detail.phone", "电话")}: ${item.phone}
 ${t("storage.detail.address", "地址")}: ${fullAddressWithMark}`;
-    
+
     if (item.post) {
       text += `\n${t("storage.detail.zip", "邮编")}: ${item.post}`;
     }
-    
+
     if (markAndUid) {
       text += `\n${t("storage.detail.mark_uid", "唛头/会员号")}: ${markAndUid}`;
     }
-    
+
     handleCopy(text, e);
   };
 
@@ -176,58 +183,69 @@ ${t("storage.detail.address", "地址")}: ${fullAddressWithMark}`;
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-safe">
+    <div className="min-h-screen bg-slate-50 font-sans pb-24">
       {/* Header */}
-      <div className="bg-white px-4 py-3 shadow-sm sticky top-0 z-10 flex items-center">
-        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-600">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h1 className="text-lg font-bold ml-2">{t("storage.title")}</h1>
+      <div className="bg-white/80 backdrop-blur-md px-4 py-3 shadow-sm sticky top-0 z-20 transition-all duration-200">
+        <div className="relative flex items-center justify-center">
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute left-0 p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+          >
+            <ChevronRightIcon className="w-5 h-5 rotate-180" />
+          </button>
+          <h1 className="text-lg font-bold text-slate-800">{t("storage.title")}</h1>
+        </div>
       </div>
 
-      <div className="p-4 space-y-4">
-        {list.map((item, index) => {
-          const selectedMark = selectedMarkByWarehouse[item.shop_id] || '';
-          const baseAddress = getBaseAddress(item);
-          const fullAddressWithMark = getFullAddressWithMark(item, selectedMark);
-          const markAndUid = getMarkAndUid(selectedMark);
+      <div className="p-4 space-y-5 max-w-xl mx-auto">
+        {loading && list.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+          </div>
+        ) : list.length > 0 ? (
+          list.map((item, index) => {
+            const selectedMark = selectedMarkByWarehouse[item.shop_id] || '';
+            const fullAddressWithMark = getFullAddressWithMark(item, selectedMark);
+            const markAndUid = getMarkAndUid(selectedMark);
 
-          return (
-            <div
-              key={item.shop_id || index}
-              className="bg-white rounded-2xl shadow-sm overflow-hidden"
-            >
-              {/* 可点击区域 - 仓库名称 */}
+            return (
               <div
-                onClick={() => handleItemClick(item.shop_id)}
-                className="px-4 pt-4 pb-2 active:bg-gray-50 transition-colors cursor-pointer"
+                key={item.shop_id}
+                className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 overflow-hidden border border-slate-100 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/80"
               >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {item.shop_name || t("storage.unknown_warehouse")}
-                  </h3>
-                  <span className="text-blue-600 text-sm font-medium flex items-center">
-                    {t("storage.view_detail", "详情")} →
-                  </span>
-                </div>
-              </div>
-
-              {/* 地址信息区域 */}
-              <div 
-                className="px-4 pb-4"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* 唛头选择器（放在地址信息上方） */}
-                {userMarks.length > 1 && (
-                  <div className="mb-3 pb-3 border-b border-gray-100">
-                    <div className="text-xs text-gray-400 mb-2">
-                      {t("storage.detail.select_mark", "选择唛头")}
+                {/* Header - Warehouse Name */}
+                <div
+                  onClick={() => handleItemClick(item.shop_id)}
+                  className="px-5 py-4 cursor-pointer group hover:bg-slate-50 transition-colors border-b border-slate-50 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform duration-300">
+                      <WarehouseIcon className="w-5 h-5" />
                     </div>
-                    <div className="max-w-[180px]">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">
+                        {item.shop_name || t("storage.unknown_warehouse")}
+                      </h3>
+                      <p className="text-xs text-slate-400 font-medium">Click for details</p>
+                    </div>
+                  </div>
+                  <div className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all">
+                    <ChevronRightIcon className="w-5 h-5" />
+                  </div>
+                </div>
+
+                {/* Details Section */}
+                <div className="px-5 pt-4 pb-5 space-y-4" onClick={(e) => e.stopPropagation()}>
+
+                  {/* Mark Selector */}
+                  {userMarks.length > 1 && (
+                    <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                          {t("storage.detail.select_mark", "Mark")}
+                        </label>
+                      </div>
                       <Dropdown
-                        label={t("mark.select_mark", "选择唛头")}
                         value={selectedMark}
                         options={markOptions}
                         onChange={(value) => handleMarkChange(item.shop_id, value)}
@@ -235,100 +253,142 @@ ${t("storage.detail.address", "地址")}: ${fullAddressWithMark}`;
                         onToggle={() => setOpenDropdownId(
                           openDropdownId === item.shop_id ? null : item.shop_id
                         )}
+                        className="w-full"
                       />
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* 地址信息 - 可分段复制 */}
-                <div className="space-y-2 mb-3">
-                  <AddressRow
-                    label={t("storage.detail.recipient", "收件人")}
-                    value={item.linkman}
-                    onCopy={(e) => handleCopy(item.linkman, e)}
-                    t={t}
-                  />
-                  <AddressRow
-                    label={t("storage.detail.phone", "电话")}
-                    value={item.phone}
-                    onCopy={(e) => handleCopy(item.phone, e)}
-                    t={t}
-                  />
-                  {/* 地址行：包含唛头+UID中文 */}
-                  <AddressRow
-                    label={t("storage.detail.address", "地址")}
-                    value={fullAddressWithMark}
-                    onCopy={(e) => handleCopy(fullAddressWithMark, e)}
-                    t={t}
-                    highlight={true}
-                  />
-                  {item.post && (
+                  {/* Address Fields */}
+                  <div className="space-y-2.5">
                     <AddressRow
-                      label={t("storage.detail.zip", "邮编")}
-                      value={item.post}
-                      onCopy={(e) => handleCopy(item.post, e)}
+                      label={t("storage.detail.recipient", "收件人")}
+                      value={item.linkman}
+                      onCopy={(e) => handleCopy(item.linkman, e)}
                       t={t}
                     />
-                  )}
-                  {/* 唛头/会员号行 */}
-                  {markAndUid && (
                     <AddressRow
-                      label={t("storage.detail.mark_uid", "唛头/会员号")}
-                      value={markAndUid}
-                      onCopy={(e) => handleCopy(markAndUid, e)}
+                      label={t("storage.detail.phone", "电话")}
+                      value={item.phone}
+                      onCopy={(e) => handleCopy(item.phone, e)}
+                      t={t}
+                    />
+
+                    <AddressRow
+                      label={t("storage.detail.address", "地址")}
+                      value={fullAddressWithMark}
+                      onCopy={(e) => handleCopy(fullAddressWithMark, e)}
                       t={t}
                       highlight={true}
+                      icon="map"
                     />
-                  )}
+
+                    {item.post && (
+                      <AddressRow
+                        label={t("storage.detail.zip", "邮编")}
+                        value={item.post}
+                        onCopy={(e) => handleCopy(item.post, e)}
+                        t={t}
+                      />
+                    )}
+
+                    {markAndUid && (
+                      <AddressRow
+                        label={t("storage.detail.mark_uid", "唛头/会员号")}
+                        value={markAndUid}
+                        onCopy={(e) => handleCopy(markAndUid, e)}
+                        t={t}
+                        highlight={true}
+                        icon="user"
+                      />
+                    )}
+                  </div>
+
+                  {/* Action Button */}
+                  <button
+                    onClick={(e) => handleCopyFullAddress(item, e)}
+                    className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
+                  >
+                    <CopyIcon className="w-4 h-4" />
+                    {t("mark.copy_full_address", "复制完整地址")}
+                  </button>
                 </div>
-
-                {/* 一键复制全部按钮 */}
-                <button
-                  onClick={(e) => handleCopyFullAddress(item, e)}
-                  className="w-full py-2.5 bg-primary-500 text-white text-sm font-medium rounded-xl
-                             active:scale-[0.98] transition-transform flex items-center justify-center gap-1.5"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                  </svg>
-                  {t("mark.copy_full_address", "复制完整地址")}
-                </button>
               </div>
+            );
+          })
+        ) : (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-300">
+              <WarehouseIcon className="w-8 h-8" />
             </div>
-          );
-        })}
-
-        {list.length === 0 && (
-          <div className="text-center py-10 text-gray-400">
-            {t("common.loading")}
+            <p className="font-medium text-slate-500">{t("common.no_data")}</p>
           </div>
         )}
       </div>
+      <Tab />
     </div>
   );
 };
 
-// 地址行组件 - 支持分段复制
-const AddressRow = ({ label, value, onCopy, t, highlight = false }) => (
-  <div className={`flex items-start justify-between rounded-lg px-3 py-2 ${highlight ? 'bg-primary-50' : 'bg-gray-50'}`}>
-    <div className="flex-1 min-w-0 mr-2">
-      <span className={`text-xs ${highlight ? 'text-primary-400' : 'text-gray-400'}`}>{label}:</span>
-      <div className={`text-sm font-medium break-all ${highlight ? 'text-primary-700' : 'text-gray-700'}`}>{value || "-"}</div>
-    </div>
-    <button
-      onClick={onCopy}
-      className={`flex-shrink-0 p-1.5 rounded-lg transition-colors ${
-        highlight 
-          ? 'text-primary-400 hover:text-primary-600 hover:bg-primary-100' 
-          : 'text-gray-400 hover:text-primary-500 hover:bg-primary-50'
-      }`}
-      title={t("common.copy", "复制")}
+// AddressRow component
+const AddressRow = ({ label, value, onCopy, t, highlight = false, icon }) => {
+  const Icon = icon === 'map' ? MapIcon : icon === 'user' ? UserIcon : null;
+
+  return (
+    <div
+      className={classNames(
+        "flex items-start justify-between rounded-xl p-3 transition-colors duration-200",
+        {
+          'bg-indigo-50/60 border border-indigo-100/50': highlight,
+          'bg-slate-50 border border-transparent': !highlight
+        }
+      )}
     >
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-      </svg>
-    </button>
-  </div>
-);
+      <div className="flex-1 min-w-0 mr-3 flex gap-3">
+        {Icon && (
+          <div className={classNames(
+            "mt-0.5",
+            highlight ? "text-indigo-500" : "text-slate-400"
+          )}>
+            <Icon className="w-4 h-4" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <span className={classNames(
+            "text-[11px] font-bold uppercase tracking-wider block mb-1",
+            {
+              'text-indigo-400': highlight,
+              'text-slate-400': !highlight
+            }
+          )}>
+            {label}
+          </span>
+          <div className={classNames(
+            "text-sm font-medium break-all leading-relaxed",
+            {
+              'text-indigo-900': highlight,
+              'text-slate-700': !highlight
+            }
+          )}>
+            {value || "-"}
+          </div>
+        </div>
+      </div>
+
+      <button
+        onClick={onCopy}
+        className={classNames(
+          "flex-shrink-0 p-2 rounded-lg transition-all active:scale-95",
+          {
+            'bg-indigo-100 text-indigo-600 hover:bg-indigo-200': highlight,
+            'bg-white text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 shadow-sm border border-slate-100': !highlight
+          }
+        )}
+        title={t("common.copy", "复制")}
+      >
+        <CopyIcon className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
 
 export default StoragePage;

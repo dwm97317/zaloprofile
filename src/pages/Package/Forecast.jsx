@@ -5,6 +5,7 @@ import request from "../../utils/request";
 import { toast } from "../../utils/toast.jsx";
 import LineButton from "../../components/LineButton/Index";
 import LineInput from "../../components/LineInput/Index";
+import Tab from "../../components/Tab/Tab";
 import "./Forecast.scss";
 
 /**
@@ -15,18 +16,18 @@ import "./Forecast.scss";
 const ForecastPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  
+
   const [mode, setMode] = useState("single"); // 'single' | 'batch'
   const [warehouses, setWarehouses] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
   // 单个预报表单
   const [singleForm, setSingleForm] = useState({
     warehouse_id: "",
     tracking_number: "",
     mark: "",
   });
-  
+
   // 批量预报表单
   const [batchForm, setBatchForm] = useState({
     warehouse_id: "",
@@ -56,7 +57,7 @@ const ForecastPage = () => {
    */
   const handleSingleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // 验证
     if (!singleForm.warehouse_id) {
       toast.error(t("forecast.select_warehouse", "กรุณาเลือกคลังสินค้า"));
@@ -105,7 +106,7 @@ const ForecastPage = () => {
       toast.error(t("forecast.enter_tracking", "กรุณากรอกหมายเลขพัสดุ"));
       return;
     }
-    
+
     if (batchForm.tracking_numbers.includes(trimmed)) {
       toast.error(t("forecast.duplicate_tracking", "หมายเลขพัสดุซ้ำ"));
       return;
@@ -133,7 +134,7 @@ const ForecastPage = () => {
    */
   const handleBatchSubmit = async (e) => {
     e.preventDefault();
-    
+
     // 验证
     if (!batchForm.warehouse_id) {
       toast.error(t("forecast.select_warehouse", "กรุณาเลือกคลังสินค้า"));
@@ -155,7 +156,7 @@ const ForecastPage = () => {
       );
 
       const results = await Promise.allSettled(promises);
-      
+
       const successCount = results.filter((r) => r.status === "fulfilled" && r.value.code === 1).length;
       const failCount = results.length - successCount;
 
@@ -163,13 +164,13 @@ const ForecastPage = () => {
         toast.success(
           t("forecast.batch_success", `แจ้งพัสดุสำเร็จ ${successCount} รายการ${failCount > 0 ? `, ล้มเหลว ${failCount} รายการ` : ""}`)
         );
-        
+
         // 重置表单
         setBatchForm({
           warehouse_id: batchForm.warehouse_id,
           tracking_numbers: [],
         });
-        
+
         // 延迟跳转
         setTimeout(() => navigate("/order/package"), 1500);
       } else {
@@ -184,7 +185,7 @@ const ForecastPage = () => {
   };
 
   return (
-    <div className="forecast-page">
+    <div className="forecast-page pb-24">
       {/* Header */}
       <div className="forecast-header">
         <button onClick={() => navigate(-1)} className="back-btn">
@@ -359,6 +360,7 @@ const ForecastPage = () => {
           </LineButton>
         </form>
       )}
+      <Tab />
     </div>
   );
 };

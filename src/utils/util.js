@@ -44,6 +44,14 @@ export default {
   isEmpty: (object) => {
     return Object.keys(object).length === 0;
   },
+  // Convert number to Chinese characters
+  convertNumberToChinese: (num) => {
+    const chineseNumbers = {
+      '0': '零', '1': '一', '2': '二', '3': '三', '4': '四',
+      '5': '五', '6': '六', '7': '七', '8': '八', '9': '九'
+    };
+    return String(num).split('').map(digit => chineseNumbers[digit] || digit).join('');
+  },
   // Set page title - LINE LIFF doesn't support this, so we just update document title
   setBarPageView: (title) => {
     document.title = title;

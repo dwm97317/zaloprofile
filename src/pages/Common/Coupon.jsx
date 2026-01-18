@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import request from "../../utils/request";
 import util from "../../utils/util";
 import Loading from "../../components/Loading/Index";
+import Tab from "../../components/Tab/Tab";
 import "./Coupon.scss";
 
 const CommonCouponPage = () => {
@@ -55,9 +56,9 @@ const CommonCouponPage = () => {
       default: return t("common_page.use_now", "ใช้งาน");
     }
   };
-  
+
   return (
-    <div className="coupon-page">
+    <div className="coupon-page pb-24">
       {/* Header */}
       <div className="coupon-header">
         <button onClick={() => navigate(-1)} className="back-btn">
@@ -108,9 +109,8 @@ const CommonCouponPage = () => {
           list.map((item, index) => (
             <div
               key={index}
-              className={`coupon-card bg-gradient-to-r ${getStatusColor(tab)} ${
-                tab === 0 ? 'active' : 'inactive'
-              }`}
+              className={`coupon-card bg-gradient-to-r ${getStatusColor(tab)} ${tab === 0 ? 'active' : 'inactive'
+                }`}
               style={{
                 animationDelay: `${index * 0.1}s`
               }}
@@ -139,7 +139,7 @@ const CommonCouponPage = () => {
                   {/* 半圆切口 */}
                   <div className="circle-cutout circle-top"></div>
                   <div className="circle-cutout circle-bottom"></div>
-                  
+
                   <button
                     disabled={tab !== 0}
                     className={`use-btn ${tab === 0 ? 'active' : 'disabled'}`}
@@ -162,6 +162,7 @@ const CommonCouponPage = () => {
           </div>
         )}
       </div>
+      <Tab />
     </div>
   );
 };

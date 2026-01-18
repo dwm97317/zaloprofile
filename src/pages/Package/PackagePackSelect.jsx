@@ -8,6 +8,7 @@ import { toast } from "../../utils/toast";
 import Loading from "../../components/Loading/Index";
 import LineButton from "../../components/LineButton/Index";
 import OptimizedImage from "../../components/Common/OptimizedImage";
+import Tab from "../../components/Tab/Tab";
 import "./PackagePackSelect.scss";
 
 /**
@@ -77,7 +78,7 @@ const PackagePackSelectPage = () => {
     // 检查是否所有选中的包裹都来自同一个仓库
     const selectedPackages = packages.filter(pkg => selectedIds.includes(pkg.id));
     const storageIds = [...new Set(selectedPackages.map(pkg => pkg.storage_id))];
-    
+
     if (storageIds.length > 1) {
       toast.error(t("package.error.different_warehouse", "กรุณาเลือกพัสดุจากคลังเดียวกันเท่านั้น"));
       return;
@@ -132,7 +133,7 @@ const PackagePackSelectPage = () => {
   }
 
   return (
-    <div className="package-pack-select-page">
+    <div className="package-pack-select-page pb-24">
       {/* Header - LINE 主题 */}
       <div className="pack-select-header">
         <button
@@ -222,7 +223,7 @@ const PackagePackSelectPage = () => {
               </svg>
             </button>
           </div>
-          
+
           {/* 仓库提示 */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
             <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -303,145 +304,146 @@ const PackagePackSelectPage = () => {
             <div className="package-list">
               {packages.map((pkg, index) => {
                 const isSelected = selectedIds.includes(pkg.id);
-                
-                return (
-                <div
-                  key={pkg.id}
-                  className={`package-card ${isSelected ? "selected" : ""}`}
-                  onClick={() => toggleSelect(pkg.id)}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  {/* 选中状态指示器 */}
-                  <div className="select-indicator">
-                    {isSelected ? (
-                      <svg
-                        className="w-6 h-6"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    ) : (
-                      <div className="w-6 h-6 rounded-full border-2 border-gray-300"></div>
-                    )}
-                  </div>
 
-                  {/* 包裹信息 */}
-                  <div className="package-info">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-bold text-gray-900">
-                            {pkg.express_num}
-                          </h4>
-                          {pkg.storage?.shop_name && (
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-                              {pkg.storage.shop_name}
-                            </span>
+                return (
+                  <div
+                    key={pkg.id}
+                    className={`package-card ${isSelected ? "selected" : ""}`}
+                    onClick={() => toggleSelect(pkg.id)}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    {/* 选中状态指示器 */}
+                    <div className="select-indicator">
+                      {isSelected ? (
+                        <svg
+                          className="w-6 h-6"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full border-2 border-gray-300"></div>
+                      )}
+                    </div>
+
+                    {/* 包裹信息 */}
+                    <div className="package-info">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-bold text-gray-900">
+                              {pkg.express_num}
+                            </h4>
+                            {pkg.storage?.shop_name && (
+                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                                {pkg.storage.shop_name}
+                              </span>
+                            )}
+                          </div>
+                          {pkg.mark && (
+                            <p className="text-xs text-primary-600 font-medium mb-1">
+                              {t("package.labels.mark", "唛头")}: {pkg.mark}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500">{pkg.class_name || t("package.labels.items")}</p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          {pkg.weight && (
+                            <div className="px-2 py-1 bg-primary-100 text-primary-700 rounded-lg text-xs font-bold">
+                              {pkg.weight} kg
+                            </div>
                           )}
                         </div>
-                        {pkg.mark && (
-                          <p className="text-xs text-primary-600 font-medium mb-1">
-                            {t("package.labels.mark", "唛头")}: {pkg.mark}
-                          </p>
-                        )}
-                        <p className="text-xs text-gray-500">{pkg.class_name || t("package.labels.items")}</p>
                       </div>
-                      <div className="flex-shrink-0">
-                        {pkg.weight && (
-                          <div className="px-2 py-1 bg-primary-100 text-primary-700 rounded-lg text-xs font-bold">
-                            {pkg.weight} kg
+
+                      {/* 货物图片 */}
+                      {pkg.images && pkg.images.length > 0 && (
+                        <div className="mb-2">
+                          <div className="flex gap-2 overflow-x-auto">
+                            {pkg.images.map((img, idx) => (
+                              <OptimizedImage
+                                key={idx}
+                                src={img}
+                                alt={`Package ${idx + 1}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleImageClick(pkg.images, idx);
+                                }}
+                                className="w-16 h-16 object-cover rounded-lg bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-1 text-xs text-gray-600">
+                        {(pkg.length || pkg.width || pkg.height) && (
+                          <div className="flex items-center gap-2">
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                              />
+                            </svg>
+                            <span>
+                              {t("package.labels.dimensions", "ขนาด")}: {pkg.length || '-'}×{pkg.width || '-'}×{pkg.height || '-'} cm
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <span>
+                            {t("package.select_pack.date", "วันที่")}:
+                            {formatDate(pkg.create_time)}
+                          </span>
+                        </div>
+                        {pkg.country?.title && (
+                          <div className="flex items-center gap-2">
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            <span>{pkg.country.title}</span>
                           </div>
                         )}
                       </div>
                     </div>
-
-                    {/* 货物图片 */}
-                    {pkg.images && pkg.images.length > 0 && (
-                      <div className="mb-2">
-                        <div className="flex gap-2 overflow-x-auto">
-                          {pkg.images.map((img, idx) => (
-                            <OptimizedImage
-                              key={idx}
-                              src={img} 
-                              alt={`Package ${idx + 1}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageClick(pkg.images, idx);
-                              }}
-                              className="w-16 h-16 object-cover rounded-lg bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="space-y-1 text-xs text-gray-600">
-                      {(pkg.length || pkg.width || pkg.height) && (
-                        <div className="flex items-center gap-2">
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                            />
-                          </svg>
-                          <span>
-                            {t("package.labels.dimensions", "ขนาด")}: {pkg.length || '-'}×{pkg.width || '-'}×{pkg.height || '-'} cm
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <span>
-                          {t("package.select_pack.date", "วันที่")}:
-                          {formatDate(pkg.create_time)}
-                        </span>
-                      </div>
-                      {pkg.country?.title && (
-                        <div className="flex items-center gap-2">
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                          <span>{pkg.country.title}</span>
-                        </div>
-                      )}
-                    </div>
                   </div>
-                </div>
-              )})}
+                )
+              })}
             </div>
 
             {/* 选中数量和提交按钮 */}
@@ -474,13 +476,13 @@ const PackagePackSelectPage = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* 仓库检查提示 */}
                 {(() => {
                   const selectedPackages = packages.filter(pkg => selectedIds.includes(pkg.id));
                   const storageIds = [...new Set(selectedPackages.map(pkg => pkg.storage_id))];
                   const warehouseNames = [...new Set(selectedPackages.map(pkg => pkg.storage?.shop_name).filter(Boolean))];
-                  
+
                   if (storageIds.length > 1) {
                     return (
                       <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2 mb-3">
@@ -581,6 +583,7 @@ const PackagePackSelectPage = () => {
           </div>
         </div>
       )}
+      <Tab />
     </div>
   );
 };

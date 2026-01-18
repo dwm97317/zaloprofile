@@ -7,6 +7,7 @@ import util from '../../utils/util';
 import CategorySelector from '../../components/PackageTake/CategorySelector';
 import PackageCard from '../../components/PackageTake/PackageCard';
 import Loading from '../../components/Loading/Index';
+import Tab from "../../components/Tab/Tab";
 
 /**
  * Package Take Page - Redesigned
@@ -130,13 +131,13 @@ const PackageTake = () => {
     setTrackingNumber(fullTrackingNumber);
     setSelectedPackage(pkg);
     setShowCategorySelector(true);
-    
+
     // Scroll to quick claim section
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-safe">
+    <div className="min-h-screen bg-gray-50 pb-24">
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 px-4 pt-6 pb-12 rounded-b-[2rem] shadow-xl relative overflow-hidden">
         {/* Background Pattern */}
@@ -404,6 +405,7 @@ const PackageTake = () => {
           </div>
         </div>
       </div>
+      <Tab />
     </div>
   );
 };

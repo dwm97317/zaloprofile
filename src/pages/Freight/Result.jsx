@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { useTranslation } from "react-i18next";
+import classNames from "classnames";
 import { lineIdState, queryFormState } from "../../state";
 import request from "../../utils/request";
 import util from "../../utils/util";
 import Loading from "../../components/Loading/Index";
+import { ChevronRightIcon, InfoIcon, TruckIcon } from "../../components/Icons";
 
 const FreightResultPage = () => {
   const { t } = useTranslation();
@@ -24,14 +26,8 @@ const FreightResultPage = () => {
       fetchEstimatedFreight();
       fetchAllRoutes();
     } else {
-      // If no form data, maybe redirect back or just fetch all
       fetchAllRoutes();
     }
-
-    // Cleanup form data on unmount or after fetch? 
-    // Original code cleared it immediately but that might prevent re-fetch if component updates. 
-    // Let's clear it on unmount or just leave it. 
-    // Original: setFormQueryData("");
 
     return () => {
       // cleanup
@@ -73,21 +69,21 @@ const FreightResultPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-safe">
-      {/* Header */}
-      <div className="bg-white px-4 py-3 shadow-sm sticky top-0 z-10 flex items-center">
-        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-600">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-          </svg>
+    <div className="min-h-screen bg-slate-50 pb-safe font-sans">
+      {/* Header - Glassmorphism */}
+      <div className="bg-white/80 backdrop-blur-md px-4 py-3 shadow-sm sticky top-0 z-20 flex items-center transition-all">
+        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors active:scale-90">
+          <ChevronRightIcon className="w-6 h-6 rotate-180" />
         </button>
-        <h1 className="text-lg font-bold ml-2 text-gray-800">{t("freight.result.title")}</h1>
+        <h1 className="text-lg font-bold ml-2 text-slate-800 tracking-tight">{t("freight.result.title")}</h1>
       </div>
 
       {/* Tips */}
-      <div className="bg-orange-50 p-4 flex gap-3 items-start mx-4 mt-4 rounded-xl border border-orange-100">
-        <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img34.png" className="w-5 h-5 flex-shrink-0 mt-0.5 object-contain" />
-        <p className="text-sm text-orange-700 leading-relaxed font-medium">
+      <div className="bg-indigo-50/80 border border-indigo-100 p-4 flex gap-3 items-start mx-4 mt-4 rounded-xl shadow-sm">
+        <div className="w-5 h-5 flex-shrink-0 mt-0.5 text-indigo-500">
+          <InfoIcon className="w-full h-full" />
+        </div>
+        <p className="text-sm text-indigo-700 leading-relaxed font-medium">
           {t("freight.result.note")}
         </p>
       </div>
@@ -108,17 +104,17 @@ const FreightResultPage = () => {
         )}
 
         {list.length === 0 && !loading && formQuery && (
-          <div className="text-center py-4 text-gray-400 text-sm">
+          <div className="text-center py-4 text-slate-400 text-sm">
             {t("common.no_data")}
           </div>
         )}
 
         {/* All Routes Label */}
-        <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
-          <div className="bg-blue-100 p-1.5 rounded-lg">
-            <img src="https://zhuanyun.sllowly.cn/assets/api/images/dzx_img14.png" className="w-4 h-4" />
+        <div className="flex items-center gap-2 pt-4 border-t border-slate-200">
+          <div className="bg-indigo-100 p-1.5 rounded-lg text-indigo-600">
+            <TruckIcon className="w-4 h-4" />
           </div>
-          <h2 className="font-bold text-gray-800 text-lg">{t("freight.result.all_routes")}</h2>
+          <h2 className="font-bold text-slate-800 text-lg">{t("freight.result.all_routes")}</h2>
         </div>
 
         {/* All Routes List */}
@@ -132,7 +128,7 @@ const FreightResultPage = () => {
             />
           ))}
           {allList.length === 0 && (
-            <div className="text-center py-10 text-gray-400">
+            <div className="text-center py-10 text-slate-400">
               {t("common.loading")}
             </div>
           )}
@@ -147,29 +143,29 @@ const FreightResultPage = () => {
 const ResultCard = ({ item, onClick, t }) => (
   <div
     onClick={onClick}
-    className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 active:scale-[0.99] transition-transform cursor-pointer flex gap-4"
+    className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 active:scale-[0.99] hover:shadow-md transition-all cursor-pointer flex gap-4 group"
   >
     <img
       src={item.image || "https://zhuanyun.sllowly.cn/attachment/no_pic.png"}
-      className="w-20 h-20 rounded-xl object-cover bg-gray-50 flex-shrink-0"
+      className="w-20 h-20 rounded-xl object-cover bg-slate-50 border border-slate-100 flex-shrink-0"
     />
     <div className="flex-1 min-w-0 flex flex-col justify-between">
       <div>
-        <h3 className="font-bold text-gray-900 text-sm leading-tight mb-1 line-clamp-2">
+        <h3 className="font-bold text-slate-800 text-sm leading-tight mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
           {item.name}
         </h3>
-        <div className="text-xs text-gray-500 flex items-center gap-1">
-          <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded ml-0">
+        <div className="flex flex-wrap gap-1">
+          <span className="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md text-xs font-medium border border-indigo-100">
             {t("freight.result.delivery_time")}: {item.limitationofdelivery}
           </span>
         </div>
       </div>
       <div className="mt-2 flex justify-between items-end">
-        <div className="text-xs text-gray-500">
-          {t("freight.result.tariff")}: <span className="text-orange-500 font-bold">{item.tariff}</span>
+        <div className="text-xs text-slate-500 font-medium">
+          {t("freight.result.tariff")}: <span className="text-orange-500 font-bold ml-1 text-sm">{item.tariff}</span>
         </div>
-        <span className="text-xs text-blue-600 font-medium">
-          {t("freight.result.click_detail")} &rarr;
+        <span className="text-xs text-indigo-600 font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
+          {t("freight.result.click_detail")} <ChevronRightIcon className="w-3 h-3" />
         </span>
       </div>
     </div>

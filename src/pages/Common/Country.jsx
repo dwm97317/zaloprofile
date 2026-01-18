@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
 import { useTranslation } from "react-i18next";
 import { countryState } from "../../state";
-import Header from "../../components/Header/Header";
 import request from "../../utils/request";
+import { ChevronRightIcon, SearchIcon } from "../../components/Icons";
 
 const CountryPage = () => {
   const { t } = useTranslation();
@@ -45,10 +45,10 @@ const CountryPage = () => {
 
   const filterCountries = (countries) => {
     if (!searchTerm) return countries;
-    
+
     return countries.map(group => ({
       ...group,
-      data: group.data.filter(item => 
+      data: group.data.filter(item =>
         item.title.toLowerCase().includes(searchTerm.toLowerCase())
       )
     })).filter(group => group.data.length > 0);
@@ -61,23 +61,27 @@ const CountryPage = () => {
   const filteredCountry = filterCountries(country);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-safe">
-      <Header title={t("country.title", "Select Country")} />
+    <div className="min-h-screen bg-white pb-safe font-sans">
+      {/* Header - Glassmorphism */}
+      <div className="bg-white/80 backdrop-blur-md px-4 py-3 shadow-sm sticky top-0 z-20 flex items-center justify-center">
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute left-4 p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors active:scale-90"
+        >
+          <ChevronRightIcon className="w-6 h-6 rotate-180" />
+        </button>
+        <h1 className="text-lg font-bold text-slate-800 tracking-tight">{t("country.title", "Select Country")}</h1>
+      </div>
 
-      {/* Search Bar */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4">
+      {/* Search Bar - Sticky below header */}
+      <div className="sticky top-[52px] z-20 bg-white/95 backdrop-blur-sm border-b border-slate-100 p-3">
         <div className="relative">
-          <svg 
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <SearchIcon className="w-5 h-5" />
+          </div>
           <input
             type="text"
-            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm"
             placeholder={t("country.search_placeholder", "Search country...")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -86,34 +90,31 @@ const CountryPage = () => {
       </div>
 
       {/* Country List */}
-      <div className="p-4">
+      <div className="relative z-0">
         {loading ? (
-          <div className="text-center text-gray-500 mt-10">
-            {t("common.loading", "Loading...")}
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+            <p className="text-slate-400 text-sm font-medium">{t("common.loading", "Loading...")}</p>
           </div>
         ) : filteredCountry.length > 0 ? (
-          <div className="space-y-6">
+          <div className="pb-10">
             {filteredCountry.map((item, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-2">
-                  <h3 className="text-white font-bold text-lg">{item.key}</h3>
+              <div key={index}>
+                {/* Group Header - Sticky */}
+                <div className="bg-slate-50/95 backdrop-blur-sm px-5 py-2 sticky top-[120px] z-10 border-y border-slate-100/50">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{item.key}</h3>
                 </div>
-                <div className="divide-y divide-gray-100">
+                {/* Items */}
+                <div>
                   {item.data.map((item1, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleSelect(item1)}
-                      className="w-full px-4 py-3 text-left text-gray-700 hover:bg-blue-50 transition-colors flex items-center justify-between group"
+                      className="w-full pl-5 pr-4 py-3.5 text-left bg-white active:bg-slate-50 transition-colors flex items-center justify-between group border-b border-slate-50 last:border-none"
                     >
-                      <span className="font-medium">{item1.title}</span>
-                      <svg 
-                        className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                      </svg>
+                      <span className="font-medium text-slate-800 group-hover:text-indigo-600 transition-colors">{item1.title}</span>
+                      {/* Optional: Add flag or visual if available? For now just chevron */}
+                      <ChevronRightIcon className="w-5 h-5 text-slate-300 group-hover:text-indigo-400 transition-colors" />
                     </button>
                   ))}
                 </div>
@@ -121,11 +122,14 @@ const CountryPage = () => {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center mt-20 text-gray-400">
-            <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <p>{t("country.no_results", "No countries found")}</p>
+          <div className="flex flex-col items-center justify-center mt-20 text-slate-400">
+            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" strokeWidth="1.5" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" strokeWidth="1.5" />
+              </svg>
+            </div>
+            <p className="font-medium">{t("country.no_results", "No countries found")}</p>
           </div>
         )}
       </div>

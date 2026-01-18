@@ -8,6 +8,7 @@ import request from "../../utils/request";
 import { toast } from "../../utils/toast";
 import Loading from "../../components/Loading/Index";
 import EnhancedOrderListCard from "../../components/Order/EnhancedOrderListCard";
+import Tab from "../../components/Tab/Tab";
 
 const OrderListPage = () => {
   const { t } = useTranslation();
@@ -127,7 +128,7 @@ const OrderListPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col pb-24">
       {/* Header */}
       <div className="bg-white px-4 py-3 shadow-sm sticky top-0 z-20 flex items-center">
         <button onClick={() => navigate("/mine")} className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
@@ -232,6 +233,7 @@ const OrderListPage = () => {
       </AnimatePresence>
 
       <Loading is={loading} text={loadingText} />
+      <Tab />
     </div>
   );
 };

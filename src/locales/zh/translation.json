@@ -392,7 +392,13 @@
         "placeholder": "请输入快递单号",
         "search": "立即查询",
         "result": "查询结果",
-        "no_data": "暂无数据"
+        "no_data": "暂无数据",
+        "track_package_subtitle": "极速追踪您的包裹状态",
+        "enter_tracking_hint": "在上方输入您的快递单号",
+        "not_found": "未找到包裹信息",
+        "ready_to_track": "准备查询",
+        "check_details_try_again": "请仔细核对单号后重试",
+        "enter_code_description": "请输入单号以获取最新物流动态"
     },
     "grade": {
         "default_name": "普通会员",
