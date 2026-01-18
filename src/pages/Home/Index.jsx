@@ -127,8 +127,8 @@ const HomePage = () => {
     const fetchData = async () => {
       try {
         const [bannerRes, contactRes] = await Promise.all([
-          request.get("page/banner&wxapp_id=10001"),
-          request.get("page/customer_contact&wxapp_id=10001")
+          request.get("page/banner&wxapp_id=10001", null, { cache: true, ttl: 300000 }), // Cache 5 min
+          request.get("page/customer_contact&wxapp_id=10001", null, { cache: true, ttl: 600000 }) // Cache 10 min
         ]);
 
         setCourse(bannerRes.data || []);

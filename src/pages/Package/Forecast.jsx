@@ -39,7 +39,7 @@ const ForecastPage = () => {
   useEffect(() => {
     const fetchWarehouses = async () => {
       try {
-        const res = await request.get("storage/lists&wxapp_id=10001");
+        const res = await request.get("storage/lists&wxapp_id=10001", null, { cache: true, ttl: 60000 });
         if (res.data && res.data.list) {
           setWarehouses(res.data.list);
         }

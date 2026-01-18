@@ -37,7 +37,7 @@ const OrderListPage = () => {
     setLoading(true);
     try {
       const apiTab = typeMap[tabIndex] || "";
-      const res = await request.get("package/packagelist&wxapp_id=10001", { type: apiTab });
+      const res = await request.get("package/packagelist&wxapp_id=10001", { type: apiTab }, { cache: true, ttl: 10000 });
       if (res.code === 1 && Array.isArray(res.data.data)) {
         setList(res.data.data);
       } else {

@@ -13,7 +13,7 @@ axios.interceptors.request.use(
     const token = localStorage.getItem("token");
 
     // Initialize params if not exists
-    if (config.params === undefined) {
+    if (!config.params) {
       config.params = {};
     }
 
@@ -106,6 +106,66 @@ function checkStatus(response) {
   });
 }
 
+// Simple LRU Cache implementation
+class SimpleLRUCache {
+  constructor(limit = 100) {
+    this.limit = limit;
+    this.map = new Map();
+  }
+
+  get(key) {
+    if (!this.map.has(key)) return undefined;
+    const value = this.map.get(key);
+    // Refresh item by deleting and re-inserting
+    this.map.delete(key);
+    this.map.set(key, value);
+    return value;
+  }
+
+  set(key, value) {
+    if (this.map.has(key)) {
+      this.map.delete(key);
+    } else if (this.map.size >= this.limit) {
+      // Evict the least recently used item (first item in Map)
+      const firstKey = this.map.keys().next().value;
+      this.map.delete(firstKey);
+    }
+    this.map.set(key, value);
+  }
+
+  delete(key) {
+    this.map.delete(key);
+  }
+
+  clear() {
+    this.map.clear();
+  }
+}
+
+const CACHE = new SimpleLRUCache(100); // Limit to 100 items
+const PENDING_MAP = new Map();
+
+// Generate unique, stable key for request
+const generateKey = (method, url, params) => {
+  try {
+    let paramStr = '';
+    if (params && typeof params === 'object') {
+      // Sort keys to ensure stability: {a:1, b:2} == {b:2, a:1}
+      const sortedKeys = Object.keys(params).sort();
+      const sortedObj = {};
+      sortedKeys.forEach(key => {
+        sortedObj[key] = params[key];
+      });
+      paramStr = JSON.stringify(sortedObj);
+    } else if (params) {
+      paramStr = String(params);
+    }
+    return `${method}:${url}:${paramStr}`;
+  } catch (e) {
+    return `${method}:${url}`;
+  }
+};
+
 export default {
   post(url, params) {
     return axios({
@@ -116,13 +176,68 @@ export default {
       return checkStatus(response);
     });
   },
-  get(url, params) {
-    return axios({
+
+  get(url, params, options = {}) {
+    const { cache = false, ttl = 60000, force = false } = options;
+    const method = 'get';
+    const key = generateKey(method, url, params);
+
+    // 1. Check Memory Cache
+    if (cache && !force) {
+      const cached = CACHE.get(key);
+      if (cached) {
+        const now = Date.now();
+        if (now - cached.timestamp < ttl) {
+          // Cache hit
+          return Promise.resolve(JSON.parse(JSON.stringify(cached.data))); // Return deep copy to prevent mutation
+        } else {
+          // Cache expired
+          CACHE.delete(key);
+        }
+      }
+    }
+
+    // 2. Check Pending Requests (Deduplication)
+    // Only deduplicate if caching is enabled or explicitly requested (future)
+    // For now, we apply deduplication for all GET requests to prevent concurrent identical requests
+    if (PENDING_MAP.has(key)) {
+      return PENDING_MAP.get(key);
+    }
+
+    const requestPromise = axios({
       method: "get",
       url,
       params,
-    }).then((response) => {
-      return checkStatus(response);
-    });
+    })
+      .then((response) => {
+        return checkStatus(response);
+      })
+      .then((data) => {
+        // Remove from pending map
+        PENDING_MAP.delete(key);
+
+        // Save to cache if enabled
+        if (cache && data.code === 200) { // Only cache successful responses
+          // Check returnCode for Zalo/Line logic if necessary, but usually code 200 is API success
+          CACHE.set(key, {
+            data,
+            timestamp: Date.now()
+          });
+        }
+
+        return data;
+      })
+      .catch((err) => {
+        PENDING_MAP.delete(key);
+        return Promise.reject(err);
+      });
+
+    PENDING_MAP.set(key, requestPromise);
+    return requestPromise;
   },
+
+  // Method to clear cache manually
+  clearCache() {
+    CACHE.clear();
+  }
 };
